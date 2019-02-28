@@ -1,47 +1,47 @@
 
 % load the task information from the .mat file
+datafile = 'data/PoissonBlocksReboot_cohort1_VRTrain6_E75_T_20181105.mat';
+load(datafile);
 
-% insert task.Parameter
-
-key.parameter_category = 'maze';
-
-for field_mazes = fieldnames(mazes)'
-    key.parameter = field_mazes{:};
-    inserti(task.Parameter, key)
-end
-
-key.parameter_category = 'criterion';
-
-for field_criteria = fieldnames(criteria)'
-    key.parameter = field_criteria{:};
-    inserti(task.Parameter, key)
-end
-
-key.parameter_category = 'global settings';
-for field_global = fieldnames(globalSettings)'
-    key.parameter = field_global{:};
-    inserti(task.Parameter, key)
-end
-
-key.parameter_category = 'other';
-for other_par = others
-    key.parameter = other_par{:};
-    inserti(task.Parameter, key)
-end
-
-clear key
-
-% insert task.TaskLevelParameterSet
-key.task = 'Towers';
-
-for iLevel = 1:11
-    key.level = iLevel;
-    inserti(task.TaskLevelParameterSet, key)
-end
-
-% insert task.TaskParameter
-for iLevel = 1:11
-    key.level = iLevel;
+% insert task related parameters
+key_level.task = 'Towers';
+for iLevel = 1:length(log.version.mazes)
+    
+    % insert task.TaskLevelParameterSet
+    maze = log.version.mazes(iLevel);
+    key_level.level = iLevel;
+    inserti(task.TaskLevelParameterSet, key_level);
+    
+    % insert task.Parameter, task.TaskParameter
+    insertTaskParameter(key_level, maze, 'maze')
+    insertTaskParameter(key_level, maze, 'criterion')
     
 end
 
+function insertTaskParameter(key_level, maze, category)
+
+    key_par.parameter_category = category;
+    
+    switch category
+        case 'maze'
+            par_set = maze.variable;
+        case 'criterion'
+            par_set = maze.criteria;
+    end
+    
+    key_task_par = key_level;
+    for field = fieldnames(par_set)'
+        key_par.parameter = field{:};
+        inserti(task.Parameter, key_par)
+        
+        par_value = par_set.(key_par.parameter);
+        if isstring(par_value)
+                par_value = str2num(par_value);
+        end
+        if (~isscalar(par_value) && ~isempty(par_value)) || (isscalar(par_value) && ~isnan(par_value))
+            key_task_par.parameter = key_par.parameter;
+            key_task_par.parameter_value = par_value;
+            inserti(task.TaskParameter, key_task_par)
+        end
+    end
+end
