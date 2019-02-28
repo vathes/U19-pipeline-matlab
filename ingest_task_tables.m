@@ -13,8 +13,9 @@ for iLevel = 1:length(log.version.mazes)
     inserti(task.TaskLevelParameterSet, key_level);
     
     % insert task.Parameter, task.TaskParameter
-    insertTaskParameter(key_level, maze, 'maze')
-    insertTaskParameter(key_level, maze, 'criterion')
+%     insertTaskParameter(key_level, maze, 'maze')
+%     insertTaskParameter(key_level, maze, 'criterion')
+    insertTaskParameter(key_level, maze, 'visible')
     
 end
 
@@ -27,6 +28,8 @@ function insertTaskParameter(key_level, maze, category)
             par_set = maze.variable;
         case 'criterion'
             par_set = maze.criteria;
+        case 'visible'
+            par_set = maze.visible;
     end
     
     key_task_par = key_level;
