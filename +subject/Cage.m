@@ -1,9 +1,8 @@
 %{
 cage:  char(8)    # name of a cage
------
--> lab.User
--> lab.Location
+---
+(cage_owner) -> lab.User
 %}
 
-classdef Cage < dj.Manual
+classdef Cage < dj.Lookup
 end

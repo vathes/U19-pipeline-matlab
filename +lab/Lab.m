@@ -10,7 +10,9 @@ time_zone:              varchar(32)
 classdef Lab < dj.Lookup
 
     properties
-        contents = {'tanklab', 'Princeton', 'Princeton Neuroscience Institute, Princeton University Princeton, NJ 08544', 'America/New_York'}
+        contents = {'tanklab', 'Princeton', 'Princeton Neuroscience Institute, Princeton University Princeton, NJ 08544', 'America/New_York';
+                    'wittenlab', 'Princeton', 'Princeton Neuroscience Institute, Princeton University Princeton, NJ 08544', 'America/New_York';
+        }
     end
     
 end

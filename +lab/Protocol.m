@@ -1,13 +1,13 @@
 %{
-protocol: varchar(16)              # protocol number
+protocol: varchar(16)                     # protocol number
 ---
-reference_weight_pct: float        # percentage of initial allowed
-protocol_description: varchar(255) # description
+reference_weight_pct=null:   float        # percentage of initial allowed
+protocol_description='':     varchar(255) # description
 %}
 
 
 classdef Protocol < dj.Lookup
     properties
-        contents = {'1910-18', 0.8, 'Tank Lab protocol'}
+        contents = {'1910', 0.8, 'Tank Lab protocol'}
     end
 end

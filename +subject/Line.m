@@ -5,12 +5,13 @@ line:                   varchar(128)	# name
 -> subject.Strain
 line_description='':	varchar(2048)	# description
 target_phenotype='':	varchar(255)	# target phenotype
-is_active:				boolean		    # is active
+is_active=1:			boolean		    # is active
 %}
 
 classdef Line < dj.Lookup
     properties
         contents = {
+            'Unknown', 'Mus musculus', 'C57BL6/J', '', '', 1
             'C57BL6/J', 'Mus musculus', 'C57BL6/J', 'wild-type mice', '', 1
             'VGAT-ChR2-EYFP', 'Mus musculus', 'C57BL6/J', '', '', 1
             'Ai93-Emx1', 'Mus musculus', 'C57BL6/J', '', '', 1
