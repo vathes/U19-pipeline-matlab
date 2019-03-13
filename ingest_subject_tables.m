@@ -35,13 +35,16 @@ for i = 1:length(overview.Researchers)
         'phone', researcher.Phone, ...
         'carrier', researcher.Carrier, ...
         'slack', researcher.Slack, ...
-        'slack_webhook', researcher.slackWebhook, ...
         'contact_via', researcher.ContactVia, ...
         'presence', researcher.Presence, ...
         'tech_responsibility', researcher.TechResponsibility, ...
         'day_cutoff_time', researcher.DayCutoffTime ...
     );
     
+    if ~isempty(researcher.slackWebhook)
+        key_researcher.slack_webhook = researcher.slackWebhook;
+    end
+
     if ~isempty(researcher.wateringLogs)
         key_researcher.watering_logs = researcher.wateringLogs;
     end
@@ -69,7 +72,7 @@ for i = 1:length(overview.Researchers)
 end
 
 
-%% insert line info
+%% insert subject information
 animals = db.pullAnimalList;
 
 for igroup = 1:length(animals)
@@ -78,14 +81,16 @@ for igroup = 1:length(animals)
     if ~isempty(animal_group)
         for ianimal = 1:length(animal_group)
             animal = animal_group(ianimal);
+            subject_lab = fetch1(lab.UserLab & sprintf('user_id="%s"', animal.owner), 'lab');
             key_subj = struct( ...
                 'subject_id', animal.ID, ...
                 'sex', animal.sex.char, ...
                 'head_plate_mark', animal.image, ...
-                'lab', 'tanklab', ...
+                'lab', subject_lab, ...
                 'location', animal.whereAmI, ...
                 'protocol', animal.protocol, ...
-                'user_id', animal.owner ...
+                'user_id', animal.owner, ...
+                'initial_weight', animal.initWeight ...
             );
             if ~isempty(animal.actItems)
                 key_subj.act_items = animal.actItems{:};
@@ -99,7 +104,7 @@ for igroup = 1:length(animals)
             
             % death: last entry of the effective field?
             key_death.subject_id = animal.ID;
-            key_death.lab = 'tanklab';
+            key_death.lab = subject_lab;
             if ~isempty(animal.effective)
                 death_date = animal.effective{end};
                 key_death.death_date = sprintf('%d-%02d-%02d', death_date(1), death_date(2), death_date(3));
@@ -122,9 +127,25 @@ for igroup = 1:length(animals)
             inserti(subject.Cage, key_cage)
             
             key_caging_status.subject_id = animal.ID;
-            key_caging_status.lab = 'tanklab';
+            key_caging_status.lab = subject_lab;
             key_caging_status.cage = animal.cage;
             inserti(subject.CagingStatus, key_caging_status)
+            
+            % ingest SubjectStatus
+            key_status.lab = subject_lab;
+            key_status.subject_id = animal.ID;
+            if ~isempty(animal.status)
+                for istatus = 1:length(animal.status)
+                    
+                    key_status.subject_status = animal.status{istatus}.string;
+                    
+                    date = animal.effective{istatus};
+                    key_status.effective_date = sprintf('%d-%02d-%02d', date(1), date(2), date(3));
+                    key_status.water_per_day = animal.waterPerDay{istatus};
+                    key_status.schedule = strjoin(animal.techDuties{istatus}.string, '/');
+                    inserti(action.SubjectStatus, key_status)
+                end
+            end
                 
         end
     end

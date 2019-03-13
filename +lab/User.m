@@ -11,7 +11,7 @@ presence:		        enum('Available', 'Away')
 primary_tech='N/A':     enum('yes', 'no', 'N/A')
 tech_responsibility='N/A':    enum('yes', 'no', 'N/A')
 day_cutoff_time:        blob
-slack_webhook:          varchar(255) 
+slack_webhook=null:     varchar(255) 
 watering_logs=null:     varchar(255)
 %}
 

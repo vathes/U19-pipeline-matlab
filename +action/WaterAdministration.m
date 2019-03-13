@@ -2,9 +2,10 @@
 -> subject.Subject
 administration_date:	    date		    # date time
 ---
-water_administered=null:    float			# water administered
--> action.WaterType
--> lab.User
+earned=null:    float			# water administered
+supplement=null: float
+received=null: float
+-> action.WaterType                         # unknown now
 %}
 
 classdef WaterAdministration < dj.Manual

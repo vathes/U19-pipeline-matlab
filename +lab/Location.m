@@ -1,7 +1,6 @@
 %{
 # The physical location at which an session is performed or appliances are located.
 # This could be a room, a rig or a bench.
--> lab.Lab
 location:                   varchar(32)
 -----
 location_description='':    varchar(255)
@@ -10,11 +9,11 @@ location_description='':    varchar(255)
 classdef Location < dj.Lookup
     properties
         contents = {
-            'tanklab', 'Benzos2',  ''
-            'tanklab', 'Benzos3',  ''
-            'tanklab', 'vivarium', ''
-            'tanklab', 'pni-171jppw32', ''
-            'tanklab', 'pni-174cr4jk2', ''
+            'Benzos2',  ''
+            'Benzos3',  ''
+            'vivarium', ''
+            'pni-171jppw32', ''
+            'pni-174cr4jk2', ''
             }
     end
 end
