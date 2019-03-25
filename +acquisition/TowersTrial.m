@@ -31,7 +31,8 @@ trial_prior_p_left:         float    # prior probablity of this trial for left
 vi_start:                   int      # 
 %}
 
-classdef TowersTrial < dj.Imported
-
-
+classdef TowersTrial < dj.Part
+    properties
+        master = aquisition.TowersBlock
+    end
 end

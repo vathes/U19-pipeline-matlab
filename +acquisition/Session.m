@@ -13,6 +13,8 @@ session_end_time=null:      datetime	# end time
 stimulus_bank:             varchar(255)           # path to the function to generate the stimulus
 stimulus_commit:           varchar(64)            # git hash for the version of the function
 data_dir:                  varchar(255)           # directory of the data
+stimulus_set:              tinyint                # 
+ball_squal:                float                  # percentage
 session_narrative='':      varchar(512)
 %}
 
