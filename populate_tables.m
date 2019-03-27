@@ -1,0 +1,2 @@
+populate(acquisition.DataDirectory)
+populate(acquisition.TowersBlock)
