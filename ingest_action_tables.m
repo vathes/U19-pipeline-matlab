@@ -11,6 +11,7 @@ for iuser = 1:length(users)
         key_weigh = animal;
         key_status = animal;
         key_health = animal;
+        key_session = animal;
         for log = logs
              % ingest weighing
             if ~isempty(log.weight)
@@ -61,9 +62,33 @@ for iuser = 1:length(users)
                     inserti(subject.HealthStatusAction, key_health_action)
                 end
             end
-
+            % ingest session
+            if ~isempty(log.trainStart) && ~isempty(log.mainMazeID) % TODO: ingest trainings without mainMazeID
+                key_session.session_date = sprintf('%d-%02d-%02d', ...
+                    log.date(1), log.date(2), log.date(3));
+                key_session.session_start_time = sprintf('%d-%02d-%02d %2d:%2d:00', ...
+                    log.date(1), log.date(2), log.date(3), log.trainStart(1), log.trainStart(2));
+                key_session.session_end_time = sprintf('%d-%02d-%02d %2d:%2d:00', ...
+                    log.date(1), log.date(2), log.date(3), log.trainEnd(1), log.trainEnd(2));
+                
+                % ingest locations
+                key_location.location = log.rigName;
+                inserti(lab.Location, key_location)
+                
+                key_session.location = log.rigName;
+                key_session.user_id = user;
+                key_session.task = 'Towers';
+                key_session.level = log.mainMazeID;
+                key_session.set_id = 1;
+                key_session.stimulus_bank = log.stimulusBank;
+                key_session.stimulus_set = log.stimulusSet;
+                key_session.ball_squal = log.squal;
+                key_session.session_performance = log.performance;
+                
+                inserti(acquisition.Session, key_session)
+            end
+            
         end
     end
 end
-
 
