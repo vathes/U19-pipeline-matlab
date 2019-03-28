@@ -2,8 +2,8 @@
 db = AnimalDatabase;
 
 %% declare table lab.Lab, lab.Protocol
-lab.Lab
-lab.Protocol
+lab.Lab;
+lab.Protocol;
 
 %% insert user information
 overview = db.pullOverview;

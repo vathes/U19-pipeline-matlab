@@ -3,7 +3,7 @@
 trial_idx:          int     # trial index, keep the original number in the file
 ---
 trial_type:                 enum('L', 'R')               # answer of this trial, left or right
-choice:                     enum('L', 'R', 'Time Out')   # choice of this trial, left or right
+choice:                     enum('L', 'R', 'nil')   # choice of this trial, left or right
 trial_time:                 longblob # time series of this trial, start from zero for each trial
 trial_abs_start:            float    # absolute start time of the trial realtive to the beginning of the session
 collision:                  longblob # boolean vector indicating whether the subject hit the maze on each time point
@@ -26,12 +26,13 @@ iterations:                 int      # length of the meaningful recording
 position:                   longblob # 3d recording of the position of the mouse, length equals to interations
 velocity:                   longblob # 3d recording of the velocity of the mouse, length equals to interations
 sensor_dots:                longblob # raw recordings of the ball
-trial_difficulty:           int      # some measure of the difficulty of this trial
+trial_id:                   int      #
 trial_prior_p_left:         float    # prior probablity of this trial for left
 vi_start:                   int      # 
 %}
 
-classdef TowersTrial < dj.Imported
-
-
+classdef TowersBlockTrial < dj.Part
+    properties(SetAccess=protected)
+        master = acquisition.TowersBlock
+    end
 end
