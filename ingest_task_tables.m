@@ -1,7 +1,6 @@
-
 % load the task information from the .mat file
 datafile = 'data/PoissonBlocksReboot_cohort1_VRTrain6_E75_T_20181105.mat';
-load(datafile);
+load(datafile)
 
 % insert task related parameters
 key_level.task = 'Towers';
@@ -11,10 +10,6 @@ for iLevel = 1:length(log.version.mazes)
     maze = log.version.mazes(iLevel);
     key_level.level = iLevel;
     inserti(task.TaskLevelParameterSet, key_level);
-    
-    % insert task.Parameter, task.TaskParameter
-%     insertTaskParameter(key_level, maze, 'maze')
-%     insertTaskParameter(key_level, maze, 'criterion')
     insertTaskParameter(key_level, maze, 'visible')
     
 end
