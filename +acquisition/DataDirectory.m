@@ -15,14 +15,25 @@ classdef DataDirectory < dj.Computed
 	methods(Access=protected)
 
 		function makeTuples(self, key)
-            
-            base_dir = '/Volumes/braininit/RigData/training/';
+
             [user, rig, subject, session_date] = fetch1(...
                 acquisition.Session & key, 'user_id', 'location', 'subject_id', 'session_date');
-            session_date = erase(session_date, '-');
-            rig_number = rig(regexp(rig, '[0-9]'));
-            file = dir([base_dir 'rig' rig_number '/' user '/*/data/' subject '/*_' session_date '.mat']);
-            
+            session_date = erase(session_date, '-');  
+
+            if strcmp('Bezos3', rig)
+                % Or on the scope in bezos
+                base_dir = '/Volumes/braininit/RigData/scope/bay3/';
+            	file = dir([base_dir '/' user '/*/data/' subject '/*_' session_date '.mat']);
+            else
+                % Training rigs 1 to 7
+                rig_number = rig(regexp(rig, '[0-9]'));
+                base_dir = '/Volumes/braininit/RigData/training/';
+                if strcmp(subject, 'E86')
+                    subject = 'e86';
+                end
+            	file = dir([base_dir 'rig' rig_number '/' user '/*/data/' subject '/*_' session_date '.mat']);
+            end
+
             if isempty(file)
                 return
             end

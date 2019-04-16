@@ -22,8 +22,8 @@ classdef TowersBlock < dj.Imported
             data_dir = fetch1(acquisition.DataDirectory & key, 'combined_file_name');
             data = load(data_dir, 'log');
             log = data.log;
-            tuple = key;
             for iBlock = 1:length(log.block)
+                tuple = key;
                 block = log.block(iBlock);
                 tuple.block = iBlock;
                 tuple_trial = tuple;
@@ -37,7 +37,7 @@ classdef TowersBlock < dj.Imported
                 tuple.reward_mil = block.rewardMiL;
                 tuple.reward_scale = block.trial(1).rewardScale;
                 tuple.block_level = block.mazeID;
-                tuple.easy_block = block.easyBlockFlag;
+                tuple.easy_block = exists_helper(block,'easyBlockFlag'); %if it doesn't exist, difficulty was uniform
                 self.insert(tuple);
                 
                 for itrial = 1:length(block.trial)
@@ -74,26 +74,40 @@ classdef TowersBlock < dj.Imported
                     if ~isempty(trial.cuePos{2})
                         tuple_trial.cue_pos_right = trial.cuePos{2};
                     end
-                    
+
                     tuple_trial.trial_duration = trial.duration;
                     tuple_trial.excess_travel = trial.excessTravel;
-                    tuple_trial.i_arm_entry = trial.iArmEntry;
-                    tuple_trial.i_blank = trial.iBlank;
-                    tuple_trial.i_cue_entry = trial.iCueEntry;
-                    tuple_trial.i_mem_entry = trial.iMemEntry;
-                    tuple_trial.i_turn_entry = trial.iTurnEntry;
+                    tuple_trial.i_arm_entry = exists_helper(trial,'iArmEntry');
+                    tuple_trial.i_blank = exists_helper(trial,'iBlank');
+                    tuple_trial.i_turn_entry = exists_helper(trial,'iTurnEntry');
+                    tuple_trial.i_cue_entry = exists_helper(trial,'trial.iCueEntry');
+                    tuple_trial.i_mem_entry = exists_helper(trial,'trial.iMemEntry');
                     tuple_trial.iterations = trial.iterations;
                     tuple_trial.position = trial.position;
                     tuple_trial.velocity = trial.velocity;
                     tuple_trial.sensor_dots = trial.sensorDots;
                     tuple_trial.trial_id = trial.trialID;
-                    tuple_trial.trial_prior_p_left = trial.trialProb;
+                    if length(trial.trialProb) == 1
+                        tuple_trial.trial_prior_p_left = trial.trialProb;
+                    else
+                        % For not 50:50 trials, take only one of the
+                        % probabilities (they add up to 1)
+                        tuple_trial.trial_prior_p_left = trial.trialProb(1);
+                    end
                     tuple_trial.vi_start = trial.viStart;
-                    
                     insert(acquisition.TowersBlockTrial, tuple_trial)
                 end
             end
-            
         end
+        
+
     end
+end
+    
+function [s] = exists_helper(trial, fieldname)
+    if isfield(trial, fieldname)
+       s = trial.(fieldname);
+    else
+       s = 0;
+    end 
 end
