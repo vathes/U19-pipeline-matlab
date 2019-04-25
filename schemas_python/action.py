@@ -36,7 +36,6 @@ class WaterRestriction(dj.Manual):
     restriction_start_time:     datetime	# start time
     ---
     restriction_end_time=null:  datetime	# end time
-    initial_weight:             float
     restriction_narrative='':   varchar(1024) # comment
     """
 
@@ -58,7 +57,7 @@ class WaterAdministration(dj.Manual):
     earned=null:    float			# water administered
     supplement=null: float
     received=null: float
-    -> action.WaterType                         # unknown now
+    -> WaterType                         # unknown now
     """
 
 

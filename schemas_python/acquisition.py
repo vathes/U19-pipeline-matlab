@@ -46,7 +46,7 @@ class SessionSessionType(dj.Manual):
 @schema
 class DataDirectory(dj.Computed):
     definition = """
-    -> acquisition.Session
+    -> Session
     ---
     data_dir:  varchar(255) # data directory for each session
     file_name: varchar(255) # file name
