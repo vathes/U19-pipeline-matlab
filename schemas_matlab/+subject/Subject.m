@@ -10,8 +10,7 @@ head_plate_mark=null        : blob                          # little drawing on 
 -> lab.Location
 -> lab.Protocol
 -> subject.Line
-act_items=null              : varchar(32)                   #
-subject_description         : varchar(255)                  # description
+subject_description=''      : varchar(255)                  # description
 initial_weight=null         : float                         # initial weight of the animal before the training start.
 %}
 

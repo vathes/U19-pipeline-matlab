@@ -4,8 +4,8 @@
 effective_date: date
 -----
 subject_status: enum('InExperiments', 'WaterRestrictionOnly', 'AdLibWater', 'Dead')
-water_per_day: float   # in mL
-schedule: varchar(255)
+water_per_day=null: float   # in mL
+schedule=null: varchar(255)
 %}
 
 classdef SubjectStatus < dj.Manual

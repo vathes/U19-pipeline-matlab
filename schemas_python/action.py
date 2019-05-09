@@ -24,8 +24,18 @@ class SubjectStatus(dj.Manual):
     effective_date: date
     -----
     subject_status: enum('InExperiments', 'WaterRestrictionOnly', 'AdLibWater', 'Dead')
-    water_per_day: float   # in mL
-    schedule: varchar(255)
+    water_per_day=null: float   # in mL
+    schedule=null: varchar(255)
+    """
+
+@schema
+class ActionItem(dj.Manual):
+    definition = """
+    -> subject.Subject
+    action_date: date       # date of action
+    action_id: tinyint      # action id
+    -----
+    action: varchar(255)
     """
 
 
@@ -45,7 +55,7 @@ class WaterType(dj.Lookup):
     definition = """
     watertype_name:  varchar(255)
     """
-    contents = zip(['Water', 'Water 10% Sucrose', 'Milk'])
+    contents = zip(['Water', 'Water 10% Sucrose', 'Milk', 'Unknown'])
 
 
 @schema

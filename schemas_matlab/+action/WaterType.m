@@ -9,6 +9,7 @@ classdef WaterType < dj.Lookup
             'Water'
             'Water 10% Sucrose'
             'Milk'
+            'Unknown'
             }
     end
 end
