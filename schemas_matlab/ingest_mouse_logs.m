@@ -1,6 +1,7 @@
 db = AnimalDatabase;
 
-users = {'sakoay', 'lucas', 'edward', 'ben'};
+users = fetchn(lab.User, 'user_id');
+
 
 for iuser = 1:length(users)
     user = users{iuser};
@@ -10,14 +11,22 @@ for iuser = 1:length(users)
        
         key_weigh = animal;
         key_status = animal;
+        key_water_admin = animal;
         key_health = animal;
         key_session = animal;
         for log = logs
              % ingest weighing
             if ~isempty(log.weight)
                 key_weigh.weight = log.weight;
-                key_weigh.weighing_time = sprintf('%d-%02d-%02d %02d:%02d:00', ...
-                    log.date(1), log.date(2), log.date(3), log.weighTime(1), log.weighTime(2));
+                
+                if ~isempty(log.weighTime)
+                    key_weigh.weighing_time = sprintf('%d-%02d-%02d %02d:%02d:00', ...
+                        log.date(1), log.date(2), log.date(3), log.weighTime(1), log.weighTime(2));
+                else
+                    key_weigh.weighing_time = sprintf('%d-%02d-%02d 12:00:00', ...
+                        log.date(1), log.date(2), log.date(3));
+                end
+
                 key_weigh.weigh_person = log.weighPerson;
                 
                 if ~isempty(log.weighLocation)
@@ -27,6 +36,16 @@ for iuser = 1:length(users)
                 key_weigh.location = log.weighLocation;
                 inserti(action.Weighing, key_weigh)
                 
+            end
+            % ingest water administration info
+            if ~isempty(log.received)
+                key_water_admin.administration_date = sprintf('%d-%02d-%02d', ...
+                    log.date(1), log.date(2), log.date(3));
+                key_water_admin.earned = log.earned;
+                key_water_admin.supplement = log.supplement;
+                key_water_admin.received = log.received;
+                key_water_admin.watertype_name = 'Unknown';
+                inserti(action.WaterAdministration, key_water_admin)
             end
             % ingest health status
             key_health.status_date = sprintf('%d-%02d-%02d', ...
@@ -55,11 +74,11 @@ for iuser = 1:length(users)
             
             if ~isempty(log.actions)
                 for iaction = 1:size(log.actions,1)
-                    key_health_action = animal;
-                    key_health_action.status_date = key_health.status_date;
-                    key_health_action.action_id = iaction;
-                    key_health_action.action = log.actions{iaction, 2};
-                    inserti(subject.HealthStatusAction, key_health_action)
+                    key_action = animal;
+                    key_action.action_date = key_health.status_date;
+                    key_action.action_id = iaction;
+                    key_action.action = log.actions{iaction, 2};
+                    inserti(action.ActionItem, key_action)
                 end
             end
             % ingest session

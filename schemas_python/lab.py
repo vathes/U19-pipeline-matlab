@@ -35,7 +35,8 @@ class Location(dj.Lookup):
         ['Benzos3',  ''],
         ['vivarium', ''],
         ['pni-171jppw32', ''],
-        ['pni-174cr4jk2', '']
+        ['pni-174cr4jk2', ''],
+        ['valhalla', '']
     ]
 
 

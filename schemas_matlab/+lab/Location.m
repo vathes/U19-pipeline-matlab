@@ -14,6 +14,7 @@ classdef Location < dj.Lookup
             'vivarium', ''
             'pni-171jppw32', ''
             'pni-174cr4jk2', ''
+            'valhalla', ''
             }
     end
 end
