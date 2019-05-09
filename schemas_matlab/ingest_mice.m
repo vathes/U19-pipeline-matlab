@@ -1,9 +1,6 @@
 %% load database
 db = AnimalDatabase;
 
-%% declare table lab.Lab, lab.Protocol
-lab.Lab;
-lab.Protocol;
 
 %% insert user information
 overview = db.pullOverview;
@@ -82,17 +79,41 @@ for igroup = 1:length(animals)
         for ianimal = 1:length(animal_group)
             animal = animal_group(ianimal);
             key_subj = struct( ...
-                'subject_id', animal.ID, ...
-                'sex', animal.sex.char, ...
-                'dob', sprintf('%d-%02d-%02d', animal.dob(1), animal.dob(2), animal.dob(3)),...
-                'head_plate_mark', animal.image, ...
-                'location', animal.whereAmI, ...
-                'protocol', animal.protocol, ...
                 'user_id', animal.owner, ...
-                'initial_weight', animal.initWeight ...
+                'subject_id', animal.ID, ...
+                'location', animal.whereAmI ...
             );
+            
+            if ~isempty(animal.sex)
+                key_subj.sex = animal.sex.char;
+            end
+            
+            if ~isempty(animal.image)
+                key_subject.head_plate_mark = animal.image;
+            end
+        
+            if ~isempty(animal.dob)
+                key_subj.dob = sprintf('%d-%02d-%02d', animal.dob(1), animal.dob(2), animal.dob(3));
+            end
+            
+            if ~isempty(animal.protocol)
+                key_subj.protocol = animal.protocol;
+            end
+            
+            if ~isempty(animal.initWeight)
+                key_subj.initial_weight = animal.initWeight;
+            end
+            
+            
             if ~isempty(animal.actItems)
-                key_subj.act_items = animal.actItems{:};
+                for i_act = 1:length(animal.actItems)
+                    key_act = struct(...
+                        'user_id', animal.owner, ...
+                        'subject_id', animal.ID);
+
+                    key_act.act_item = animal.actItems{i_act};
+                    inserti(subject.SubjectActItem, key_act)
+                end
             end
             if ~isempty(animal.genotype)
                 key_subj.line = animal.genotype;
@@ -101,10 +122,11 @@ for igroup = 1:length(animals)
             end
             inserti(subject.Subject, key_subj)
             
-            % death: last entry of the effective field?
-            key_death.subject_id = animal.ID;
-            key_death.lab = subject_lab;
-            if ~isempty(animal.effective)
+            % death information
+           
+            if ~isempty(animal.status) && strcmp(animal.status{end}, 'Dead')
+                key_death.subject_id = animal.ID;
+                key_death.user_id = animal.owner;
                 death_date = animal.effective{end};
                 key_death.death_date = sprintf('%d-%02d-%02d', death_date(1), death_date(2), death_date(3));
                 inserti(subject.Death, key_death)
@@ -120,19 +142,23 @@ for igroup = 1:length(animals)
                 key_cage.cage_owner = 'edward';
             elseif contains(animal.cage, 'LP')
                 key_cage.cage_owner = 'lucas';
+            elseif contains(animal.cage, 'Test')
+                key_cage.cage_owner = 'testuser';
             else
                 key_cage.cage_owner = 'unknown';
             end
             inserti(subject.Cage, key_cage)
             
-            key_caging_status.subject_id = animal.ID;
-            key_caging_status.lab = subject_lab;
-            key_caging_status.cage = animal.cage;
+            key_caging_status = struct(...
+                'subject_id', animal.ID, ...
+                'user_id', animal.owner,...
+                'cage', animal.cage);
             inserti(subject.CagingStatus, key_caging_status)
             
             % ingest SubjectStatus
-            key_status.lab = subject_lab;
-            key_status.subject_id = animal.ID;
+            key_status = struct(...
+                'subject_id', animal.ID, ...
+                'user_id', animal.owner);
             if ~isempty(animal.status)
                 for istatus = 1:length(animal.status)
                     

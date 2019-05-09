@@ -190,9 +190,28 @@ class Subject(dj.Manual):
     -> lab.Location
     -> [nullable] lab.Protocol
     -> [nullable] Line
-    act_items=null              : varchar(32)                   #
     subject_description=''      : varchar(255)                  # description
     initial_weight=null         : float
+    """
+
+
+@schema
+class ActItem(dj.Lookup):
+    definition = """
+    act_item:       varchar(64)  # possible act item
+    """
+    contents = zip(['Post-op painkillers',
+                    'Post-op monitoring',
+                    'Acclimatize to humans',
+                    'Topical antibiotics for headplate scab',
+                    'Needs fattening'])
+
+
+@schema
+class SubjectActItem(dj.Manual):
+    definition = """
+    -> Subject
+    -> ActItem
     """
 
 

@@ -1,7 +1,4 @@
 
-disp 'Creating schemas ...'
-create_schemas
-
 disp 'Ingest mice information ...'
 ingest_mice
 
