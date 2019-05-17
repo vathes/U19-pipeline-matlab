@@ -1,5 +1,5 @@
 import datajoint as dj
-from . import subject, lab, task
+from . import subject, lab, task, reference
 
 schema = dj.schema('pni_acquisition')
 
@@ -45,7 +45,7 @@ class SessionSessionType(dj.Manual):
 @schema
 class Scan(dj.Imported):
     definition = """
-    -> acquisition.Session
+    -> Session
     ---
     scan_directory:     varchar(255)
     scan_filename:      varchar(64)

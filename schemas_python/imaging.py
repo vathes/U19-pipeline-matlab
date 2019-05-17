@@ -17,13 +17,13 @@ class MotionCorrectionMethod(dj.Lookup):
 @schema
 class MotionCorrection(dj.Imported):
     definition = """
-    -> Scan
+    -> acquisition.Scan
     ---
-    x_shifts:    longblob      # 512 x 512 x nFrames
-    y_shifts:    longblob      # 512 x 512 x nFrames
-    reference_image: longblob  # 512 x 512
-    motion_corrected_average_image: longblob    # 512 x 512
-    motion_corrected_movie:    # in summary.mat 1/10 down sampled
+    x_shifts                        : longblob      # 512 x 512 x nFrames
+    y_shifts                        : longblob      # 512 x 512 x nFrames
+    reference_image                 : longblob      # 512 x 512
+    motion_corrected_average_image  : longblob      # 512 x 512
+    motion_corrected_movie          : longblob      # in summary.mat 1/10 down sampled
     """
 
 
