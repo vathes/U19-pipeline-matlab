@@ -42,6 +42,21 @@ class SessionSessionType(dj.Manual):
     -> SessionType
     """
 
+@schema
+class Scan(dj.Imported):
+    definition = """
+    -> acquisition.Session
+    ---
+    scan_directory:     varchar(255)
+    scan_filename:      varchar(64)
+    gdd=null:           float
+    wavelength=920:     float
+    pmt_gain=null:      float
+    -> reference.BrainArea.proj(imaging_area='brain_area')
+    # Plus the meta data from scan image .tiff file
+    """
+
+
 
 @schema
 class DataDirectory(dj.Computed):
