@@ -17,7 +17,7 @@ class MotionCorrectionMethod(dj.Lookup):
 @schema
 class MotionCorrection(dj.Imported):
     definition = """
-    -> acquisition.Scan
+    -> acquisition.Scan.File
     ---
     x_shifts                        : longblob      # 512 x 512 x nFrames
     y_shifts                        : longblob      # 512 x 512 x nFrames
