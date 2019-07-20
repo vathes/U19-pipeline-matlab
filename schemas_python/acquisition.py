@@ -70,8 +70,6 @@ class Scan(dj.Imported):
         dir_pattern = path.join(base_dir, user, '*', 'imaging', subj, session_date)
         dirs = glob.glob(dir_pattern)
 
-        print(dir_pattern)
-        print(dirs)
         if not len(dirs):
             return
         else:
@@ -79,7 +77,6 @@ class Scan(dj.Imported):
             file_pattern = path.join(dirs[0], '*.tif')
             files = glob.glob(file_pattern)
 
-            print(files)
             if not len(files):
                 return
             else:
