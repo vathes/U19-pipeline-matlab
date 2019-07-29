@@ -10,7 +10,7 @@ allBlocks = fetch(acquisition.TowersBlock); % Get the primary keys of all Blocks
 
 for key_idx = 1:length(allBlocks)
     key = allBlocks(key_idx);
-    disp(key_idx)
+    disp(key_idx/length(allBlocks))
     trials = fetch(acquisition.TowersBlockTrial & key, '*'); % Get trials in blocks
     correct_counter = 0;
     for i = 1:length(trials)
