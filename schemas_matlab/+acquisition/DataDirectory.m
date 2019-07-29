@@ -33,7 +33,11 @@ classdef DataDirectory < dj.Computed
                 end
             	file = dir([base_dir 'rig' rig_number '/' user '/*/data/' subject '/*_' session_date '.mat']);
             end
-
+            if strcmp('VRLaser', rig)
+                base_dir = '/Volumes/braininit/RigData/VRLaser/behav/lucas/blocksReboot/data';
+                file = dir([base_dir '/' subject '/*_' session_date '.mat']);
+            end
+            
             if isempty(file)
                 disp([rig, '  -file not found.'])
                 return
