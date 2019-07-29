@@ -13,4 +13,4 @@ in one coherent framework.
 The backend is a SQL server [MariaDB].
 
 # Integration into rigs.
-The rigs talk to the database directly [SSL, wired donnection].
+The rigs talk to the database directly [SSL, wired connection].
