@@ -35,6 +35,7 @@ classdef DataDirectory < dj.Computed
             end
 
             if isempty(file)
+                disp([rig, '  -file not found.'])
                 return
             end
             key.data_dir = file.folder;
