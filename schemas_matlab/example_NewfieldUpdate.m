@@ -11,12 +11,9 @@ reverseStr = '';
 for key_idx = 1:length(allBlocks)
     key = allBlocks(key_idx);
     trials = fetch(acquisition.TowersBlockTrial & key, '*'); % Get trials in blocks
-    correct_counter = 0;
-    for i = 1:length(trials)
-        correct_counter = correct_counter + strcmp(trials(i).trial_type, trials(i).choice);
-    end
+    correct_counter = sum(strcmp({trials.trial_type}, {trials.choice}));
     performance = correct_counter / length(trials);          % Calculate performance
-    if isfinite(performance)
+    if length(trials)>0
         update(acquisition.TowersBlock & key, 'block_performance', performance); % Update entry
     else
         update(acquisition.TowersBlock & key, 'block_performance', 0);
