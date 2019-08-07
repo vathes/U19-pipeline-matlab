@@ -8,7 +8,7 @@ addAttribute(acquisition.TowersBlock, 'block_performance: float  # performance i
 %% update one field in TowersBlock
 allBlocks = fetch(acquisition.TowersBlock); % Get the primary keys of all Blocks
 reverseStr = '';
-for key_idx = 1:length(allBlocks)
+for key_idx = 1:length(allBlocks)           % Use of index to indicate progress
     key = allBlocks(key_idx);
     trials = fetch(acquisition.TowersBlockTrial & key, '*'); % Get trials in blocks
     correct_counter = sum(strcmp({trials.trial_type}, {trials.choice}));

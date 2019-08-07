@@ -2,7 +2,7 @@
 -> acquisition.Session
 block                       : tinyint                       # block number
 ---
- (block_level) -> `pni_task`.`#task_level_parameter_set`
+(block_level) -> task.TaskLevelParameterSet(level)
 n_trials                    : int                           # number of trials in this block
 first_trial                 : int                           # trial_idx of the first trial in this block
 block_duration              : float                         # in secs, duration of the block
