@@ -116,7 +116,7 @@ class UserProtocol(dj.Lookup):
 @schema
 class Path(dj.Lookup):
     definition = """
-    global              : varchar(255)               # global path name
+    global_path         : varchar(255)               # global path name
     system              : enum('windows', 'mac', 'linux')
     ---
     local_path          : varchar(255)               # local computer path
@@ -161,17 +161,18 @@ class Path(dj.Lookup):
         path = path.replace(os.path.sep, '/')
         path = path.replace('~', home)
 
-        globs = dj.U('global') & self
+        globs = dj.U('global_path') & self
         systems = ['linux', 'windows', 'mac']
 
         mapping = [[], []]
 
         for iglob, glob in enumerate(globs.fetch('KEY')):
-            mapping[iglob].append(glob['global'])
+            mapping[iglob].append(glob['global_path'])
             for system in systems:
                 mapping[iglob].append((self & glob & {'system': system}).fetch1('local_path'))
 
         mapping = np.asarray(mapping)
+        print(mapping)
 
         for i in range(len(globs)):
             for j in range(len(systems)):
