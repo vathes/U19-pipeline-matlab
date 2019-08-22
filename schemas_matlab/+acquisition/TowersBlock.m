@@ -1,15 +1,16 @@
 %{
 -> acquisition.Session
-block:              tinyint     # block number
+block                       : tinyint                       # block number
 ---
 (block_level) -> task.TaskLevelParameterSet(level)
-n_trials:           int         # number of trials in this block
-first_trial:        int         # trial_idx of the first trial in this block
-block_duration:     float       # in secs, duration of the block
-block_start_time:   datetime    # absolute start time of the block
-reward_mil:         float       # in mL, reward volume in this block
-reward_scale:       tinyint     # scale of the reward in this block
-easy_block:         bool        # true if the difficulty reduces during the session
+n_trials                    : int                           # number of trials in this block
+first_trial                 : int                           # trial_idx of the first trial in this block
+block_duration              : float                         # in secs, duration of the block
+block_start_time            : datetime                      # absolute start time of the block
+reward_mil                  : float                         # in mL, reward volume in this block
+reward_scale                : tinyint                       # scale of the reward in this block
+easy_block                  : bool                          # true if the difficulty reduces during the session
+block_performance           : float                         # performance in the current block
 %}
 
 classdef TowersBlock < dj.Imported
@@ -35,9 +36,26 @@ classdef TowersBlock < dj.Imported
                     block.start(1), block.start(2), block.start(3), ...
                     block.start(4), block.start(5));
                 tuple.reward_mil = block.rewardMiL;
-                tuple.reward_scale = block.trial(1).rewardScale;
+                try
+                    tuple.reward_scale = block.trial(1).rewardScale;
+                catch
+                    tuple.reward_scale = 0;
+                end
                 tuple.block_level = block.mazeID;
                 tuple.easy_block = exists_helper(block,'easyBlockFlag'); %if it doesn't exist, difficulty was uniform
+                correct_counter = 0;
+                for itrial = 1:length(block.trial)
+                    trial = block.trial(itrial);
+                    tuple_trial.trial_type = trial.trialType.char; 
+                    tuple_trial.choice = trial.choice.char;
+                    correct_counter = correct_counter + strcmp(trial.trialType.char, trial.choice.char);
+                end
+                perf = correct_counter/length(block.trial);
+                if isfinite(perf)
+                    tuple.block_performance = perf;
+                else
+                    tuple.block_performance = 0;
+                end
                 self.insert(tuple);
                 
                 for itrial = 1:length(block.trial)
@@ -99,8 +117,6 @@ classdef TowersBlock < dj.Imported
                 end
             end
         end
-        
-
     end
 end
     
