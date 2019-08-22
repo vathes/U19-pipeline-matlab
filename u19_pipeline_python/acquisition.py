@@ -5,8 +5,11 @@ import scanreader
 from os import path
 import glob
 import re
+from datetime import datetime
+import scipy.io as sio
+import numpy as np
 
-schema = dj.schema('pni_acquisition')
+schema = dj.schema(dj.config['database.prefix'] + 'acquisition')
 
 
 @schema
@@ -58,8 +61,13 @@ class Scan(dj.Imported):
     wavelength=920:     float           # in nm
     pmt_gain=null:      float
     -> [nullable]reference.BrainArea.proj(imaging_area='brain_area')
+    frame_time:         longblob
     """
     def make(self, key):
+        ### for test
+        key_copy = key.copy()
+        ### end of test
+
         scan = key.copy()
         user, subj, session_date = (acquisition.Session & key).fetch1(
             'user_id', 'subject_id', 'session_date')
@@ -80,7 +88,20 @@ class Scan(dj.Imported):
             if not len(files):
                 return
             else:
+                scan_dir = scan['scan_directory']
+                ### for test
+                scan_dir = '/Users/shanshen/Documents/princeton_imaging_data/20170203/'
+                key_copy['subject_id'] = 'E22'
+                key_copy['session_date'] = datetime.date(2017, 2, 3)
+                ### end of test
+
+                meta_pattern = key_copy['subject_id'] + '_' + str(key_copy['session_date']).replace('-', '') + '*meta.mat'
+                file_name_pattern = path.join(scan_dir, meta_pattern)
+                f = glob.glob(file_name_pattern)
+                meta_data = sio.loadmat(f[0], struct_as_record=False, squeeze_me=True)
+                scan['frame_time'] = np.hstack([item.frameTime for item in meta_data['imaging']])
                 self.insert1(scan)
+
                 for ifile in files:
                     file_tuple = key.copy()
                     file_name = re.search('{}_{}.*tif'.format(subj, session_date), ifile).group(0)

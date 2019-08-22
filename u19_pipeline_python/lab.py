@@ -3,7 +3,7 @@ import sys
 import os
 import numpy as np
 
-schema = dj.schema('pni_lab')
+schema = dj.schema(dj.config['database.prefix'] + 'lab')
 
 
 @schema
