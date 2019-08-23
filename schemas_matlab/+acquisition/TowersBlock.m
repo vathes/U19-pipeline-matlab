@@ -20,7 +20,7 @@ classdef TowersBlock < dj.Imported
     methods(Access=protected)
         function makeTuples(self, key)
             
-            data_dir = fetch1(acquisition.DataDirectory & key, 'combined_file_name');
+            data_dir = getLocalPath(fetch1(acquisition.DataDirectory & key, 'combined_file_name'));
             data = load(data_dir, 'log');
             log = data.log;
             for iBlock = 1:length(log.block)
