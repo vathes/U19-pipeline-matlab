@@ -65,7 +65,7 @@ class Scan(dj.Imported):
     """
     def make(self, key):
         ### for test
-        key_copy = key.copy()
+        #key_copy = key.copy()
         ### end of test
 
         scan = key.copy()
@@ -90,9 +90,9 @@ class Scan(dj.Imported):
             else:
                 scan_dir = scan['scan_directory']
                 ### for test
-                scan_dir = '/Users/shanshen/Documents/princeton_imaging_data/20170203/'
-                key_copy['subject_id'] = 'E22'
-                key_copy['session_date'] = datetime.date(2017, 2, 3)
+                # scan_dir = '/Users/shanshen/Documents/princeton_imaging_data/20170203/'
+                # key_copy['subject_id'] = 'E22'
+                # key_copy['session_date'] = datetime.date(2017, 2, 3)
                 ### end of test
 
                 meta_pattern = key_copy['subject_id'] + '_' + str(key_copy['session_date']).replace('-', '') + '*meta.mat'
