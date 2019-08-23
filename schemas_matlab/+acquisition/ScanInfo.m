@@ -21,25 +21,4 @@ fill_fraction_space     : float             # raster scan spatial fill fraction 
 %}
 
 classdef ScanInfo < dj.Computed
-    
-    methods(Access=protected)
-        function makeTuples(self, key)
-            tuple = key;
-            data_dir = fetch1(acquisition.Scan & key, 'scan_directory');
-            file = [data_dir '/_0001.tif'];
-            t = Tiff(file);
-            tuple.nchannels =
-            tuple.nframes = 
-            tuple.nframes_requested = 
-            tuple.px_height = 
-            tuple.px_width =
-            tuple.fps = 
-            tuple.zoom = 
-            tuple.bidirectional = 
-            tuple.fill_fraction_temp = 
-            tuple.fill_fraction_space =
-            
-            self.insert(tuple)
-        end
-    end
 end 
