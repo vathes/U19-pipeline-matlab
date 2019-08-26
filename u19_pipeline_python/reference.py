@@ -1,6 +1,6 @@
 import datajoint as dj
 
-schema = dj.schema('pni_reference')
+schema = dj.schema(dj.config['database.prefix'] + 'reference')
 
 
 @schema
