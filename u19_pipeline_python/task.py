@@ -1,6 +1,5 @@
-
 import datajoint as dj
-schema = dj.schema('pni_task')
+schema = dj.schema(dj.config['database.prefix'] + 'task')
 
 
 @schema

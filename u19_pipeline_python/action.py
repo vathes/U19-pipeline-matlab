@@ -1,7 +1,7 @@
 import datajoint as dj
 from . import lab, reference, subject
 
-schema = dj.schema('pni_action')
+schema = dj.schema(dj.config['database.prefix'] + 'action')
 
 
 @schema

@@ -3,7 +3,7 @@ import sys
 import os
 import numpy as np
 
-schema = dj.schema('pni_lab')
+schema = dj.schema(dj.config['database.prefix'] + 'lab')
 
 
 @schema
@@ -116,7 +116,7 @@ class UserProtocol(dj.Lookup):
 @schema
 class Path(dj.Lookup):
     definition = """
-    global              : varchar(255)               # global path name
+    global_path         : varchar(255)               # global path name
     system              : enum('windows', 'mac', 'linux')
     ---
     local_path          : varchar(255)               # local computer path
@@ -161,13 +161,13 @@ class Path(dj.Lookup):
         path = path.replace(os.path.sep, '/')
         path = path.replace('~', home)
 
-        globs = dj.U('global') & self
+        globs = dj.U('global_path') & self
         systems = ['linux', 'windows', 'mac']
 
         mapping = [[], []]
 
         for iglob, glob in enumerate(globs.fetch('KEY')):
-            mapping[iglob].append(glob['global'])
+            mapping[iglob].append(glob['global_path'])
             for system in systems:
                 mapping[iglob].append((self & glob & {'system': system}).fetch1('local_path'))
 

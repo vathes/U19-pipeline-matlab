@@ -5,8 +5,11 @@ import scanreader
 from os import path
 import glob
 import re
+from datetime import datetime
+import scipy.io as sio
+import numpy as np
 
-schema = dj.schema('pni_acquisition')
+schema = dj.schema(dj.config['database.prefix'] + 'acquisition')
 
 
 @schema
@@ -58,6 +61,7 @@ class Scan(dj.Imported):
     wavelength=920:     float           # in nm
     pmt_gain=null:      float
     -> [nullable]reference.BrainArea.proj(imaging_area='brain_area')
+    frame_time:         longblob
     """
     def make(self, key):
         scan = key.copy()
@@ -80,7 +84,17 @@ class Scan(dj.Imported):
             if not len(files):
                 return
             else:
+                scan_dir = scan['scan_directory']
+                meta_pattern = key['subject_id'] + '_' + str(key['session_date']).replace('-', '') + '*meta.mat'
+                file_name_pattern = path.join(scan_dir, meta_pattern)
+                f = glob.glob(file_name_pattern)
+                
+                if not len(f):
+                    return
+                meta_data = sio.loadmat(f[0], struct_as_record=False, squeeze_me=True)
+                scan['frame_time'] = np.hstack([item.frameTime for item in meta_data['imaging']])
                 self.insert1(scan)
+
                 for ifile in files:
                     file_tuple = key.copy()
                     file_name = re.search('{}_{}.*tif'.format(subj, session_date), ifile).group(0)
@@ -129,7 +143,6 @@ class ScanInfo(dj.Imported):
         file1 = (Scan.File & key & 'file_number=1').fetch1('scan_filename')
 
         filepath = path.join(file_dir, file1)
-        filepath = '/Users/shanshen/Documents/princeton_imaging_data/20170203/E22_20170203_30per_00001_00015.tif'
         t = ScanImageTiffReader(filepath)
         t2 = scanreader.read_scan(filepath)
 
