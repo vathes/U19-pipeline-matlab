@@ -64,10 +64,6 @@ class Scan(dj.Imported):
     frame_time:         longblob
     """
     def make(self, key):
-        ### for test
-        #key_copy = key.copy()
-        ### end of test
-
         scan = key.copy()
         user, subj, session_date = (acquisition.Session & key).fetch1(
             'user_id', 'subject_id', 'session_date')
@@ -89,15 +85,12 @@ class Scan(dj.Imported):
                 return
             else:
                 scan_dir = scan['scan_directory']
-                ### for test
-                # scan_dir = '/Users/shanshen/Documents/princeton_imaging_data/20170203/'
-                # key_copy['subject_id'] = 'E22'
-                # key_copy['session_date'] = datetime.date(2017, 2, 3)
-                ### end of test
-
-                meta_pattern = key_copy['subject_id'] + '_' + str(key_copy['session_date']).replace('-', '') + '*meta.mat'
+                meta_pattern = key['subject_id'] + '_' + str(key['session_date']).replace('-', '') + '*meta.mat'
                 file_name_pattern = path.join(scan_dir, meta_pattern)
                 f = glob.glob(file_name_pattern)
+                
+                if not len(f):
+                    return
                 meta_data = sio.loadmat(f[0], struct_as_record=False, squeeze_me=True)
                 scan['frame_time'] = np.hstack([item.frameTime for item in meta_data['imaging']])
                 self.insert1(scan)
@@ -150,7 +143,6 @@ class ScanInfo(dj.Imported):
         file1 = (Scan.File & key & 'file_number=1').fetch1('scan_filename')
 
         filepath = path.join(file_dir, file1)
-        filepath = '/Users/shanshen/Documents/princeton_imaging_data/20170203/E22_20170203_30per_00001_00015.tif'
         t = ScanImageTiffReader(filepath)
         t2 = scanreader.read_scan(filepath)
 

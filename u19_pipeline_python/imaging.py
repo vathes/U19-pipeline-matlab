@@ -40,21 +40,8 @@ class MotionCorrection(dj.Imported):
     key_source = acquisition.Scan()
 
     def make(self, key):
-        ### for test
-        key_copy = key.copy()
-        ### end of test
         scan_dir = (acquisition.Scan & key).fetch1('scan_directory')
-
-        ### for test
-        scan_dir = '/Users/shanshen/Documents/princeton_imaging_data/20170203/'
-        ### end of test
         files = acquisition.Scan.File & key_copy
-
-        ### for test
-        file_numbers = range(1, 18)
-        key['subject_id'] = 'E22'
-        key['session_date'] = datetime.date(2017, 2, 3)
-        ### end of test
 
         meta_pattern = key['subject_id'] + '_' + str(key['session_date']).replace('-', '') + '*meta.mat'
         file_name_pattern = path.join(scan_dir, meta_pattern)
@@ -65,9 +52,6 @@ class MotionCorrection(dj.Imported):
             if ikey > 16:
                 return
             file_number = (files & file_key).fetch1('file_number')
-            ### for test
-            file_number = file_numbers[ikey]
-            #### end of test
 
             mcorr = file_key.copy()
             sync = file_key.copy()
@@ -122,15 +106,9 @@ class Segmentation(dj.Imported):
     def make(self, key):
         self.insert1(key)
         scan_dir = (acquisition.Scan & key).fetch1('scan_directory')
-        ### for test
-        scan_dir = '/Users/shanshen/Documents/princeton_imaging_data/20170203/'
-        ### end of test
         files = acquisition.Scan.File & key
         file_numbers = files.fetch('file_number')
 
-        ### for test
-        file_numbers = range(0, 17)
-        ### end of test
         file_name_pattern = key['subject_id'] + '_' + str(key['session_date']).replace('-', '') \
             + str(min(file_numbers)) + '-' + str(max(file_numbers)) + '*.cnmf-proto-roi-posthoc.mat'
 
