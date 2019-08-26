@@ -172,7 +172,6 @@ class Path(dj.Lookup):
                 mapping[iglob].append((self & glob & {'system': system}).fetch1('local_path'))
 
         mapping = np.asarray(mapping)
-        print(mapping)
 
         for i in range(len(globs)):
             for j in range(len(systems)):
