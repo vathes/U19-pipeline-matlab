@@ -41,11 +41,13 @@ class MotionCorrection(dj.Imported):
 
     def make(self, key):
         scan_dir = (acquisition.Scan & key).fetch1('scan_directory')
-        files = acquisition.Scan.File & key_copy
+        files = acquisition.Scan.File & key
 
         meta_pattern = key['subject_id'] + '_' + str(key['session_date']).replace('-', '') + '*meta.mat'
         file_name_pattern = path.join(scan_dir, meta_pattern)
         f = glob.glob(file_name_pattern)
+        if not len(f):
+            return
         meta_data = sio.loadmat(f[0], struct_as_record=False, squeeze_me=True)
 
         for ikey, file_key in enumerate(files.fetch('KEY')):
