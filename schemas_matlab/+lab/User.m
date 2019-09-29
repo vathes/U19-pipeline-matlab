@@ -4,7 +4,7 @@ user_id:                varchar(32)     # username
 full_name=null:         varchar(32)     # first name
 email=null:		        varchar(64)     # email address
 phone=null:             varchar(12)     # phone number
-carrier=null:           varchar(16)     # phone carrier
+->lab.MobileCarrier
 slack=null:             varchar(32)     # slack username   
 contact_via:            enum('Slack', 'text', 'Email')
 presence:		        enum('Available', 'Away')	        
@@ -17,4 +17,3 @@ watering_logs=null:     varchar(255)
 
 classdef User < dj.Manual
 end
-
