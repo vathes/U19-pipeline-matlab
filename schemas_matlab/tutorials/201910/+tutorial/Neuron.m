@@ -10,7 +10,7 @@ classdef Neuron < dj.Imported
 
 		function makeTuples(self, key)
             % use the key struct to determine the data file path
-            data_file = sprintf('../data/data_%d_%s', key.mouse_id, key.session_date);
+            data_file = sprintf('data/data_%d_%s', key.mouse_id, key.session_date);
             
             % load the data file
             data = load(data_file, 'data');
