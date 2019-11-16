@@ -1,5 +1,5 @@
 %{
--> Session
+-> acquisition.Session
 ---
 scan_directory      : varchar(255)
 gdd=null            : float

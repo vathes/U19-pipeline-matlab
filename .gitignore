@@ -2,6 +2,9 @@
 # Notebooks for the sake of development
 notebooks_dev/*
 
+# config files
+*_conf.json
+
 # IDEA configs
 .idea/
 
