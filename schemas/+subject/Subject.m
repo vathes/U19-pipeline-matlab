@@ -1,8 +1,9 @@
 %{
 # subject information
--> lab.User
-subject_id                  : char(8)                       # nickname
+subject_fullname            : varchar(64)                   # {username}_{subject_nickname}
 ---
+subject_id                  : varchar(16)                   # nickname
+-> lab.User
 genomics_id=null            : int                           # number from the facility
 sex="Unknown"               : enum('Male','Female','Unknown') # sex
 dob=null                    : date                          # birth date

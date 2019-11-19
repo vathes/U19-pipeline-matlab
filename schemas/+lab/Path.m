@@ -8,16 +8,6 @@ description=null    : varchar(255)
 %}
 
 classdef Path < dj.Lookup
-    properties
-        contents = {
-            '/bezos', 'windows', 'Y:', '\\bucket.pni.princeton.edu\Bezos-center', ''
-            '/bezos', 'mac', '/Volumes/bezos', 'apps.pni.princeton.edu:/jukebox/Bezos', ''
-            '/bezos', 'linux', '/mnt/bezos', 'apps.pni.princeton.edu:/jukebox/Bezos', ''
-            '/braininit', 'windows', 'Z:', '\\bucket.pni.princeton.edu\braininit', ''
-            '/braininit', 'mac', '/Volumes/braininit', 'apps.pni.princeton.edu:/jukebox/braininit', ''
-            '/braininit', 'linux', '/mnt/bezos', 'apps.pni.princeton.edu:/jukebox/braininit', ''
-        }
-    end
 end
 
 

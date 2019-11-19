@@ -8,13 +8,5 @@ location_description='':    varchar(255)
 
 classdef Location < dj.Lookup
     properties
-        contents = {
-            'Benzos2',  ''
-            'Benzos3',  ''
-            'vivarium', ''
-            'pni-171jppw32', ''
-            'pni-174cr4jk2', ''
-            'valhalla', ''
-            }
     end
 end

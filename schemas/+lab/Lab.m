@@ -11,9 +11,6 @@ pi_name                     : varchar(64)                   #
 classdef Lab < dj.Lookup
 
     properties
-        contents = {'tanklab', 'Princeton', 'Princeton Neuroscience Institute, Princeton University Princeton, NJ 08544', 'America/New_York', 'D. W. Tank';
-                    'wittenlab', 'Princeton', 'Princeton Neuroscience Institute, Princeton University Princeton, NJ 08544', 'America/New_York', 'I. Witten';
-        }
     end
     
 end

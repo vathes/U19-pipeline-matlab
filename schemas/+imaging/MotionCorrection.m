@@ -1,5 +1,5 @@
 %{
--> acquisition.ScanFile
+-> imaging.ScanFile
 -> imaging.MotionCorrectionMethod       # meta file, frameMCorr-method
 ---
 x_shifts                        : longblob      # nFrames x 2, meta file, frameMCorr-xShifts

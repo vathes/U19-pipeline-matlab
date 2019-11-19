@@ -11,7 +11,6 @@ classdef Task < dj.Lookup
             'Towers', ''
             'Clicks', ''
             'LinearTrack', ''
-            'Ben', ''
             }
     end
 end

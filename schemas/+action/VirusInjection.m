@@ -7,3 +7,6 @@ rate_of_injection:		float           # rate of injection
 virus_dilution:         float           # x dilution of the original virus 
 -> reference.BrainArea
 %}
+
+classdef VirusInjection < dj.Manual
+end

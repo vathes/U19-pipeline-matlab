@@ -1,8 +1,8 @@
 %{
--> acquisition.Session
+-> behavior.TowersSession
 block                       : tinyint                       # block number
 ---
-(block_level) -> task.TaskLevelParameterSet(level)
+-> task.TaskLevelParameterSet
 n_trials                    : int                           # number of trials in this block
 first_trial                 : int                           # trial_idx of the first trial in this block
 block_duration              : float                         # in secs, duration of the block
