@@ -6,7 +6,7 @@ session_number              : int                           # number
 ---
 session_start_time          : datetime                      # start time
 session_end_time=null       : datetime                      # end time
--> lab.Location
+(session_location) -> lab.Location
 -> task.TaskLevelParameterSet
 stimulus_bank = ''          : varchar(255)                  # path to the function to generate the stimulus
 stimulus_commit = ''        : varchar(64)                   # git hash for the version of the function

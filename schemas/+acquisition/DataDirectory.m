@@ -9,15 +9,16 @@ combined_file_name: varchar(255) # combined filename
 classdef DataDirectory < dj.Computed
     
     properties
-        popRel = acquisition.Session & 'location != "wide-field"'
+        popRel = acquisition.Session & 'session_location != "wide-field"'
     end
 
 	methods(Access=protected)
 
 		function makeTuples(self, key)
-
+            
+            info = subject.Subject * acquisition.Session & key;
             [user, rig, subject, session_date] = fetch1(...
-                acquisition.Session*subject.Subject & key, 'user_id', 'location', 'subject_nickname', 'session_date');
+                info, 'user_id', 'session_location', 'subject_nickname', 'session_date');
             session_date = erase(session_date, '-');  
 
             if strcmp('Bezos3', rig)

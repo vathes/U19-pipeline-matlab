@@ -10,12 +10,16 @@ num_towers_r:          blob      # Number of towers shown to the right x number 
 num_towers_l:          blob      # Number of towers shown to the left x tumber of trials
 %}
 
-classdef TowersSession < dj.Computed
+classdef TowersSession < dj.Imported
 
     methods(Access=protected)
-        function makeTuples(self,key)
+        
+        % posthoc computation, usually not used. Major ingestion was
+        % handled by the script ingest_mouse_logs
+        function makeTuples(self, key)
 
-            [key.rewarded_side, key.chosen_side, key.num_towers_l, key.num_towers_r] = fetchn(acquisition.TowersBlockTrial & key, 'trial_type', 'choice','cue_presence_left', 'cue_presence_right');
+            [key.rewarded_side, key.chosen_side, key.num_towers_l, key.num_towers_r] = fetchn(...
+                acquisition.TowersBlockTrial & key, 'trial_type', 'choice','cue_presence_left', 'cue_presence_right');
             key.maze_id = fetchn(acquisition.TowersBlock * acquisition.TowersBlockTrial & key , 'block_level');
             
             key.num_towers_l = cellfun(@sum, key.num_towers_l);

@@ -1,5 +1,5 @@
 %{
--> acquisition.TowersBlock
+-> behavior.TowersBlock
 trial_idx:          int     # trial index, keep the original number in the file
 ---
 trial_type:                 enum('L', 'R')               # answer of this trial, left or right
@@ -33,6 +33,6 @@ vi_start:                   int      #
 
 classdef TowersBlockTrial < dj.Part
     properties(SetAccess=protected)
-        master = acquisition.TowersBlock
+        master = behavior.TowersBlock
     end
 end

@@ -41,7 +41,8 @@ classdef TowersBlock < dj.Imported
                 catch
                     tuple.reward_scale = 0;
                 end
-                tuple.block_level = block.mazeID;
+                tuple.level = block.mazeID;
+                tuple.set_id = 1;
                 tuple.easy_block = exists_helper(block,'easyBlockFlag'); %if it doesn't exist, difficulty was uniform
                 correct_counter = 0;
                 for itrial = 1:length(block.trial)
@@ -113,7 +114,7 @@ classdef TowersBlock < dj.Imported
                         tuple_trial.trial_prior_p_left = trial.trialProb(1);
                     end
                     tuple_trial.vi_start = trial.viStart;
-                    insert(acquisition.TowersBlockTrial, tuple_trial)
+                    insert(behavior.TowersBlockTrial, tuple_trial)
                 end
             end
         end
