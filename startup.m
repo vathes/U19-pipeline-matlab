@@ -1,3 +1,6 @@
+
+addpath(genpath('../../pipeline'))
+
 if strcmp(computer, 'MACI64')
     setenv('DB_PREFIX', 'u19_')
 else
