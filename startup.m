@@ -1,5 +1,5 @@
 
-addpath(genpath('../../pipeline'))
+addpath(genpath('../../pipelines'))
 
 if strcmp(computer, 'MACI64')
     setenv('DB_PREFIX', 'u19_')
