@@ -9,4 +9,5 @@ disp 'Ingest mouse logs ...'
 ingest_mouse_logs
 
 disp 'Ingest trial information ...'
+clear
 populate_tables
