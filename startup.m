@@ -4,7 +4,7 @@ addpath(genpath('../../pipelines'))
 if strcmp(computer, 'MACI64')
     setenv('DB_PREFIX', 'u19_')
 else
-    setenv('DB_PREFIX', 'shan_')
+    setenv('DB_PREFIX', 'shans_')
 end
 
 
