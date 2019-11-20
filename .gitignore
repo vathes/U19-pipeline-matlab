@@ -122,7 +122,7 @@ venv.bak/
 .mypy_cache/
 
 # raw data file
-data/*
+data/DailyLogs.mat
 
 # svg file
 *.svg
