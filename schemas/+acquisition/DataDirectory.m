@@ -31,7 +31,7 @@ classdef DataDirectory < dj.Computed
                 if strcmp(subj, 'E86')
                     subj = 'e86';
                 end
-            	file = dir(getLocalPath([base_dir 'rig' rig_number '/' user '/*/data/' subject '/*_' session_date '.mat']));
+            	file = dir(getLocalPath([base_dir 'rig' rig_number '/' user '/*/data/' subj '/*_' session_date '.mat']));
             end
             if strcmp('VRLaser', rig)
                 base_dir = '/braininit/RigData/VRLaser/behav/lucas/blocksReboot/data';
