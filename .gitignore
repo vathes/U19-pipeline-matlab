@@ -2,6 +2,9 @@
 # Notebooks for the sake of development
 notebooks_dev/*
 
+# config files
+*_conf.json
+
 # IDEA configs
 .idea/
 
@@ -119,7 +122,7 @@ venv.bak/
 .mypy_cache/
 
 # raw data file
-data/*
+data/DailyLogs.mat
 
 # svg file
 *.svg
