@@ -5,10 +5,25 @@ db = AnimalDatabase;
 %% insert user information
 overview = db.pullOverview;
 
+net_id_mapping = struct('ben', 'emanuele', ...
+                        'edward', 'eneih', ...
+                        'joel', 'joelcf', ...
+                        'jteran', 'jteran', ...
+                        'lteachen', 'lteachen', ...
+                        'lucas', 'lpinto', ...
+                        'mioffe', 'mioffe', ...
+                        'sakoay', 'koay', ...
+                        'sbaptista', 'baptista', ...
+                        'sbolkan', 'sbolkan', ...
+                        'sstein', 'ss31', ...
+                        'testuser', 'testuser', ...
+                        'zhihao', 'zhihaoz');
+
 for i = 1:length(overview.Technicians)
     tech = overview.Technicians(i);
     key_tech = struct(...
-        'user_id', tech.ID, ...
+        'user_nickname', tech.ID, ...
+        'user_id', net_id_mapping.(tech.ID), ...
         'full_name', tech.Name, ...
         'email', tech.Email, ...
         'phone', tech.Phone, ...
@@ -26,7 +41,8 @@ end
 for i = 1:length(overview.Researchers)
     researcher = overview.Researchers(i);
     key_researcher = struct( ...
-        'user_id', researcher.ID, ...
+        'user_nickname', researcher.ID, ...
+        'user_id', net_id_mapping.(researcher.ID), ...
         'full_name', researcher.Name, ...
         'email', researcher.Email, ...
         'phone', researcher.Phone, ...
@@ -47,7 +63,7 @@ for i = 1:length(overview.Researchers)
     end
     inserti(lab.User, key_researcher)
     
-    key_userlab.user_id = researcher.ID;
+    key_userlab.user_id = net_id_mapping.(researcher.ID);
     if ~isempty(researcher.PI)
         switch researcher.PI
             case 'D. W. Tank'
@@ -58,16 +74,42 @@ for i = 1:length(overview.Researchers)
         inserti(lab.UserLab, key_userlab)
     end
     
-    key_userproc.user_id = researcher.ID;
+    key_userproc.user_id = net_id_mapping.(researcher.ID);
     if ~isempty(researcher.Protocol)
         key_proc.protocol = researcher.Protocol;
         inserti(lab.Protocol, key_proc)
         key_userproc.protocol = researcher.Protocol;
         inserti(lab.UserProtocol, key_userproc)
     end
-        
+    
+    key_user_secondary_contact.user_id = net_id_mapping.(researcher.ID);
+    if ~isempty(researcher.SecondaryContact)
+        key_user_secondary_contact.secondary_contact = net_id_mapping.(researcher.SecondaryContact);
+        inserti(lab.UserSecondaryContact, key_user_secondary_contact)
+    end     
 end
 
+%% insert duty roaster
+duty_roaster.duty_roaster_date = '2019-01-01';
+duty_roaster.sunday_duty = net_id_mapping.(overview.DutyRoster(1).Technician);
+duty_roaster.monday_duty = net_id_mapping.(overview.DutyRoster(2).Technician);
+duty_roaster.tuesday_duty = net_id_mapping.(overview.DutyRoster(3).Technician);
+duty_roaster.wednesday_duty = net_id_mapping.(overview.DutyRoster(4).Technician);
+duty_roaster.thursday_duty = net_id_mapping.(overview.DutyRoster(5).Technician);
+duty_roaster.friday_duty = net_id_mapping.(overview.DutyRoster(6).Technician);
+duty_roaster.saturday_duty = net_id_mapping.(overview.DutyRoster(7).Technician);
+
+inserti(lab.DutyRoaster, duty_roaster)
+
+
+%% insert notification settings
+notification_settings.notification_settings_date = '2019-01-01';
+notification_settings.max_response_time = overview.NotificationSettings.MaxResponseTime;
+notification_settings.change_cutoff_time = overview.NotificationSettings.ChangeCutoffTime;
+notification_settings.weekly_digest_day = overview.NotificationSettings.WeeklyDigestDay;
+notification_settings.weekly_digest_time = overview.NotificationSettings.WeeklyDigestTime;
+
+inserti(lab.NotificationSettings, notification_settings)
 
 %% insert subject information
 animals = db.pullAnimalList;
@@ -79,9 +121,9 @@ for igroup = 1:length(animals)
         for ianimal = 1:length(animal_group)
             animal = animal_group(ianimal);
             key_subj = struct( ...
-                'user_id', animal.owner, ...
+                'user_id', net_id_mapping.(animal.owner), ...
                 'subject_nickname', animal.ID, ...
-                'subject_fullname', [animal.owner, '_', animal.ID],...
+                'subject_fullname', [net_id_mapping.(animal.owner), '_', animal.ID],...
                 'location', animal.whereAmI ...
             );
             
@@ -90,7 +132,7 @@ for igroup = 1:length(animals)
             end
             
             if ~isempty(animal.image)
-                key_subject.head_plate_mark = animal.image;
+                key_subj.head_plate_mark = animal.image;
             end
         
             if ~isempty(animal.dob)
@@ -104,6 +146,7 @@ for igroup = 1:length(animals)
             if ~isempty(animal.initWeight)
                 key_subj.initial_weight = animal.initWeight;
             end
+            inserti(subject.Subject, key_subj)
             
             
             if ~isempty(animal.actItems)
@@ -120,7 +163,7 @@ for igroup = 1:length(animals)
             else
                 key_subj.line = 'Unknown';
             end
-            inserti(subject.Subject, key_subj)
+            
             
             % death information
            
