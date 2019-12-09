@@ -32,8 +32,10 @@ for iuser = 1:length(users)
                     key_weigh.weighing_time = sprintf('%d-%02d-%02d 12:00:00', ...
                         log.date(1), log.date(2), log.date(3));
                 end
-
-                key_weigh.weigh_person = fetch1(lab.User & sprintf('user_nickname="%s"', log.weighPerson), 'user_id');
+                
+                if ~isempty(log.weighPerson)
+                    key_weigh.weigh_person = fetch1(lab.User & sprintf('user_nickname="%s"', log.weighPerson), 'user_id');
+                end
                 
                 if ~isempty(log.weighLocation)
                     key_loc.location = log.weighLocation;
@@ -54,7 +56,7 @@ for iuser = 1:length(users)
                     date_time_str = datestr(date_time, 'dd mmm yyyy HH:MM:SS AM');
                     key_weigh.low_weight_alert = ['Weight too low (' num2str(key_weigh.weight) 'g) on ' date_time_str '.'];
                 end
-                insert(action.Weighing, key_weigh)
+                inserti(action.Weighing, key_weigh)
                 
             end
             % ingest water administration info
