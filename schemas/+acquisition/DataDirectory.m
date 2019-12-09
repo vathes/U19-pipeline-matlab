@@ -18,7 +18,7 @@ classdef DataDirectory < dj.Computed
             
             [rig, subj, session_date] = fetch1(...
                 subject.Subject * acquisition.Session & key, 'session_location', 'subject_nickname', 'session_date');
-            user = fetch1(lab.User & key, 'user_nickname');
+            user = fetch1(lab.User*subject.Subject & key, 'user_nickname');
             session_date = erase(session_date, '-');  
 
             if strcmp('Bezos3', rig)
