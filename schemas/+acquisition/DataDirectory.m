@@ -16,8 +16,9 @@ classdef DataDirectory < dj.Computed
 
 		function makeTuples(self, key)
             
-            [user, rig, subj, session_date] = fetch1(...
-                subject.Subject * acquisition.Session & key, 'user_id', 'session_location', 'subject_nickname', 'session_date');
+            [rig, subj, session_date] = fetch1(...
+                subject.Subject * acquisition.Session & key, 'session_location', 'subject_nickname', 'session_date');
+            user = fetch1(lab.User*subject.Subject & key, 'user_nickname');
             session_date = erase(session_date, '-');  
 
             if strcmp('Bezos3', rig)
