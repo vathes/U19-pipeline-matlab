@@ -11,7 +11,6 @@ scan_depths       : tinyint       # depths in this scan ("Zs")
 frame_rate        : float         # ("frameRate")
 inter_fov_lag_sec : float         # time lag in secs between fovs ("interROIlag_sec")
 frame_ts_sec      : longblob      # frame timestamps in secs 1xnFrames ("Timing.Frame_ts_sec")
-behav_frames      : longblob      # ----needs to be modified after making sense of it----
 power_percent     : float         # percentage of power used in this scan ("Scope.Power_percent")
 channels          : blob          # ----is this the channer number or total number of channels? ("Scope.Channels")
 cfg_filename      : varchar(255)  # cfg file path ("Scope.cfgFilename")
@@ -23,7 +22,7 @@ scan_frame_period : float         # ("Scope.scanFramePeriod")
 scan_volume_rate  : float         # ("Scope.scanVolumeRate")
 flyback_time_per_frame: float     # ("Scope.flybackTimePerFrame")
 flyto_time_per_scan_field: float  # ("Scope.flytoTimePerScanfield")
-fov_corner_points : blob          # what is this?
+fov_corner_points : blob          # coordinates of the corners of the full 5mm FOV, in microns ("Scope.fovCornerPoints")
 nfovs             : int           # number of field of view
 nframes           : int           # number of frames in the scan
 %}

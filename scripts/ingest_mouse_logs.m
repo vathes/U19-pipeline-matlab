@@ -1,12 +1,12 @@
 db = AnimalDatabase;
 
-users = fetchn(lab.User, 'user_id');
+users = fetchn(lab.User, 'user_nickname');
 
 
 for iuser = 1:length(users)
     user = users{iuser};
-    animals_nicknames = fetchn(subject.Subject & sprintf('user_id = "%s"', user), 'subject_nickname');
-    animals = fetch(subject.Subject & sprintf('user_id = "%s"', user));
+    animals_nicknames = fetchn(subject.Subject*lab.User & sprintf('user_nickname = "%s"', user), 'subject_nickname');
+    animals = fetch(subject.Subject & (lab.User & sprintf('user_nickname = "%s"', user)));
     for ianimal = 1:numel(animals)
         animal = animals(ianimal);
         subject_nickname = animals_nicknames{ianimal};
@@ -14,13 +14,15 @@ for iuser = 1:length(users)
        
         key_weigh = animal;
         key_status = animal;
+        key_notification = animal;
         key_water_admin = animal;
         key_health = animal;
         key_session = animal;
         key_towers_session = animal;
         for log = logs
+            key_weigh = animal;
              % ingest weighing
-            if ~isempty(log.weight)
+             if ~isempty(log.weight)
                 key_weigh.weight = log.weight;
                 
                 if ~isempty(log.weighTime)
@@ -30,14 +32,30 @@ for iuser = 1:length(users)
                     key_weigh.weighing_time = sprintf('%d-%02d-%02d 12:00:00', ...
                         log.date(1), log.date(2), log.date(3));
                 end
-
-                key_weigh.weigh_person = log.weighPerson;
+                
+                if ~isempty(log.weighPerson)
+                    key_weigh.weigh_person = fetch1(lab.User & sprintf('user_nickname="%s"', log.weighPerson), 'user_id');
+                end
                 
                 if ~isempty(log.weighLocation)
                     key_loc.location = log.weighLocation;
                     inserti(lab.Location, key_loc)
                 end
                 key_weigh.location = log.weighLocation;
+                
+                init_weight = fetch1(subject.Subject & animal, 'initial_weight');
+                
+                key = fetch(action.Weighing & animal);
+                if ~isempty(key)
+                    ref_weight = fetch1(action.Weighing & animal, 'weight', 'ORDER BY weighing_time DESC LIMIT 1');
+                else
+                    ref_weight = init_weight;
+                end
+                if log.weight < 0.8 * init_weight || log.weight < ref_weight - 1
+                    date_time = datetime(key_weigh.weighing_time, 'InputFormat', 'yyyy-MM-dd HH:mm:ss');
+                    date_time_str = datestr(date_time, 'dd mmm yyyy HH:MM:SS AM');
+                    key_weigh.low_weight_alert = ['Weight too low (' num2str(key_weigh.weight) 'g) on ' date_time_str '.'];
+                end
                 inserti(action.Weighing, key_weigh)
                 
             end
@@ -61,6 +79,7 @@ for iuser = 1:length(users)
             if ~isempty(log.bcs)
                 key_health.bcs = log.bcs;
             end
+            
             if ~isempty(log.activity)
                 key_health.activity = log.activity;
             end
@@ -71,6 +90,10 @@ for iuser = 1:length(users)
             if ~isempty(log.turgor)
                 key_health.turgor = log.turgor;
             end
+            if ~isempty(log.posture)
+                key_health.posture_grooming = log.posture;
+            end
+              
             if ~isempty(log.comments)
                 key_health.comments = log.comments;
             end
@@ -81,10 +104,29 @@ for iuser = 1:length(users)
                     key_action = animal;
                     key_action.action_date = key_health.status_date;
                     key_action.action_id = iaction;
-                    key_action.action = log.actions{iaction, 2};
+                    key_action.action = ['[' char(log.actions{iaction, 1}.string) '] ' log.actions{iaction, 2}];
                     inserti(action.ActionItem, key_action)
                 end
             end
+            % ingest notification
+            if ~isempty(log.cageNotice) || ~isempty(log.healthNotice) || ~isempty(log.weightNotice)
+                key_notification.notification_date = sprintf('%d-%02d-%02d', ...
+                    log.date(1), log.date(2), log.date(3));
+                if ~isempty(log.cageNotice)
+                    key_notification.cage_notice = log.cageNotice;
+                end
+
+                if ~isempty(log.healthNotice)
+                    key_notification.health_notice = log.healthNotice;
+                end
+
+                if ~isempty(log.weightNotice)
+                    key_notification.weight_notice = log.weightNotice;
+                end
+            
+                inserti(action.Notification, key_notification)
+            end
+            
             % ingest session
             if ~isempty(log.trainStart) && ~isempty(log.mainMazeID) % TODO: ingest trainings without mainMazeID
                 key_session.session_date = sprintf('%d-%02d-%02d', ...
@@ -103,6 +145,14 @@ for iuser = 1:length(users)
                 key_session.set_id = 1;
                 key_session.stimulus_bank = log.stimulusBank;
                 key_session.session_performance = log.performance;
+                if ~isempty(log.behavProtocol)
+                    protocol = join(log.behavProtocol);
+                    key_session.session_protocol = protocol{1};
+                    
+                    if ~isempty(log.versionInfo)
+                        key_session.session_code_version = log.versionInfo;
+                    end
+                end
                 
                 key_towers_session.session_date = key_session.session_date;
                 key_towers_session.stimulus_set = log.stimulusSet;
@@ -112,7 +162,7 @@ for iuser = 1:length(users)
                 key_towers_session.maze_id = log.mazeID;
                 key_towers_session.num_towers_r = log.numTowersR;
                 key_towers_session.num_towers_l = log.numTowersL;
-                           
+                
                 inserti(acquisition.Session, key_session)
                 inserti(behavior.TowersSession, key_towers_session)
             end
