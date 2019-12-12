@@ -35,8 +35,13 @@ classdef DataDirectory < dj.Computed
             	file = dir(getLocalPath([base_dir 'rig' rig_number '/' user '/*/data/' subj '/*_' session_date '.mat']));
             end
             if strcmp('VRLaser', rig)
-                base_dir = '/braininit/RigData/VRLaser/behav/lucas/blocksReboot/data';
+                base_dir = '/braininit/RigData/VRLaser/behav/lucas/blocksReboot/data/';
                 file = dir(getLocalPath([base_dir '/' subj '/*_' session_date '.mat']));
+            end
+            
+            if strcmp('BezosMeso', rig)
+                base_dir = '/braininit/RigData/mesoscope/behavior/lucas/blocksReboot/data';
+                file = dir(getLocalPath([base_dir '/' lower(subj) '/*_' session_date '.mat']));
             end
             
             if isempty(file)
