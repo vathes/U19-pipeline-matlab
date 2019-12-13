@@ -220,7 +220,23 @@ for igroup = 1:length(animals)
                     inserti(action.SubjectStatus, key_status)
                 end
             end
-                
+            
+            %ingest subject.ActWeight
+            key_status = struct(...
+                'subject_fullname', [net_id_mapping.(animal.owner) '_' animal.ID]);
+            
+            if ~isempty(animal.actItems)
+                for i_act = 1:length(animal.actItems)
+                    action_string = char(animal.actItems(i_act));
+                    if strfind(action_string, 'Weight')
+                        da = strsplit(action_string,'on ');
+                        date = datevec(da{2});
+                        key_status.notification_date = sprintf('%d-%02d-%02d', date(1), date(2), date(3));
+                        inserti(subject.SubjectActWeight, key_status)
+                    end
+                end
+            end
+            
         end
     end
 end
