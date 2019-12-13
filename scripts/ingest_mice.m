@@ -6,7 +6,7 @@ db = AnimalDatabase;
 overview = db.pullOverview;
 
 net_id_mapping = struct('ben', 'emanuele', ...
-                        'edward', 'eneih', ...
+                        'edward', 'hnieh', ...
                         'joel', 'joelcf', ...
                         'jteran', 'jteran', ...
                         'lteachen', 'lteachen', ...
@@ -164,6 +164,14 @@ for igroup = 1:length(animals)
                 key_subj.line = 'Unknown';
             end
             
+            available_genotypes = fetch(subject.Line, 'line');
+            if sum(strcmp({available_genotypes.line}, animal.genotype)) == 0
+                linestruct.line = animal.genotype;
+                linestruct.binomial = 'Mus musculus';
+                linestruct.strain_name = 'C57BL6/J';
+                inserti(subject.Line, linestruct)
+            end
+            update(subject.Subject & ['subject_fullname = "', key_subj.subject_fullname, '"'], 'line', key_subj.line)
             
             % death information
            
@@ -177,28 +185,28 @@ for igroup = 1:length(animals)
             % caging information
             key_cage.cage = animal.cage;
             if contains(animal.cage, 'Ben')
-                key_cage.cage_owner = 'ben';
+                key_cage.cage_owner = net_id_mapping.ben;
             elseif contains(animal.cage, 'SK')
-                key_cage.cage_owner = 'sakoay';
+                key_cage.cage_owner = net_id_mapping.sakoay;
             elseif contains(animal.cage, 'EN')
-                key_cage.cage_owner = 'edward';
+                key_cage.cage_owner = net_id_mapping.edward;
             elseif contains(animal.cage, 'LP')
-                key_cage.cage_owner = 'lucas';
+                key_cage.cage_owner = net_id_mapping.lucas;
             elseif contains(animal.cage, 'Test')
-                key_cage.cage_owner = 'testuser';
+                key_cage.cage_owner = net_id_mapping.testuser;
             else
                 key_cage.cage_owner = 'unknown';
             end
             inserti(subject.Cage, key_cage)
             
             key_caging_status = struct(...
-                'subject_fullname', [animal.owner '_' animal.ID], ...
+                'subject_fullname', [net_id_mapping.(animal.owner) '_' animal.ID], ...
                 'cage', animal.cage);
             inserti(subject.CagingStatus, key_caging_status)
             
             % ingest SubjectStatus
             key_status = struct(...
-                'subject_fullname', [animal.owner '_' animal.ID]);
+                'subject_fullname', [net_id_mapping.(animal.owner) '_' animal.ID]);
 
             if ~isempty(animal.status)
                 for istatus = 1:length(animal.status)
@@ -212,7 +220,23 @@ for igroup = 1:length(animals)
                     inserti(action.SubjectStatus, key_status)
                 end
             end
-                
+            
+            %ingest subject.ActWeight
+            key_status = struct(...
+                'subject_fullname', [net_id_mapping.(animal.owner) '_' animal.ID]);
+            
+            if ~isempty(animal.actItems)
+                for i_act = 1:length(animal.actItems)
+                    action_string = char(animal.actItems(i_act));
+                    if strfind(action_string, 'Weight')
+                        da = strsplit(action_string,'on ');
+                        date = datevec(da{2});
+                        key_status.notification_date = sprintf('%d-%02d-%02d', date(1), date(2), date(3));
+                        inserti(subject.SubjectActWeight, key_status)
+                    end
+                end
+            end
+            
         end
     end
 end
