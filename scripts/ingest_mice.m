@@ -155,7 +155,7 @@ for igroup = 1:length(animals)
                         'subject_fullname', [animal.owner '_' animal.ID]);
                     
                     key_act.act_item = animal.actItems{i_act};
-                    inserti(subject.SubjectActItem, key_act)
+                    inserti(subject.SubjectActionManual, key_act)
                 end
             end
             if ~isempty(animal.genotype)
@@ -221,7 +221,7 @@ for igroup = 1:length(animals)
                 end
             end
             
-            %ingest subject.ActWeight
+            %ingest subject.SubjectActionAutomatic
             key_status = struct(...
                 'subject_fullname', [net_id_mapping.(animal.owner) '_' animal.ID]);
             
@@ -231,8 +231,11 @@ for igroup = 1:length(animals)
                     if strfind(action_string, 'Weight')
                         da = strsplit(action_string,'on ');
                         date = datevec(da{2});
-                        key_status.notification_date = sprintf('%d-%02d-%02d', date(1), date(2), date(3));
-                        inserti(subject.SubjectActWeight, key_status)
+                        date_time = datetime(date, 'InputFormat', 'dd-MMM-yyyy- HH:mm:ss');
+                        [y,mo,d,h,mi,s] = datevec(date_time);
+                        key_status.notification_date = sprintf('%d-%02d-%02d %2d:%2d:%2d', y, mo, d, h, mi, s);
+                        key_status.notification_message = action_string;
+                        inserti(subject.SubjectActionAutomatic, key_status)
                     end
                 end
             end

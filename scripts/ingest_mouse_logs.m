@@ -42,20 +42,6 @@ for iuser = 1:length(users)
                     inserti(lab.Location, key_loc)
                 end
                 key_weigh.location = log.weighLocation;
-                
-                init_weight = fetch1(subject.Subject & animal, 'initial_weight');
-                
-                key = fetch(action.Weighing & animal);
-                if ~isempty(key)
-                    ref_weight = fetch1(action.Weighing & animal, 'weight', 'ORDER BY weighing_time DESC LIMIT 1');
-                else
-                    ref_weight = init_weight;
-                end
-                if log.weight < 0.8 * init_weight || log.weight < ref_weight - 1
-                    date_time = datetime(key_weigh.weighing_time, 'InputFormat', 'yyyy-MM-dd HH:mm:ss');
-                    date_time_str = datestr(date_time, 'dd mmm yyyy HH:MM:SS AM');
-                    key_weigh.low_weight_alert = ['Weight too low (' num2str(key_weigh.weight) 'g) on ' date_time_str '.'];
-                end
                 inserti(action.Weighing, key_weigh)
                 
             end
@@ -105,7 +91,7 @@ for iuser = 1:length(users)
                     key_action.action_date = key_health.status_date;
                     key_action.action_id = iaction;
                     key_action.action = ['[' char(log.actions{iaction, 1}.string) '] ' log.actions{iaction, 2}];
-                    inserti(action.ActionItem, key_action)
+                    inserti(action.ActionRecord, key_action)
                 end
             end
             % ingest notification
