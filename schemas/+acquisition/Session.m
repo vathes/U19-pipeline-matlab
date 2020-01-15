@@ -12,9 +12,9 @@ stimulus_bank = ''          : varchar(255)                  # path to the functi
 stimulus_commit = ''        : varchar(64)                   # git hash for the version of the function
 stimulus_set                : tinyint                       # an integer that describes a particular set of stimuli in a trial
 session_performance         : float                         # percentage correct on this session
-session_narrative = ''      : varchar(512)                  # 
+session_narrative = ''      : varchar(512)                  # descriptive string
 session_protocol=null       : varchar(255)                  # function and parameters to generate the stimulus
-session_code_version=null   : blob                          # code version of the stimulus, maybe a version number, or a githash
+session_code_version=null   : blob                          # code version of the stimulus, usually two numbers "maze_version=2.1, code_version = 4.0". In the future: a githash?
 %}
 
 classdef Session < dj.Manual
