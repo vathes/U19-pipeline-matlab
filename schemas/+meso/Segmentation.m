@@ -12,11 +12,11 @@ classdef Segmentation < dj.Imported
             
             result = key;
             result.region_image_size = magic_func(key);
-            self.insert1(result)
+            self.insert(result)
             
             rois = func(key);
             
-            meso.SegmentationRoi.insert(rois)
+            insert(meso.SegmentationRoi, rois)
            
             
         end

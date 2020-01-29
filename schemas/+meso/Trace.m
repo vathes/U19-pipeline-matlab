@@ -12,4 +12,7 @@ is_baseline:    boolean
 
 
 classdef Trace < dj.Imported
+    
+    % insert by the Segmentation as well.
+    % we could rejudge the decision on the session part idea for the definition, let me know.
 end

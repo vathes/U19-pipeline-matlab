@@ -9,5 +9,8 @@ sync_iteration    :    longblob   # register the sample number of behavior recor
 %}
 
 
-classdef SyncImagingBehavior < dj.Manual
+classdef SyncImagingBehavior < dj.Computed
+    
+    % figure it out
 end
+

@@ -15,4 +15,19 @@ fov_discrete_plane_mode :  boolean        # true if FOV is only defined (acquire
 
 classdef FieldOfView < dj.Imported
     % ingestion handled by ScanInfo
+    methods(Access=protected)
+        function makeTuples(self, key)
+            
+            % load the original tiff, parse that, fill in these
+            % information, generate new tiff files, insert the new names
+            % into the table FieldOfViewFile
+          
+            self.insert(key)
+            
+            insert(meso.FieldOfViewFile, file_entries)
+                % ingestion triggered by the existence of Scan
+                % will run a modified version of mesoscopeSetPreproc
+                % will also trigger the ingestion into the table FieldOfView
+        end
+    end
 end
