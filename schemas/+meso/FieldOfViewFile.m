@@ -3,9 +3,13 @@
 -> meso.FieldOfView
 file_number         : int
 ---
-fov_filename        : varchar(255)     # file name of the fov file name
+fov_filename        : varchar(255)     # file name of the new fov tiff file
+
 %}
 
 classdef FieldOfViewFile < dj.Part
-    % ingestion handled by ScanInfo
+    properties(SetAccess=protected)
+        master = meso.FieldOfView
+    end
+    % ingestion handled by meso.FieldOfView
 end
