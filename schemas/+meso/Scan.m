@@ -11,6 +11,8 @@ pmt_gain=null        : float
 
 
 classdef Scan < dj.Imported
+  % code to figure out directory where tifs live, see
+  % acquisition.dataDirectory
 end
 
 % Question: how to ingest in this table?

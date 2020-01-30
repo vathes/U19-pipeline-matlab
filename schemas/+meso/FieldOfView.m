@@ -15,4 +15,14 @@ fov_discrete_plane_mode :  boolean        # true if FOV is only defined (acquire
 
 classdef FieldOfView < dj.Imported
     % ingestion handled by ScanInfo
+    methods
+    function makeTuples(self, key)
+            % load, parse and save tifs here
+            % key = 
+            % insert in this table insert(self,key)
+            % then insert in FieldOfViewFiles
+            % insert(self.FieldOfViewFiles,file_parts)
+            
+    end
+    end
 end

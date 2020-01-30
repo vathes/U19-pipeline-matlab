@@ -35,6 +35,7 @@ classdef ScanInfo < dj.Imported
             % ingestion triggered by the existence of Scan
             % will run a modified version of mesoscopeSetPreproc
             % will also trigger the ingestion into the table FieldOfView
+            
         end
     end
 end
