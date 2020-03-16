@@ -15,7 +15,7 @@ block_performance           : float                         # performance in the
 
 classdef TowersBlock < dj.Imported
     properties
-        popRel = acquisition.DataDirectory
+        popRel = behavior.DataDirectory
     end
     methods(Access=protected)
         function makeTuples(self, key)

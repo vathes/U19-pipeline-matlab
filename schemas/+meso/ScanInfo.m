@@ -30,7 +30,7 @@ nframes           : int           # number of frames in the scan
 
 classdef ScanInfo < dj.Imported
     
-    methods
+    methods(Access=protected)
         function makeTuples(self, key)
             % ingestion triggered by the existence of Scan
             % will run a modified version of mesoscopeSetPreproc
