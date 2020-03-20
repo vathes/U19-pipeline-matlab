@@ -23,9 +23,12 @@ classdef TowersBlock < dj.Imported
             data_dir = getLocalPath(fetch1(acquisition.DataDirectory & key, 'combined_file_name'));
             data = load(data_dir, 'log');
             log = data.log;
+
             for iBlock = 1:length(log.block)
                 tuple = key;
                 block = log.block(iBlock);
+                block = fixLogs(block); % fix bug for mesoscope recordings where choice is not recorded (but view angle is)
+                
                 tuple.block = iBlock;
                 tuple_trial = tuple;
                 tuple.task = 'Towers';
@@ -128,3 +131,36 @@ function [s] = exists_helper(trial, fieldname)
        s = 0;
     end 
 end
+
+%% fix logs where trial type and choice are not recorded due to bug
+function block = fixLogs(block)
+  
+for iBlock = 1:numel(block)
+  nTrials = numel(block(iBlock).trial);
+  for iTrial = 1:nTrials
+    if isempty(block(iBlock).trial(iTrial).trialType)
+      if numel(block(iBlock).trial(iTrial).cuePos{1}) > numel(block(iBlock).trial(iTrial).cuePos{1})
+        block(iBlock).trial(iTrial).trialType = Choice.L;
+      else
+        block(iBlock).trial(iTrial).trialType = Choice.R;
+      end
+    end
+    if isempty(block(iBlock).trial(iTrial).choice)
+      pos = block(iBlock).trial(iTrial).position;
+      if pos(end,2) < 300
+        block(iBlock).trial(iTrial).choice   = Choice.nil;
+      else
+        if pos(end,3) > 0
+          block(iBlock).trial(iTrial).choice = Choice.L;
+        else
+          block(iBlock).trial(iTrial).choice = Choice.R;
+        end
+      end
+    end
+  end
+  block(iBlock).trialType      = [block(iBlock).trial(:).trialType];
+  block(iBlock).medianTrialDur = median([block(iBlock).trial(:).duration]);
+end
+  
+end
+

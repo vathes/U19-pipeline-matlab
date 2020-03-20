@@ -44,6 +44,11 @@ classdef DataDirectory < dj.Computed
                 file = dir(getLocalPath([base_dir '/' lower(subj) '/*_' session_date '.mat']));
             end
             
+            if strcmp('VRwidefield', rig)
+                base_dir = '/braininit/RigData/VRwidefield/behavior/lucas/blocksReboot/data';
+                file = dir(getLocalPath([base_dir '/' lower(subj) '/*_' session_date '.mat']));
+            end
+            
             if isempty(file)
                 disp([rig, '  -file not found.'])
                 return
