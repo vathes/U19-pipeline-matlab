@@ -4,5 +4,7 @@
 morphology:  enum('Doughnut', 'Blob', 'Puncta', 'Filament', 'Other', 'Noise')
 %}
 
-classdef SegmentationRoiMorphology < dj.Part
+classdef SegmentationRoiMorphologyAuto < dj.Part
 end
+
+% insert by Segmentation automatically
