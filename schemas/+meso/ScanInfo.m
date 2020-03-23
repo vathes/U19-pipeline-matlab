@@ -222,7 +222,7 @@ classdef ScanInfo < dj.Imported
         for iZ = 1:ndepths
           fov_key           = [];
           fov_key.fov       = ct;
-          fov_key.directory = sprintf('%s/ROI%02d_z%d',scan_directory,iROI,iZ);
+          fov_key.directory = sprintf('%s/ROI%02d_z%d/',scan_directory,iROI,iZ);
           
           if ~isempty(recInfo.ROI(iROI).name)
             thisname        = sprintf('%s_z%d',recInfo.ROI(iROI).name,iZ);
@@ -230,27 +230,19 @@ classdef ScanInfo < dj.Imported
             thisname        = sprintf('ROI%02d_z%d',iROI,iZ);
           end
           
-          fov_key.fov_name             = thisname;
-          fov_key.depth                = recInfo.ROI(iROI).Zs(iZ);
-          fov_key.fov_center_xy        = recInfo.ROI(iROI).centerXY;
-          fov_key.fov_rotation_degrees = recInfo.ROI(iROI).sizeXY;
+          fov_key.fov_name                = thisname;
+          fov_key.depth                   = recInfo.ROI(iROI).Zs(iZ);
+          fov_key.fov_center_xy           = recInfo.ROI(iROI).centerXY;
+          fov_key.fov_rotation_degrees    = recInfo.ROI(iROI).sizeXY;
+          fov_key.fov_pixel_resolution_xy = recInfo.ROI(iROI).pixelResolutionXY;
+          fov_key.fov_discrete_plane_mode = recInfo.ROI(iROI).discretePlaneMode;
           
           ct = ct+1;
           makeTuples(meso.FieldOfView,fov_key)
         end
       end
       
-      
-%       fov                     :  tinyint        # number of the field of view in this scan 
-% ---
-% fov_directory           :  varchar(255)   # the absolute directory created for this fov
-% fov_name=null           :  varchar(32)    # name of the field of view ("name")
-% fov_depth               :  float          # depth of the field of view ("Zs") should be a number or a vector? 
-% fov_center_xy           :  blob           # X-Y coordinate for the center of the FOV in microns. One for each FOV in scan ("centerXY")
-% fov_size_xy             :  blob           # X-Y size of the FOV in microns. One for each FOV in scan (sizeXY)
-% fov_rotation_degrees    :  float          # rotation of the FOV with respect to cardinal axes in degrees. One for each FOV in scan ("rotationDegrees")
-% fov_pixel_resolution_xy :  float          # number of pixels for rows and columns of the FOV. One for each FOV in scan ("")n
-% fov_discrete_plane_mode :  boolean   
+       
       %% wrap up
       delete(poolobj)
       cd(curr_dir)

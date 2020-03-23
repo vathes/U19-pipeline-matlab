@@ -25,6 +25,14 @@ classdef FieldOfView < dj.Imported
       self.insert(key)
       
       % list of file names
+      fov_directory = key.directory;
+      file_entries  = struct('file_number',[],'fov_filename',[]);
+      fl            = dir(sprintf('%s*.tif',fov_directory));
+      for iF = 1:numel(fl)
+        file_entries(iF).file_number  = iF;
+        file_entries(iF).fov_filename = fl(iF).name;
+      end
+      
       insert(meso.FieldOfViewFile, file_entries)
 
     end

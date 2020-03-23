@@ -3,8 +3,8 @@
 # available motion correction method
 mcorr_method:           varchar(128)
 ---
-correlation_type: enum('Normalized', 'Non-Normalized')
-tranformation_type: enum('Linear', 'Non-linear')
+correlation_type='Normalized' : enum('Normalized', 'Non-Normalized')
+tranformation_type='Linear'   : enum('Linear', 'Non-linear')
 %}
 
     
