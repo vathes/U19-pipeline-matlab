@@ -12,7 +12,7 @@ classdef MotionCorrection < dj.Imported
       % path
       fov_directory = fetch1(key,'fov_directory');
       
-      % analysis parameters
+      %%%%%%%%%% analysis parameters
       
       % call functions to compute motioncorrectionWithinFile and
       % AcrossFiles and insert into the tables
@@ -27,7 +27,7 @@ classdef MotionCorrection < dj.Imported
         cfg.mcorr{end+1}            = [0, numel(info.channels)-1];
       end
       
-      %%%%%%%%%% rewrite this to load shifts from dj
+      % run motion correction
       [frameMCorr, fileMCorr]       = getMotionCorrection(movieFiles, false, 'off', cfg.mcorr{:});
 
       
@@ -61,15 +61,7 @@ classdef MotionCorrection < dj.Imported
   end
   
 end
-% 
-% cross_files_x_shifts                        : longblob      # nFrames x 2, meta file, fileMCorr-xShifts
-% cross_files_y_shifts                        : longblob      # nFrames x 2, meta file, fileMCorr-yShifts
-% cross_files_reference_image                 : longblob      # 512 x 512, meta file, fileMCorr-reference
-% 
-% within_file_x_shifts                        : longblob      # nFrames x 2, meta file, frameMCorr-xShifts
-% within_file_y_shifts                        : longblob      # nFrames x 2, meta file, frameMCorr-yShifts
-% within_reference_image                      : longblob      # 512 x 512, meta file, frameMCorr-reference
-% 
+
 % if nonlinMotionCorr
 %     cfg.mcorr                   = {[15 15], [5 2], 0.3, 10};
 %   else
