@@ -57,6 +57,11 @@ classdef MotionCorrection < dj.Imported
         
       insert1(meso.motioncorrectionAcrossFile, across_key)
       
+      %% compute and save some stats as .mat files, intermediate step used downstream in the segmentation code
+      movieName                     = stripPath(movieFiles);
+      parfor iFile = 1:numel(movieFiles)
+        computeStatistics(movieName{iFile}, movieFiles{iFile}, frameMCorr(iFile), false);
+      end
     end
   end
   
@@ -67,3 +72,29 @@ end
 %   else
 %     cfg.mcorr                   = {15, 5, false, 0.3, nan, 10};
 %   end
+
+%%
+%---------------------------------------------------------------------------------------------------
+function [statsFile, activity] = computeStatistics(movieName, movieFile, frameMCorr, recomputeStats)
+  
+  fprintf(' :   %s\n', movieName);
+
+  % Fluorescence activity raw statistics
+  statsFile                   = regexprep(movieFile, '[.][^.]+$', '.stats.mat');
+  if recomputeStats ||  ~exist(statsFile, 'file')
+    % Load raw data with per-file motion correction
+    F                         = cv.imreadsub(movieFile, {frameMCorr,false});
+    [stats,metric,tailProb]   = highTailActivityMetric(F);
+    clear F;
+    
+    info                      = cv.imfinfox(movieFile);
+    info.movieFile            = stripPath(movieFile);
+    outputFile                = statsFile;
+    parsave(outputFile, info, stats, metric, tailProb);
+  else
+    metric                    = load(statsFile, 'metric');
+    tailProb                  = metric.metric.tailProb;
+  end
+  activity                    = tailProb;
+
+end

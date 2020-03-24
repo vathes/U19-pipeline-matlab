@@ -28,6 +28,9 @@ classdef SyncImagingBehavior < dj.Computed
       block       = fixLogs(block);
       
       %% imaging sync
+      cfg.minBehaviorSecs           = 2;      % for assuming that frames with no sync data are actually within some abnormally long behavioral iteration
+      cfg.syncTolerance             = 0.1;
+      
       syncFrame                     = [];
       syncGlobal                    = [];
       refEpoch                      = [];
