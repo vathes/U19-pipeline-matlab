@@ -24,8 +24,8 @@ classdef SyncImagingBehavior < dj.Computed
       behavdata = load(data_dir, 'log');
       block     = behavdata.log.block;
       
-      %% add some stuff that for whatever reason isn't on some of Lucas's logs
-      block       = fixLogs(block);
+      %% add some stuff that for whatever reason isn't on some mesosocope logs
+      block     = fixLogs(block);
       
       %% imaging sync
       cfg.minBehaviorSecs           = 2;      % for assuming that frames with no sync data are actually within some abnormally long behavioral iteration

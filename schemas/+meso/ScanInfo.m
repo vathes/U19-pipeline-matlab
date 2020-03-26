@@ -26,6 +26,7 @@ fov_corner_points : blob          # coordinates of the corners of the full 5mm F
 nfovs             : int           # number of field of view
 nframes           : int           # number of frames in the scan
 nframes_good      : int           # number of frames in the scan before acceptable sample bleaching threshold is crossed
+last_good_file    : int           # number of the file containing the last good frame because of bleaching
 %}
 
 
@@ -35,7 +36,7 @@ classdef ScanInfo < dj.Imported
     
     function makeTuples(self, key)
       % ingestion triggered by the existence of Scan
-      % will run a modified version of mesoscopeSetPreproc
+      % runs a modified version of mesoscopeSetPreproc
       
       curr_dir       = pwd; 
       scan_directory = fetch1(key,'scan_directory');
@@ -77,9 +78,10 @@ classdef ScanInfo < dj.Imported
       lastGoodFrame       = selectFramesFromMeanF(scan_directory);
       cumulativeFrames    = cumsum(framesPerFile);
       lastGoodFile        = find(cumulativeFrames >= lastGoodFrame,1,'first');
-      lastFrameInFile     = lastGoodFrame - cumulativeFrames(max([1 lastGoodFile-1]));
+%       lastFrameInFile     = lastGoodFrame - cumulativeFrames(max([1 lastGoodFile-1]));
       
       %% write to this table
+      originalkey                   = key;
       key.file_name_base            = recInfo.FileName;
       key.scan_width                = recInfo.Width;
       key.scan_height               = recInfo.Height;
@@ -104,6 +106,7 @@ classdef ScanInfo < dj.Imported
       key.nfovs                     = sum(cell2mat(cellfun(@(x)(numel(x)),{recInfo.ROI(:).Zs},'uniformoutput',false)));
       key.nframes                   = recInfo.nFrames;
       key.nframes_good              = lastGoodFrame;
+      key.last_good_file            = lastGoodFile;
       
       self.insert(key)
       
@@ -131,96 +134,97 @@ classdef ScanInfo < dj.Imported
         fprintf('%s\n',fl{iF})
         
         % read image and header
-        if iF <= lastGoodFile % do not write frames beyond last good frame based on bleaching
-          readObj    = Tiff(fl{iF},'r');
-          thisstack  = zeros(imheader{iF}(1).Height,imheader{iF}(1).Width,numel(imheader{iF}),'uint16');
-          for iFrame = 1:numel(imheader{iF})
-            readObj.setDirectory(iFrame);
-            thisstack(:,:,iFrame) = readObj.read();
-          end
-          
-          % number of ROIs and blank pixels from beam travel
-          [nr,nc,~]  = size(thisstack);
-          padsize    = (nr - sum(ROInr)) / (nROI - 1);
-          rowct      = 1;
-          
-          % create a separate tif for each ROI
-          for iROI = 1:nROI
-            
-            thislag  = interROIlag*(iROI-1);
-            
-            for iDepth = 1:Depths
-              
-              % extract correct frames
-              zIdx       = iDepth:Depths:size(thisstack,3);
-              substack   = thisstack(rowct:rowct+ROInr(iROI)-1,1:ROInc(iROI),zIdx); % this square ROI, depths are interleaved
-              thisfn     = sprintf('./ROI%02d_z%d/%sROI%02d_z%d_%s',iROI,iDepth,basename,iROI,iDepth,fl{iF}(stridx+1:end));
-              writeObj   = Tiff(thisfn,'w');
-              thisheader = struct([]);
-              
-              % set-up header
-              for iField = 1:numel(fieldLs)
-                switch fieldLs{iField}
-                  case 'TIFF File'
-                    thisheader(1).(fieldLs{iField}) = thisfn;
-                    
-                  case 'ImageLength'
-                    thisheader(1).(fieldLs{iField}) = nc;
-                    
-                  otherwise
-                    thisheader(1).(fieldLs{iField}) = readObj.getTag(fieldLs{iField});
-                end
+%         if iF <= lastGoodFile % do not write frames beyond last good frame based on bleaching
+        readObj    = Tiff(fl{iF},'r');
+        thisstack  = zeros(imheader{iF}(1).Height,imheader{iF}(1).Width,numel(imheader{iF}),'uint16');
+        for iFrame = 1:numel(imheader{iF})
+          readObj.setDirectory(iFrame);
+          thisstack(:,:,iFrame) = readObj.read();
+        end
+
+        % number of ROIs and blank pixels from beam travel
+        [nr,nc,~]  = size(thisstack);
+        padsize    = (nr - sum(ROInr)) / (nROI - 1);
+        rowct      = 1;
+
+        % create a separate tif for each ROI
+        for iROI = 1:nROI
+
+          thislag  = interROIlag*(iROI-1);
+
+          for iDepth = 1:Depths
+
+            % extract correct frames
+            zIdx       = iDepth:Depths:size(thisstack,3);
+            substack   = thisstack(rowct:rowct+ROInr(iROI)-1,1:ROInc(iROI),zIdx); % this square ROI, depths are interleaved
+            thisfn     = sprintf('./ROI%02d_z%d/%sROI%02d_z%d_%s',iROI,iDepth,basename,iROI,iDepth,fl{iF}(stridx+1:end));
+            writeObj   = Tiff(thisfn,'w');
+            thisheader = struct([]);
+
+            % set-up header
+            for iField = 1:numel(fieldLs)
+              switch fieldLs{iField}
+                case 'TIFF File'
+                  thisheader(1).(fieldLs{iField}) = thisfn;
+
+                case 'ImageLength'
+                  thisheader(1).(fieldLs{iField}) = nc;
+
+                otherwise
+                  thisheader(1).(fieldLs{iField}) = readObj.getTag(fieldLs{iField});
               end
-              thisheader(1).ImageDescription        = imheader{iF}(zIdx(1)).ImageDescription;
-              
-              % write first frame
+            end
+            thisheader(1).ImageDescription        = imheader{iF}(zIdx(1)).ImageDescription;
+
+            % write first frame
+            writeObj.setTag(thisheader);
+            writeObj.setTag('SampleFormat',Tiff.SampleFormat.UInt);
+            writeObj.write(substack(:,:,1));
+
+            % write frames
+            for iZ = 2:size(substack,3)
+%                 % do not write frames beyond last good frame based on bleaching
+%                 if iF == lastGoodFile && iZ > lastFrameInFile; continue; end
+
+              % account for ROI lags in new time stamps
+              imdescription = imheader{iF}(zIdx(iZ)).ImageDescription;
+              old           = cell2mat(regexp(cell2mat(regexp(imdescription,'frameTimestamps_sec = [0-9]+.[0-9]+','match')),'\d+.\d+','match'));
+              new           = num2str(thislag + str2double(old));
+              imdescription = replace(imdescription,old,new);
+
+              % write image and hedaer
+              thisheader(1).ImageDescription = imdescription;
+              writeObj.writeDirectory();
               writeObj.setTag(thisheader);
               writeObj.setTag('SampleFormat',Tiff.SampleFormat.UInt);
-              writeObj.write(substack(:,:,1));
-              
-              % write frames
-              for iZ = 2:size(substack,3)
-                % do not write frames beyond last good frame based on bleaching
-                if iF == lastGoodFile && iZ > lastFrameInFile; continue; end
-                
-                % account for ROI lags in new time stamps
-                imdescription = imheader{iF}(zIdx(iZ)).ImageDescription;
-                old           = cell2mat(regexp(cell2mat(regexp(imdescription,'frameTimestamps_sec = [0-9]+.[0-9]+','match')),'\d+.\d+','match'));
-                new           = num2str(thislag + str2double(old));
-                imdescription = replace(imdescription,old,new);
-                
-                % write image and hedaer
-                thisheader(1).ImageDescription = imdescription;
-                writeObj.writeDirectory();
-                writeObj.setTag(thisheader);
-                writeObj.setTag('SampleFormat',Tiff.SampleFormat.UInt);
-                write(writeObj,substack(:,:,iZ));
-              end
-              
-              % close tif stack object
-              writeObj.close();
-              
-              %clear substack
+              write(writeObj,substack(:,:,iZ));
             end
-            
-            % update first row index
-            rowct    = rowct+padsize+ROInr(iROI);
+
+            % close tif stack object
+            writeObj.close();
+
+            %clear substack
           end
-          
-          %MDia: close all Tiff objects otherwise can't move files (at least on windows)
-          readObj.close();
+
+          % update first row index
+          rowct    = rowct+padsize+ROInr(iROI);
         end
-        
+
+        readObj.close();
         % now move file
         movefile(fl{iF},sprintf('originalStacks/%s',fl{iF}));
       end
       
-      %% write to FieldOfView table
-      ct = 1;
+      %% write to FieldOfView and FieldOfViewFile tables
+      ct               = 1;
+      cumulativeFrames = [0 cumulativeFrames];
+      
       for iROI = 1:nROI
         ndepths = numel(recInfo.ROI(iROI).Zs);
         for iZ = 1:ndepths
-          fov_key           = [];
+          
+          % FieldOfView
+          fov_key           = originalkey;
           fov_key.fov       = ct;
           fov_key.directory = sprintf('%s/ROI%02d_z%d/',scan_directory,iROI,iZ);
           
@@ -238,7 +242,25 @@ classdef ScanInfo < dj.Imported
           fov_key.fov_discrete_plane_mode = recInfo.ROI(iROI).discretePlaneMode;
           
           ct = ct+1;
-          makeTuples(meso.FieldOfView,fov_key)
+          insert1(meso.FieldOfView,fov_key)
+          
+          % FieldOfViewFiles
+          file_entries                    = originalkey;
+          file_entries.fov                = fov_key.fov; 
+          file_entries.file_number        = [];
+          file_entries.fov_filename       = '';
+          file_entries.file_frame_range   = '';
+          
+          fov_directory                   = fov_key.directory;
+          fl                              = dir(sprintf('%s*.tif',fov_directory));
+
+          for iF = 1:numel(fl)
+            file_entries(iF).file_number  = iF;
+            file_entries(iF).fov_filename = fl(iF).name;
+            file_entries.fov_frame_range  = [cumulativeFrames(iF)+1 cumulativeFrames(iF+1)];
+          end
+
+          insertn(meso.FieldOfViewFile, file_entries)
         end
       end
       

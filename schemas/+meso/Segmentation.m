@@ -13,14 +13,62 @@ classdef Segmentation < dj.Imported
   methods(Access=protected)
     function makeTuples(self, key)
       
-      % imaging directory
+      %% imaging directory
       fov_directory = fetch1(key,'fov_directory');
       result        = key;
       
-      % analysis params
+      %% analysis params
+      segmentationMethod = 'cnmf';
+      parameterSetID     = 1;
+      params             = fetch1(meso.SegParameterSetParameter & key & ...
+                                  sprintf('seg_parameter_set_id = %d',parameterSetID));
+      frameRate          = fetch1(meso.ScanInfo & key, 'frame_rate');
       
-      % run segmentation
-      outputFiles   = runCNMF(fov_directory, cfg); 
+      % selectFileChunks
+      chunk_cfg.auto_select_behav  = params.chunks_auto_select_behav;
+      chunk_cfg.auto_select_bleach = params.chunks_auto_select_bleach;
+      chunk_cfg.filesPerChunk      = params.cmnf_files_per_chunk;
+      
+      % cnmf, general
+      cnmf_cfg.K                   = params.cmnf_num_components;
+      cnmf_cfg.tau                 = params.cmnf_tau;
+      cnmf_cfg.p                   = params.cmnf_p;
+      cnmf_cfg.filesPerChunk       = params.cmnf_files_per_chunk;
+      cnmf_cfg.protoNumChunks      = params.cnmf_proto_num_chunks;
+      cnmf_cfg.zeroIsMinium        = params.cnmf_zero_is_minimum;
+      cnmf_cfg.defaultTimeScale    = params.cnmf_default_timescale;
+      cnmf_cfg.timeResolution      = 1000/frameRate;
+      cnmf_cfg.dFFRectification    = params.cnmf_dff_rectification;
+      cnmf_cfg.minROISignificance  = params.cnmf_min_roi_significance;
+      cnmf_cfg.frameRate           = frameRate;
+      cnmf_cfg.minNumFrames        = params.cnmf_min_num_frames;
+      cnmf_cfg.maxCentroidDistance = params.cnmf_max_centroid_dist;
+      cnmf_cfg.minDistancePixels   = params.cnmf_min_dist_pixels;
+      cnmf_cfg.minShapeCorr        = params.cnmf_min_shape_corr;
+      cnmf_cfg.pixelsSurround      = params.cnmf_pixels_surround;
+
+      % cnmf, goodness of fit
+      gof_cfg.containEnergy        = params.gof_contain_energy;
+      gof_cfg.coreEnergy           = params.gof_core_energy;
+      gof_cfg.noiseRange           = params.gof_noise_range;
+      gof_cfg.maxBaseline          = params.gof_max_baseline;
+      gof_cfg.minActivation        = params.gof_min_activation;
+      gof_cfg.highActivation       = params.gof_high_activation;
+      gof_cfg.minTimeSpan          = params.gof_min_time_span;
+      gof_cfg.bkgTimeSpan          = params.gof_bkg_time_span;
+      gof_cfg.minDeltaFoverF       = params.gof_min_dff;
+      
+      %% select tif file chunks based on behavior and bleaching
+      % fileChunk is an array of size chunks x 2, where rows are [firstFileIdx lastFileIdx]
+      fileChunk                    = selectFileChunks(key,chunk_cfg); %%%%%%%%%%% NEEDS ADAPTING FROM ABBYS CODE
+            
+      %% run segmentation and populate this table
+      switch segmentationMethod
+        case 'cnmf'
+          outputFiles              = runCNMF(fov_directory, fileChunk, cnmf_cfg, gof_cfg); 
+        case 'suite2p'
+          warning('suite2p is not yet supported in this pipeline')
+      end
       
       % load summary file
       data                                 = load(outputFiles{1});
@@ -32,116 +80,128 @@ classdef Segmentation < dj.Imported
       
       self.insert(result)
       
-      % write to meso.SegmentationChunks (some session chunk-specific info)
+      %% write to meso.SegmentationChunks (some session chunk-specific info)
+      chunkRange = zeros(num_chunks,2);
+      chunkdata  = [];
       for iChunk = 1:num_chunks
         result                       = key;
-        chunkdata                    = load(outputFiles{1+iChunk});
+        chunkdata(iChunk)            = load(outputFiles{1+iChunk});
         result.segmentation_chunk_id = iChunk;
-        result.tif_file_list         = chunkdata.source.movieFile;
-        result.region_image_size     = chunkdata.source.cropping.selectSize;
-        result.region_image_x_range  = chunkdata.source.cropping.xRange;
-        result.region_image_y_range  = chunkdata.source.cropping.yRange;
+        result.tif_file_list         = chunkdata(iChunk).source.movieFile;
+        result.region_image_size     = chunkdata(iChunk).source.cropping.selectSize;
+        result.region_image_x_range  = chunkdata(iChunk).source.cropping.xRange;
+        result.region_image_y_range  = chunkdata(iChunk).source.cropping.yRange;
+        
+        % figure out imaging frame range in the chunk (with respect to whole session)
+        frame_range_first            = fetch1(meso.FiledOfViewFile & key & ...
+                                              sprintf('fov_filename=%s',result.tif_file_list{1}),'file_frame_range');
+        frame_range_last             = fetch1(meso.FiledOfViewFile & key & ...
+                                              sprintf('fov_filename=%s',result.tif_file_list{end}),'file_frame_range');   
+        chunkRange(iChunk,:)         = [frame_range_first(1) frame_range_last(end)];
+        result.imaging_frame_range   = chunkRange(iChunk,:);
         
         insert1(meso.SegmentationChunks, result)
-        clear chunkdata
+        clear result 
+        
+        % write global background (neuropil) activity data to meso.SegmentationBackground
+        result                       = key;
+        result.segmentation_chunk_id = iChunk;
+        result.background_spatial    = reshape(chunkdata(iChunk).cnmf.bkgSpatial,chunkdata(iChunk).cnmf.region.ImageSize);
+        result.background_temporal   = chunkdata(iChunk).cnmf.bkgTemporal;
+        
+        insert1(meso.SegmentationBackground, result)
+        clear result
+      end
+            
+      %% write ROI specific info 
+      globalXY      = data.registration.globalXY;
+      nROIs         = size(globalXY,2);
+      totalFrames   = fetch1(meso.ScanInfo & key,'nframes');
+      timeConstants = data.cnmf.timeConstants;
+      roikey        = [];
+      morphokey     = [];
+      tracekey      = [];
+      
+      for iROI = 1:nROIs
+        roikey(iROI)               = key;
+        roikey(iROI).roi_idx       = iROI;  
+        morphokey(iROI)            = roikey(iROI);
+        tracekey(iROI)             = roikey(iROI);
+        
+        roikey(iROI).roi_global_xy    = globalXY(:,iROI);
+        tracekey(iROI).time_constants = timeConstants{iROI};
+        
+        %%%% now look in file chunks and fill activity etc, have variable
+        %%%% to indicate which cjunks roi can be found in
+        dff                = nan(1,totalFrames);
+        surround           = nan(1,totalFrames);
+        spikes             = nan(1,totalFrames);
+        dff_isSig          = nan(1,totalFrames);
+        
+        for iChunk = 1:numel(chunk)
+          % roi: shape
+          % roi: which chunk
+          % morphology
+          % activity traces
+        end
+        
       end
       
-      % write spatial info to meso.SegmentationRoi, and which chunk it belongs to 
-      
-      %%% figure out some way of indicating wheter roi belongs to a chunk
-      %%% or both
-      
-      % write automatic morphological classification to meso.SegemntationRoiMorphologyAuto
-      morphoFile = [outputFiles{1}(1:end-4) '.morphology.mat'];
-      %%% how does it get written? (before manual curation)
-      
-      % write background (neuropil) activity data to meso.SegemntationBackground
-      
-      % write activity data to meso.Trace
+      insertn(meso.SegmentationRoi, roikey)
+      insertn(meso.SegmentationRoiMorphologyAuto, morphokey)
+      insertn(meso.Trace, tracekey)
       
     end
   end
 end
 
-% % params lookup:
-% if isempty(cfg)
-%     cfg.K                   = 400;            % number of components to be found
-%     cfg.tau                 = 4;              % std of gaussian kernel (size of neuron) 
-%     cfg.p                   = 2;              % order of autoregressive system (p = 0 no dynamics, p=1 just decay, p = 2, both rise and decay)
-%     cfg.iterations          = 2;
-%     cfg.filesPerChunk       = 100;
-%     cfg.protoNumChunks      = 1;
-%     cfg.zeroIsMinimum       = false;
-% 
-%     cfg.defaultTimeScale    = 10;
-%     cfg.timeResolution      = 1/4.6;             % ms, for temporal downsampling (rebinning) of data to feed to CNMF
-%   %   cfg.timeResolution      = 20;             % ms, for NO temporal downsampling at 30Hz
-%     cfg.dFFRectification    = 2;              % deemphasize dF/F values below this magnitude when computing component correlations
-%     cfg.minROISignificance  = 3;              % minimum significance for components to retain; at least some time points must be above this threshold
-%     cfg.frameRate           = 4.6;             % fps
-%     cfg.minNumFrames        = 400;
-% 
-%     cfg.maxCentroidDistance = 1;              % maximum fraction of diameter within which to search for a matching template
-%     cfg.minDistancePixels   = 1;              % allow searching within this many pixels even if the diameter is very small
-%     cfg.minShapeCorr        = 0.85;           % minimum shape correlation for global registration
-%     cfg.pixelsSurround      = [3 13];         % number of pixels
-%   end
-%   
-%   if fromProtoSegments
-%     method                = { 'search_method' , 'dilate'                          ... % search locations when updating spatial components
-%                             , 'se'            , strel('disk',4)                   ... % morphological element for method ‘dilate’
-%                             };
-%   else
-%     method                = { 'search_method' , 'ellipse'                         ... % search locations when updating spatial components
-%                             };
-%   end
-%   cfg.options             = CNMFSetParms( 'd1', 0,'d2', 0                         ... % dimensions of datasets
-%                                         , 'dist'          , 3                     ... 
-%                                         , 'deconv_method' , 'constrained_foopsi'  ... % activity deconvolution method
-%                                         , 'temporal_iter' , 2                     ... % number of block-coordinate descent steps 
-%                                         , 'fudge_factor'  , 0.9                   ... % bias correction for AR coefficients
-%                                         , 'merge_thr'     , 0.8                   ... % merging threshold
-%                                         , 'bas_nonneg'    , true                  ...
-%                                         , 'block_size'    , 10                    ... for FFT preprocessing 
-%                                         , 'split_data'    , true                  ... for FFT preprocessing 
-%                                         , method{:}                               ...
-%                                         );
-% 
-%   % Additional analysis configuration for "goodness-of-fit"
-%   gofCfg.containEnergy    = 0.9;            % fractional amount of energy used to specify spatial support
-%   gofCfg.coreEnergy       = 0.7;            % fractional amount of energy used to specify core of component
-%   gofCfg.noiseRange       = 2;              % range in which to search for modal (baseline) activation
-%   gofCfg.maxBaseline      = 1.5;            % number of factors below the data noise to consider as (unambiguously) baseline
-%   gofCfg.minActivation    = 3;              % number of factors above the data noise to consider activity as significant
-%   gofCfg.highActivation   = 5;              % number of factors above the data noise to consider activity as significant with reduced time span
-%   gofCfg.minTimeSpan      = 1;              % number of timeScale chunks to require activity to be above threshold
-%   gofCfg.bkgTimeSpan      = 3;              % number of timeScale chunks for smoothing the background activity level in order to determine its "baseline"
-%   gofCfg.minDeltaFoverF   = 0.3;            % minimum dF/F to be considered as a significant transient
-%   
+%% ------------------------------------------------------------------------
+%% file chunk selection
+%% ------------------------------------------------------------------------
+
+function fileChunk = selectFileChunks(key,chunk_cfg)
+
+if ~chunk_cfg.auto_select_behav && ~chunk_cfg.auto_select_bleach 
+  fileChunk = [];
+  return
+end
+
+% chunk_cfg.filesPerChunk
+
+end
 
 %% ------------------------------------------------------------------------
 %% segmentation code stripped down for datajoint
+%% ------------------------------------------------------------------------
 
-%---------------------------------------------------------------------------------------------------
-function outputFiles = runCNMF(moviePath, cfg, redoPostProcessing, fromProtoSegments, lazy, scratchDir)
+%% --------------------------------------------------------------------------------------------------
+function [outputFiles,fileChunk] = runCNMF(moviePath, fileChunk, cfg, gofCfg, redoPostProcessing, fromProtoSegments, lazy, scratchDir)
   
   warning('off','MATLAB:nargchk:deprecated');       % HACK because of cvx
   
   if nargin < 2 
+    fileChunk             = [];
+  end
+  if nargin < 3 
     cfg                   = [];
   end
-  if nargin < 3 || isempty(redoPostProcessing)
+  if nargin < 4 
+    gofCfg                = [];
+  end
+  if nargin < 5 || isempty(redoPostProcessing)
     redoPostProcessing    = false;
   end
-  if nargin < 4 || isempty(fromProtoSegments)
+  if nargin < 6 || isempty(fromProtoSegments)
     fromProtoSegments     = true;
   end
-  if nargin < 5 || isempty(lazy)
+  if nargin < 7 || isempty(lazy)
     lazy                  = true;
   end
-  if nargin < 6
+  if nargin < 7
     scratchDir            = '';
   end
+  
+  repository                  = [];
   
   % Parallel pool preferences
   parSettings                 = parallel.Settings;
@@ -193,93 +253,83 @@ function outputFiles = runCNMF(moviePath, cfg, redoPostProcessing, fromProtoSegm
                                         );
 
   % Additional analysis configuration for "goodness-of-fit"
-  gofCfg.containEnergy    = 0.9;            % fractional amount of energy used to specify spatial support
-  gofCfg.coreEnergy       = 0.7;            % fractional amount of energy used to specify core of component
-  gofCfg.noiseRange       = 2;              % range in which to search for modal (baseline) activation
-  gofCfg.maxBaseline      = 1.5;            % number of factors below the data noise to consider as (unambiguously) baseline
-  gofCfg.minActivation    = 3;              % number of factors above the data noise to consider activity as significant
-  gofCfg.highActivation   = 5;              % number of factors above the data noise to consider activity as significant with reduced time span
-  gofCfg.minTimeSpan      = 1;              % number of timeScale chunks to require activity to be above threshold
-  gofCfg.bkgTimeSpan      = 3;              % number of timeScale chunks for smoothing the background activity level in order to determine its "baseline"
-  gofCfg.minDeltaFoverF   = 0.3;            % minimum dF/F to be considered as a significant transient
-  
-  % Locate all directories with imaging info
-  allInputs               = rdir(fullfile(moviePath, '**', '*.stats.mat'));
-  moviePath               = unique(parsePath({allInputs.name}));
-  outputFiles             = {};
-  for iPath = 1:numel(moviePath)
-    % Get associated statistics info
-    movieFile             = rdir(fullfile(moviePath{iPath}, '*.tif'));
-    movieFile             = {movieFile.name};
-    if isempty(movieFile)
-      movieFile           = rdir(fullfile(moviePath{iPath}, '*.stats.mat'));
-      movieFile           = {movieFile.name};
-      [dir,name]          = parsePath(movieFile);
-      [~,name]            = parsePath(name);
-      movieFile           = fullfile(dir, strcat(name, '.tif'));
-    end
-    
-    % Separate files by acquisition label
-    [~, name]             = parsePath(movieFile);
-    acquisInfo            = regexp(name, '(.+)[_-]([0-9]+)$', 'tokens', 'once');
-    acquisInfo            = cat(1, acquisInfo{:});
-    [acquis,~,acquisIndex]= unique(acquisInfo(:,1));
-    
-    % Process each acquisition separately
-    for iAcquis = 1:numel(acquis)
-      selection           = ( acquisIndex == iAcquis );
-      [acquisNum,iOrder]  = sort(str2double(acquisInfo(selection, 2)));
-      acquisFile          = movieFile(selection);
-      acquisFile          = acquisFile(iOrder);
-      acquisPrefix        = fullfile(moviePath{iPath}, acquis{iAcquis});
-      fprintf('\n\n####  ACQUISITION %d:  %s\n', iAcquis, acquisPrefix);
-      
-      % Collect the desired number of files into processing chunks
-      fileChunk           = chunkIndices(numel(acquisFile), cfg.filesPerChunk);
-      
-      
-      % Proto-segmentation
-      if fromProtoSegments
-        protoChunk        = fileChunk(1:cfg.protoNumChunks:end);
-        if protoChunk(end) ~= fileChunk(end)
-          protoChunk(end+1) = fileChunk(end);
-        end
-        [protoROI, outputFiles]       ...
-                          = getProtoSegmentation(acquisFile, protoChunk, acquisPrefix, acquisNum, repository, lazy, cfg, outputFiles, scratchDir);
-      else
-        protoROI          = [];
-      end
-      
-      % Full segmentation
-      nil                 = cell(1,numel(fileChunk)-1);
-      chunk               = struct('movieFile', nil, 'roiFile', nil);
-      for iChunk = 1:numel(fileChunk) - 1
-        iFile             = fileChunk(iChunk):fileChunk(iChunk+1) - 1;
-        chunkFiles        = acquisFile(iFile);
-        chunk(iChunk).movieFile   = stripPath(chunkFiles);
-        
-        [cnmf, source, roiFile, summaryFile, gofCfg.timeScale, binnedY, outputFiles]  ...
-                          = cnmfSegmentation(chunkFiles, acquisPrefix, acquisNum(iFile), protoROI, cfg, repository, lazy, outputFiles, scratchDir);
-        if ~isempty(cnmf)
-          chunk(iChunk).reference = source.fileMCorr.reference;
-          chunk(iChunk).numFrames = size(cnmf.temporal,2);
-          [chunk, outputFiles]    = postprocessROIs(chunk, iChunk, roiFile, summaryFile, cnmf, source, binnedY, gofCfg, repository, ~redoPostProcessing, outputFiles);
-        end
-        clear cnmf source binnedY;
-      end
-
-      chunk(cellfun(@isempty, {chunk.roiFile})) = [];
-      if ~isempty(chunk)
-        outputFiles     = globalRegistration(chunk, moviePath{iPath}, acquis{iAcquis}, repository, cfg, outputFiles);
-      end
-    end
+  if isempty(gofCfg)
+    gofCfg.containEnergy    = 0.9;            % fractional amount of energy used to specify spatial support
+    gofCfg.coreEnergy       = 0.7;            % fractional amount of energy used to specify core of component
+    gofCfg.noiseRange       = 2;              % range in which to search for modal (baseline) activation
+    gofCfg.maxBaseline      = 1.5;            % number of factors below the data noise to consider as (unambiguously) baseline
+    gofCfg.minActivation    = 3;              % number of factors above the data noise to consider activity as significant
+    gofCfg.highActivation   = 5;              % number of factors above the data noise to consider activity as significant with reduced time span
+    gofCfg.minTimeSpan      = 1;              % number of timeScale chunks to require activity to be above threshold
+    gofCfg.bkgTimeSpan      = 3;              % number of timeScale chunks for smoothing the background activity level in order to determine its "baseline"
+    gofCfg.minDeltaFoverF   = 0.3;            % minimum dF/F to be considered as a significant transient
   end
   
-  outputFiles           = unique(outputFiles);
+  % Get movies and associated statistics info
+  outputFiles           = {};
+  movieFile             = rdir(fullfile(moviePath, '*.tif'));
+  movieFile             = {movieFile.name};
+  if isempty(movieFile)
+    movieFile           = rdir(fullfile(moviePath, '*.stats.mat'));
+    movieFile           = {movieFile.name};
+    [dir,name]          = parsePath(movieFile);
+    [~,name]            = parsePath(name);
+    movieFile           = fullfile(dir, strcat(name, '.tif'));
+  end
+
+  % Collect the desired number of files into processing chunks. Can be done
+  % explictly by passing fileChunk or automatically by chunking up
+  % according to max number of files per chunk, cfg.filesPerChunk
+  % fileChunk an array of size chunks x 2, where rows are [firstFileIdx lastFileIdx] 
+  if isempty(fileChunk)
+    fileChunkTemp       = chunkIndices(1, cfg.filesPerChunk);
+    numChunks           = numel(fileChunkTemp)-1;
+    fileChunk           = zeros(numChunks,2);
+    for iChunk = 1:numChunks
+      fileChunk(iChunk,:) = [fileChunkTemp(iChunk) fileChunkTemp(iChunk+1)-1];
+    end
+  end
+
+  % Proto-segmentation
+  if fromProtoSegments
+    protoChunk          = fileChunk(1:cfg.protoNumChunks:end);
+    if protoChunk(end) ~= fileChunk(end)
+      protoChunk(end+1) = fileChunk(end);
+    end
+    [protoROI, outputFiles]       ...
+                        = getProtoSegmentation(acquisFile, protoChunk, acquisPrefix, acquisNum, repository, lazy, cfg, outputFiles, scratchDir);
+  else
+    protoROI            = [];
+  end
+
+  % Full segmentation
+  nil                 = cell(1,numel(fileChunk)-1);
+  chunk               = struct('movieFile', nil, 'roiFile', nil);
+  for iChunk = 1:size(fileChunk,1)
+    iFile                     = fileChunk(iChunk,1):fileChunk(iChunk,2);
+    chunkFiles                = movieFile(iFile);
+    chunk(iChunk).movieFile   = stripPath(chunkFiles);
+
+    [cnmf, source, roiFile, summaryFile, gofCfg.timeScale, binnedY, outputFiles]  ...
+                              = cnmfSegmentation(chunkFiles, acquisPrefix, acquisNum(iFile), protoROI, cfg, repository, lazy, outputFiles, scratchDir);
+    if ~isempty(cnmf)
+      chunk(iChunk).reference = source.fileMCorr.reference;
+      chunk(iChunk).numFrames = size(cnmf.temporal,2);
+      [chunk, outputFiles]    = postprocessROIs(chunk, iChunk, roiFile, summaryFile, cnmf, source, binnedY, gofCfg, repository, ~redoPostProcessing, outputFiles);
+    end
+    clear cnmf source binnedY;
+  end
+
+  chunk(cellfun(@isempty, {chunk.roiFile})) = [];
+  if ~isempty(chunk)
+    outputFiles     = globalRegistration(chunk, moviePath, 1, repository, cfg, outputFiles);
+  end
+  
+  outputFiles       = unique(outputFiles);
   
 end
 
-%---------------------------------------------------------------------------------------------------
+%% --------------------------------------------------------------------------------------------------
 function [prototypes, outputFiles] = getProtoSegmentation(movieFile, fileChunk, prefix, fileNum, repository, lazy, cfg, outputFiles, scratchDir)
   
   %% Look for existing work if available
@@ -352,7 +402,7 @@ function [prototypes, outputFiles] = getProtoSegmentation(movieFile, fileChunk, 
     %% Run proto-segmentation 
     pool          = startParallelPool(scratchDir);
     [spatial, prototypes(iChunk).params, fig(end+1)]        ...
-                  = estimateNeuronCount( binnedF, zeroLevel, metric, chunkLabel );
+                  = estimateNeuronCount_mesoscope( binnedF, zeroLevel, metric, chunkLabel );
                 
     %% Undo cropping for ease of re-registration; labels at the boundaries are replicated to minimize
     % loss of component area due to motion correction
@@ -380,7 +430,7 @@ function [prototypes, outputFiles] = getProtoSegmentation(movieFile, fileChunk, 
   
 end
 
-%---------------------------------------------------------------------------------------------------
+%% ---------------------------------------------------------------------------------------------------
 function [cnmf, source, roiFile, summaryFile, timeScale, binnedF, outputFiles]  ...
                     = cnmfSegmentation(movieFile, prefix, fileNum, protoROI, cfg, repository, lazy, outputFiles, scratchDir)
 
@@ -724,7 +774,7 @@ function [cnmf, source, roiFile, summaryFile, timeScale, binnedF, outputFiles]  
 
 end
 
-%---------------------------------------------------------------------------------------------------
+%% --------------------------------------------------------------------------------------------------
 function [info, outputFiles] = postprocessROIs(info, index, roiFile, summaryFile, cnmf, source, binnedF, cfg, repository, lazy, outputFiles)
   
   % Check for existing output
@@ -835,7 +885,7 @@ function cnmf = computeDataChecks(cnmf, source, Y, cfg)
   
 end
 
-%---------------------------------------------------------------------------------------------------
+%% --------------------------------------------------------------------------------------------------
 function outputFiles = globalRegistration(chunk, path, prefix, repository, cfg, outputFiles)
 
   %% Precompute the safe frame size to contain all centered components 
@@ -1160,7 +1210,7 @@ function outputFiles = globalRegistration(chunk, path, prefix, repository, cfg, 
     
 end
 
-%---------------------------------------------------------------------------------------------------
+%% --------------------------------------------------------------------------------------------------
 function target = mergeParameters(target, source, doCheck, varargin)
   
   if doCheck
@@ -1175,7 +1225,7 @@ function target = mergeParameters(target, source, doCheck, varargin)
   
 end
 
-%---------------------------------------------------------------------------------------------------
+%% --------------------------------------------------------------------------------------------------
 function target = mergeIfDifferent(target, source)
 
   if isstruct(source)
@@ -1364,7 +1414,7 @@ function cnmf = computeBaselines(cnmf, binnedF, cfg)
     
 end
 
-%---------------------------------------------------------------------------------------------------
+%% --------------------------------------------------------------------------------------------------
 function [cnmf, gof, roi] = classifyMorphology(cnmf, binnedF, frameSize, cfg, protoCfg)
   
   somaElem                      = strel('disk', protoCfg.somaRadius);
@@ -1466,7 +1516,7 @@ function [cnmf, gof, roi] = classifyMorphology(cnmf, binnedF, frameSize, cfg, pr
   
 end
 
-%---------------------------------------------------------------------------------------------------
+%% --------------------------------------------------------------------------------------------------
 function x = negativeIfNaN(x)
 
   x(isnan(x)) = -0.1;

@@ -1,6 +1,6 @@
 %{
 -> meso.FieldOfView
--> meso.MotionCorrectionParameterSet       # meta file, frameMCorr-method
+-> meso.McParameterSet       # meta file, frameMCorr-method
 ---
 %}
 
@@ -12,14 +12,23 @@ classdef MotionCorrection < dj.Imported
       % path
       fov_directory = fetch1(key,'fov_directory');
       
-      %%%%%%%%%% analysis parameters
-      
-      % call functions to compute motioncorrectionWithinFile and
-      % AcrossFiles and insert into the tables
+      %% analysis parameters
+      method         = 'Linear';
+      parameterSetID = 1;
+      switch method
+        case 'Nonlinear'
+          cfg.mcorr    = {[15 15], [5 2], 0.3, 10};
+        case 'Linear'
+          [max_shift, max_iter, stop_below, black_tolerance, median_rebin] ...
+                       = fetch1(meso.McParameterSetParameter & key & sprintf('mc_parameter_set_id = %d',parameterSetID), ...
+                                'mc_max_shift', 'mc_max_iter', 'mc_stop_below_shift', 'mc_black_tolerance', 'mc_median_rebin');
+          cfg.mcorr    = {max_shift, max_iter, false, stop_below, black_tolerance, median_rebin};
+      end
+
+      %% call functions to compute motioncorrectionWithinFile and AcrossFiles and insert into the tables
       fprintf('==[ PROCESSING ]==   %s\n', fov_directory);
   
       % Determine whether or not we need to use frame skipping to select only the first channel
-%       movieFiles                    = dir(sprintf('%s*.tif',fov_directory));
       [order,movieFiles]            = fetchn(meso.FieldOfViewFile & key, 'file_number', 'fov_file_name');
       movieFiles                    = movieFiles(order);
       info                          = cv.imfinfox(movieFiles{1}, true);
@@ -29,18 +38,19 @@ classdef MotionCorrection < dj.Imported
       
       % run motion correction
       [frameMCorr, fileMCorr]       = getMotionCorrection(movieFiles, false, 'off', cfg.mcorr{:});
-
-      
+ 
       % insert an entry into this table as well, just the key
       self.insert(key)
       
-      % insert within file correction meso.motioncorrectionWithinFile
-      within_key = struct('FieldOfViewFile','','MotionCorrectionParameterSet',[],...
-                          'within_file_x_shifts',[],'within_file_y_shifts',[],'within_reference_image',[]);
+      %% insert within file correction meso.motioncorrectionWithinFile
+      within_key                        = key;
+      within_key.FieldOfViewFile        = '';
+      within_key.within_file_x_shifts   = [];
+      within_key.within_file_y_shifts   = [];
+      within_key.within_reference_image = [];
                         
       for iFile = 1:numel(frameMCorr)
         within_key(iFile).FieldOfViewFile               = movieFiles{iFile};
-        within_key(iFile).MotionCorrectionParameterSet  = key.MotionCorrectionParameterSet;
         within_key(iFile).within_file_x_shifts          = frameMCorr(iFile).xShifts;
         within_key(iFile).within_file_y_shifts          = frameMCorr(iFile).yShifts;
         within_key(iFile).within_reference_image        = frameMCorr(iFile).reference; 
@@ -48,12 +58,11 @@ classdef MotionCorrection < dj.Imported
       
       insertn(meso.motioncorrectionWithinFile, within_key)
       
-      % insert within file correction meso.motioncorrectionAcrossFile
-      across_key.FieldOfView                   = key.FieldOfView;
-      across_key.MotionCorrectionParameterSet  = key.MotionCorrectionParameterSet;
-      across_key(iFile).within_file_x_shifts   = fileMCorr(iFile).xShifts;
-      across_key(iFile).within_file_y_shifts   = fileMCorr(iFile).yShifts;
-      across_key(iFile).within_reference_image = fileMCorr(iFile).reference; 
+      %% insert within file correction meso.motioncorrectionAcrossFile
+      across_key                        = key;
+      across_key.within_file_x_shifts   = fileMCorr(iFile).xShifts;
+      across_key.within_file_y_shifts   = fileMCorr(iFile).yShifts;
+      across_key.within_reference_image = fileMCorr(iFile).reference; 
         
       insert1(meso.motioncorrectionAcrossFile, across_key)
       
@@ -66,12 +75,6 @@ classdef MotionCorrection < dj.Imported
   end
   
 end
-
-% if nonlinMotionCorr
-%     cfg.mcorr                   = {[15 15], [5 2], 0.3, 10};
-%   else
-%     cfg.mcorr                   = {15, 5, false, 0.3, nan, 10};
-%   end
 
 %%
 %---------------------------------------------------------------------------------------------------

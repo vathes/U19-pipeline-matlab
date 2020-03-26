@@ -9,3 +9,5 @@ roi_global_xy:     blob
 
 classdef SegmentationRoi < dj.Part
 end
+
+% inserted by segmentation

@@ -1,6 +1,5 @@
 %{
 -> meso.SegmentationRoi
-session_part: enum('first half', 'second half', 'full')
 ---
 data_dff:   longblob     # delta f/f for each cell, 1 x nFrames from cnmf-dataDFF
 data_bkg:   longblob     # background? of the trace
@@ -12,7 +11,7 @@ is_baseline:    boolean
 
 
 classdef Trace < dj.Imported
-    
-    % insert by the Segmentation as well.
-    % we could rejudge the decision on the session part idea for the definition, let me know.
+
 end
+
+% inserted by segmentation

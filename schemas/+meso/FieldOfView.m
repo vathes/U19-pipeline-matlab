@@ -15,26 +15,4 @@ fov_discrete_plane_mode :  boolean        # true if FOV is only defined (acquire
 
 classdef FieldOfView < dj.Imported
   % ingestion handled by ScanInfo
-  methods(Access=protected)
-    function makeTuples(self, key)
-      
-      % load the original tiff, parse that, fill in these
-      % information, generate new tiff files, insert the new names
-      % into the table FieldOfViewFile
-      
-      self.insert(key)
-      
-      % list of file names
-      fov_directory = key.directory;
-      file_entries  = struct('file_number',[],'fov_filename',[]);
-      fl            = dir(sprintf('%s*.tif',fov_directory));
-      for iF = 1:numel(fl)
-        file_entries(iF).file_number  = iF;
-        file_entries(iF).fov_filename = fl(iF).name;
-      end
-      
-      insert(meso.FieldOfViewFile, file_entries)
-
-    end
-  end
 end
