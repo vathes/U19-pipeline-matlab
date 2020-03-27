@@ -1,10 +1,10 @@
 %{
 -> meso.SegmentationRoi
 ---
-morphology:  enum('Doughnut', 'Blob', 'Puncta', 'Filament', 'Other', 'Noise')
+morphology:  enum('Doughnut', 'Blob', 'Puncta', 'Filament', 'Other', 'Noise') # shape classification
 %}
 
 classdef SegmentationRoiMorphologyAuto < dj.Part
 end
 
-% insert by Segmentation automatically
+% inserted by Segmentation 

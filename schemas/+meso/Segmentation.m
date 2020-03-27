@@ -1,6 +1,6 @@
 %{
 -> meso.FieldOfView
--> meso.SegmentationParameterSet
+-> meso.SegParameterSet
 ---
 num_chunks                                   : blob          # number of different segmentation chunks within the session
 cross_chunks_x_shifts                        : longblob      # nChunks x 2, 
@@ -18,54 +18,64 @@ classdef Segmentation < dj.Imported
       result        = key;
       
       %% analysis params
-      segmentationMethod = 'cnmf';
-      parameterSetID     = 1;
-      params             = fetch1(meso.SegParameterSetParameter & key & ...
-                                  sprintf('seg_parameter_set_id = %d',parameterSetID));
-      frameRate          = fetch1(meso.ScanInfo & key, 'frame_rate');
+      segmentationMethod             = 'cnmf';
+      parameterSetID                 = 1;
+      params                         = fetch1(meso.SegParameterSetParameter & key & ...
+                                              sprintf('seg_parameter_set_id = %d',parameterSetID));
+      frameRate                      = fetch1(meso.ScanInfo & key, 'frame_rate');
       
       % selectFileChunks
-      chunk_cfg.auto_select_behav  = params.chunks_auto_select_behav;
-      chunk_cfg.auto_select_bleach = params.chunks_auto_select_bleach;
-      chunk_cfg.filesPerChunk      = params.cmnf_files_per_chunk;
-      
+      chunk_cfg.auto_select_behav    = params.chunks_auto_select_behav;
+      chunk_cfg.auto_select_bleach   = params.chunks_auto_select_bleach;
+      chunk_cfg.filesPerChunk        = params.cmnf_files_per_chunk;
+      chunk_cfg.T11_minNtrials       = params.chunks_towers_min_n_trials;
+      chunk_cfg.T11_perfTh           = params.chunks_towers_perf_thresh;
+      chunk_cfg.T11_biasTh           = params.chunks_towers_bias_thresh;
+      chunk_cfg.T11_fracBad          = params.chunks_towers_max_frac_bad;
+      chunk_cfg.T12_minNtrials       = params.chunks_visguide_min_n_trials;
+      chunk_cfg.T12_perfTh           = params.chunks_visguide_perf_thresh;
+      chunk_cfg.T12_biasTh           = params.chunks_visguide_bias_thresh;
+      chunk_cfg.T12_fracBad          = params.chunks_visguide_max_frac_bad;
+      chunk_cfg.min_NconsecBlocks    = params.chunks_min_num_consecutive_blocks;
+      chunk_cfg.breakNonConsecBlocks = params.chunks_break_nonconsecutive_blocks;
+
       % cnmf, general
-      cnmf_cfg.K                   = params.cmnf_num_components;
-      cnmf_cfg.tau                 = params.cmnf_tau;
-      cnmf_cfg.p                   = params.cmnf_p;
-      cnmf_cfg.filesPerChunk       = params.cmnf_files_per_chunk;
-      cnmf_cfg.protoNumChunks      = params.cnmf_proto_num_chunks;
-      cnmf_cfg.zeroIsMinium        = params.cnmf_zero_is_minimum;
-      cnmf_cfg.defaultTimeScale    = params.cnmf_default_timescale;
-      cnmf_cfg.timeResolution      = 1000/frameRate;
-      cnmf_cfg.dFFRectification    = params.cnmf_dff_rectification;
-      cnmf_cfg.minROISignificance  = params.cnmf_min_roi_significance;
-      cnmf_cfg.frameRate           = frameRate;
-      cnmf_cfg.minNumFrames        = params.cnmf_min_num_frames;
-      cnmf_cfg.maxCentroidDistance = params.cnmf_max_centroid_dist;
-      cnmf_cfg.minDistancePixels   = params.cnmf_min_dist_pixels;
-      cnmf_cfg.minShapeCorr        = params.cnmf_min_shape_corr;
-      cnmf_cfg.pixelsSurround      = params.cnmf_pixels_surround;
+      cnmf_cfg.K                     = params.cmnf_num_components;
+      cnmf_cfg.tau                   = params.cmnf_tau;
+      cnmf_cfg.p                     = params.cmnf_p;
+      cnmf_cfg.filesPerChunk         = params.cmnf_files_per_chunk;
+      cnmf_cfg.protoNumChunks        = params.cnmf_proto_num_chunks;
+      cnmf_cfg.zeroIsMinium          = params.cnmf_zero_is_minimum;
+      cnmf_cfg.defaultTimeScale      = params.cnmf_default_timescale;
+      cnmf_cfg.timeResolution        = 1000/frameRate;
+      cnmf_cfg.dFFRectification      = params.cnmf_dff_rectification;
+      cnmf_cfg.minROISignificance    = params.cnmf_min_roi_significance;
+      cnmf_cfg.frameRate             = frameRate;
+      cnmf_cfg.minNumFrames          = params.cnmf_min_num_frames;
+      cnmf_cfg.maxCentroidDistance   = params.cnmf_max_centroid_dist;
+      cnmf_cfg.minDistancePixels     = params.cnmf_min_dist_pixels;
+      cnmf_cfg.minShapeCorr          = params.cnmf_min_shape_corr;
+      cnmf_cfg.pixelsSurround        = params.cnmf_pixels_surround;
 
       % cnmf, goodness of fit
-      gof_cfg.containEnergy        = params.gof_contain_energy;
-      gof_cfg.coreEnergy           = params.gof_core_energy;
-      gof_cfg.noiseRange           = params.gof_noise_range;
-      gof_cfg.maxBaseline          = params.gof_max_baseline;
-      gof_cfg.minActivation        = params.gof_min_activation;
-      gof_cfg.highActivation       = params.gof_high_activation;
-      gof_cfg.minTimeSpan          = params.gof_min_time_span;
-      gof_cfg.bkgTimeSpan          = params.gof_bkg_time_span;
-      gof_cfg.minDeltaFoverF       = params.gof_min_dff;
+      gof_cfg.containEnergy          = params.gof_contain_energy;
+      gof_cfg.coreEnergy             = params.gof_core_energy;
+      gof_cfg.noiseRange             = params.gof_noise_range;
+      gof_cfg.maxBaseline            = params.gof_max_baseline;
+      gof_cfg.minActivation          = params.gof_min_activation;
+      gof_cfg.highActivation         = params.gof_high_activation;
+      gof_cfg.minTimeSpan            = params.gof_min_time_span;
+      gof_cfg.bkgTimeSpan            = params.gof_bkg_time_span;
+      gof_cfg.minDeltaFoverF         = params.gof_min_dff;
       
       %% select tif file chunks based on behavior and bleaching
       % fileChunk is an array of size chunks x 2, where rows are [firstFileIdx lastFileIdx]
-      fileChunk                    = selectFileChunks(key,chunk_cfg); %%%%%%%%%%% NEEDS ADAPTING FROM ABBYS CODE
+      fileChunk                            = selectFileChunks(key,chunk_cfg); 
             
       %% run segmentation and populate this table
       switch segmentationMethod
         case 'cnmf'
-          outputFiles              = runCNMF(fov_directory, fileChunk, cnmf_cfg, gof_cfg); 
+          outputFiles                      = runCNMF(fov_directory, fileChunk, cnmf_cfg, gof_cfg); 
         case 'suite2p'
           warning('suite2p is not yet supported in this pipeline')
       end
@@ -93,9 +103,9 @@ classdef Segmentation < dj.Imported
         result.region_image_y_range  = chunkdata(iChunk).source.cropping.yRange;
         
         % figure out imaging frame range in the chunk (with respect to whole session)
-        frame_range_first            = fetch1(meso.FiledOfViewFile & key & ...
+        frame_range_first            = fetch1(meso.FieldOfViewFile & key & ...
                                               sprintf('fov_filename=%s',result.tif_file_list{1}),'file_frame_range');
-        frame_range_last             = fetch1(meso.FiledOfViewFile & key & ...
+        frame_range_last             = fetch1(meso.FieldOfViewFile & key & ...
                                               sprintf('fov_filename=%s',result.tif_file_list{end}),'file_frame_range');   
         chunkRange(iChunk,:)         = [frame_range_first(1) frame_range_last(end)];
         result.imaging_frame_range   = chunkRange(iChunk,:);
@@ -113,43 +123,88 @@ classdef Segmentation < dj.Imported
         clear result
       end
             
-      %% write ROI specific info 
+      %% write ROI-specific info into relevant tables
+      
+      % initialize data structures
       globalXY      = data.registration.globalXY;
       nROIs         = size(globalXY,2);
       totalFrames   = fetch1(meso.ScanInfo & key,'nframes');
-      timeConstants = data.cnmf.timeConstants;
-      roikey        = [];
-      morphokey     = [];
-      tracekey      = [];
+      keyfields     = fields(key);
+      for iField = 1:numel(keyfields)
+        roi_data.(keyfields{iField})    = key.(keyfields{iField});
+        morpho_data.(keyfields{iField}) = key.(keyfields{iField});
+        trace_data.(keyfields{iField})  = key.(keyfields{iField});
+      end
       
+      roi_data.roi_idx                  = [];
+      roi_data.roi_global_xy            = [];
+      roi_data.roi_spatial              = [];
+      roi_data.surround_spatial         = [];
+      roi_data.roi_is_in_chunks         = [];
+      roi_data                          = repmat(roi_data,[1 nROIs]);
+      
+      morpho_data.roi_idx               = [];
+      morpho_data.morphology            = [];
+      morpho_data                       = repmat(morpho_data,[1 nROIs]);
+      
+      trace_data.roi_idx                = [];
+      trace_data.dff_roi                = [];
+      trace_data.dff_surround           = [];
+      trace_data.dff_roi_is_significant = [];
+      trace_data.dff_roi_is_baseline    = [];
+      trace_data.spiking                = [];
+      trace_data.time_constants         = [];
+      trace_data.init_concentration     = [];
+      trace_data                        = repmat(trace_data,[1 nROIs]);
+
+      % loop through ROIs
       for iROI = 1:nROIs
-        roikey(iROI)               = key;
-        roikey(iROI).roi_idx       = iROI;  
-        morphokey(iROI)            = roikey(iROI);
-        tracekey(iROI)             = roikey(iROI);
+        roi_data(iROI).roi_idx                    = iROI;  
+        morpho_data(iROI)                         = roi_data(iROI);
+        trace_data(iROI)                          = roi_data(iROI);
         
-        roikey(iROI).roi_global_xy    = globalXY(:,iROI);
-        tracekey(iROI).time_constants = timeConstants{iROI};
+        roi_data(iROI).roi_global_xy              = globalXY(:,iROI);
+        trace_data(iROI).time_constants           = data.cnmf.timeConstants{iROI};
+        trace_data(iROI).initial_concentration    = data.cnmf.initConcentration{iROI};
         
-        %%%% now look in file chunks and fill activity etc, have variable
-        %%%% to indicate which cjunks roi can be found in
-        dff                = nan(1,totalFrames);
-        surround           = nan(1,totalFrames);
-        spikes             = nan(1,totalFrames);
-        dff_isSig          = nan(1,totalFrames);
-        
+        % now look in file chunks and fill activity etc
+        trace_data(iROI).dff_roi                  = nan(1,totalFrames);
+        trace_data(iROI).dff_surround             = nan(1,totalFrames);
+        trace_data(iROI).spiking                  = nan(1,totalFrames);
+        trace_data(iROI).dff_roi_is_significant   = nan(1,totalFrames);
+        trace_data(iROI).dff_roi_is_baseline      = nan(1,totalFrames);
+
         for iChunk = 1:numel(chunk)
-          % roi: shape
-          % roi: which chunk
-          % morphology
+          % find roi in chunks
+          localIdx                                = data.chunk.globalID == iChunk;
+          if sum(localIdx) == 0; continue; end
+          roi_data(iROI).roi_is_in_chunks         = [roi_data(iROI).roi_is_in_chunks iChunk];
+            
           % activity traces
+          frameIdx                                = chunkRange(iChunk,1):chunkRange(iChunk,2);
+          uniqueData                              = chunkdata(iChunk).cnmf.uniqueData(localIdx,:);
+          uniqueBase                              = halfSampleMode(uniqueData(localIdx,:)');
+          surroundData                            = chunkdata(iChunk).cnmf.surroundData(localIdx,:);
+          trace_data(iROI).dff_roi(frameIdx)      = uniqueData / uniqueBase - 1;
+          trace_data(iROI).dff_surround(frameIdx) = surroundData / uniqueBase - 1;
+          trace_data(iROI).spiking(frameIdx)      = chunkdata(iChunk).cnmf.spiking(localIdx,:);
+          trace_data(iROI).dff_roi_is_significant(frameIdx) = chunkdata(iChunk).cnmf.isSignificant(localIdx,:);
+          trace_data(iROI).dff_roi_is_baseline(frameIdx)    = chunkdata(iChunk).cnmf.isBaseline(localIdx,:);
+          
+          % roi: shape and morphological classification
+          if isempty(roi_data(iROI).roi_spatial)
+            roi_data(iROI).roi_spatial      = reshape(chunkdata(iChunk).cnmf.spatial(:,localIdx),chunkdata.cnmf.region.ImageSize);
+            roi_data(iROI).surround_spatial = reshape(chunkdata(iChunk).cnmf.surround(:,localIdx),chunkdata.cnmf.region.ImageSize);
+            morpho_data(iROI).morphology    = char(chunkdata.cnmf.morphology(localIdx));
+          end
         end
         
       end
       
-      insertn(meso.SegmentationRoi, roikey)
-      insertn(meso.SegmentationRoiMorphologyAuto, morphokey)
-      insertn(meso.Trace, tracekey)
+      % insert in tables
+      insertn(meso.SegmentationRoi, roi_data)
+      insertn(meso.SegmentationRoiMorphologyAuto, morpho_data)
+      insertn(meso.Trace, trace_data)
       
     end
   end
@@ -161,12 +216,113 @@ end
 
 function fileChunk = selectFileChunks(key,chunk_cfg)
 
-if ~chunk_cfg.auto_select_behav && ~chunk_cfg.auto_select_bleach 
+% fileChunk is an array of size chunks x 2, where rows are [firstFileIdx lastFileIdx]
+
+%% check if enforcing this is actually desired
+file_ids       = fetchn(meso.FiledOfViewFiles & key,'file_number');
+nfiles         = numel(file_ids);
+
+if ~chunk_cfg.auto_select_behav && ~chunk_cfg.auto_select_bleach && nfiles < chunk_cfg.filesPerChunk
   fileChunk = [];
   return
 end
 
-% chunk_cfg.filesPerChunk
+%% select imaging chunks based on behavior blocks (at least two consecutive blocks)
+if chunk_cfg.auto_select_behav
+
+  % flatten log and summarize block info 
+  addImagingSync     = false;
+  logSumm            = flattenVirmenLogFromDJ(key,addImagingSync); %%%%% write this
+
+  session.badData    = false;
+  session.blockID    = unique(logSumm.blockID);
+  badTr              = isBadTrial(logSumm);
+
+  nBlock             = numel(session.blockID);
+  session.fracBadTr  = nan(1,nBlock);     
+  session.meanPerf   = nan(1,nBlock); 
+  session.nTrials    = nan(1,nBlock);
+  session.meanBias   = nan(1,nBlock); 
+  session.mazeID     = nan(1,nBlock);
+
+  for iBlock = 1:nBlock
+    thisBlock                   = session.blockID(iBlock);
+    theseTrials                 = logSumm.blockID == thisBlock;
+    session.fracBadTr(iBlock)   = sum(badTr(theseTrials))/sum(theseTrials);
+    session.meanPerf(iBlock)    = mode(logSumm.meanPerfBlock(theseTrials));
+    session.meanBias(iBlock)    = mode(logSumm.meanBiasBlock(theseTrials));
+    session.mazeID(iBlock)      = mode(logSumm.currMaze(theseTrials));
+    session.nTrials(iBlock)     = sum(theseTrials);
+  end
+
+  isRealBlock                   = session.nTrials > 3;
+  realBlockIdx                  = 1:sum(isRealBlock);
+  session.blockIdx              = nan(1, numel(session.nTrials));
+  session.blockIdx(isRealBlock) = realBlockIdx;
+
+  % find blocks/sessions with good behavior
+  goodSess                      = enforcePerformanceCriteria(session, chunk_cfg);
+
+  if isempty(goodSess)
+    fileChunk = [];
+    return
+  end
+  
+  % if good blocks, determine which imaging files to segment based on behavior
+  % do this by picking a continuous stretch of files going from the first
+  % tif file containing the first good behavior block to the last tif file
+  % containing the last good behavior block. Further chunking will depend
+  % on max num file criterion / bleaching
+  isGoodBlock          = [goodSess.extractThisBlock 0];
+  frameRanges          = fetchn(meso.SyncImagingBehavior & key,'sync_im_frame_span_by_behav_block')';
+  frameRangesPerBlock  = cell2mat(frameRanges(isGoodBlock));
+  frameRangesPerFile   = cell2mat(fetchn(meso.FiledOfViewFiles & key,'file_frame_range')');
+  
+  % break chunks of non-consecutive blocks if necessary
+  if chunk_cfg.breakNonConsecBlocks
+    isGood_diff        = diff([0 isGoodBlock]);
+    numchunks          = sum(isGood_diff == 1);
+    fileChunk          = zeros(numchunks,2);
+    
+    curr_idx = 1;
+    for iChunk = 1:numchunks
+      firstidx             = find(isGoodBlock(curr_idx:end) & isGood_diff(curr_idx:end) == 1,1,'first') + curr_idx - 1;
+      lastidx              = find(~isGoodBlock(firstidx:end) & isGood_diff(firstidx:end) < 1,1,'first') + firstidx - 2;
+      curr_idx             = lastidx+find(isGoodBlock(lastidx+1:end),1,'first')-2;
+      
+      thisRange            = frameRangesPerBlock(firstidx:lastidx,:);
+      fileChunk(iChunk,:)  = [find(min(thisRange(:)) < frameRangesPerFile(:,2), 1, 'first') ...
+                              find(max(thisRange(:)) > frameRangesPerFile(:,1), 1, 'last')];
+    end
+    
+  else
+    fileChunk              = [find(min(frameRangesPerBlock(:)) < frameRangesPerFile(:,2), 1, 'first') ...
+                              find(max(frameRangesPerBlock(:)) > frameRangesPerFile(:,1), 1, 'last')];
+  end
+  
+end
+
+%% enforce bleaching and max num file criteria if necessary
+
+% bleaching
+if chunk_cfg.auto_select_bleach
+  lastGoodFile           = fetch1(meso.ScanInfo & key,'last_good_file');
+  deleteIdx              = fileChunk(:,1) > lastGoodFile;
+  fileChunk(deleteIdx,:) = [];
+  if isempty(fileChunk); return; end
+  fillInIdx              = fileChunk(:,2) > lastGoodFile;
+  fileChunk(fillInIdx,2) = lastGoodFile;
+end
+
+% max files per chunk. Split in half if it exceeds this criterion in the
+% case of many consecutive blocks, otherwise break at disjoint blocks
+if size(fileChunk,1) == 1
+  if diff(fileChunk) > chunk_cfg.filesPerChunk
+    oldchunk       = fileChunk;
+    fileChunk(1,:) = [oldchunk(1) floor(oldchunk(end)/2)]; 
+    fileChunk(2,:) = [floor(oldchunk(end)/2)+1 oldchunk(end)]; 
+  end
+end
 
 end
 

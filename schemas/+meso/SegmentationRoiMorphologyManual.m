@@ -8,4 +8,4 @@ morphology:  enum('Doughnut', 'Blob', 'Puncta', 'Filament', 'Other', 'Noise')
 classdef SegmentationRoiMorphologyManual < dj.Manual
 end
 
-% insert by the GUI of curation of morphology
+% inserted by the GUI of curation of morphology: viewSegmentation_dj()
