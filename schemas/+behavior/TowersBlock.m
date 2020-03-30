@@ -11,6 +11,7 @@ reward_mil                  : float                         # in mL, reward volu
 reward_scale                : tinyint                       # scale of the reward in this block
 easy_block                  : bool                          # true if the difficulty reduces during the session
 block_performance           : float                         # performance in the current block
+level                       : int                           # maze number (difficulty) of this block
 %}
 
 classdef TowersBlock < dj.Imported
