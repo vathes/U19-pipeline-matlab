@@ -1,5 +1,4 @@
 %{
-% table that reflects the contents in the file recInfo.mat
 -> meso.Scan
 ---
 file_name_base    : varchar(255)  # base name of the file ("FileName")
@@ -242,7 +241,7 @@ classdef ScanInfo < dj.Imported
           fov_key.fov_discrete_plane_mode = recInfo.ROI(iROI).discretePlaneMode;
           
           ct = ct+1;
-          insert1(meso.FieldOfView,fov_key)
+          inserti(meso.FieldOfView,fov_key)
           
           % FieldOfViewFiles
           file_entries                    = originalkey;

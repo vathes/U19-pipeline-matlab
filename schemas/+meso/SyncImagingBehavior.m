@@ -340,7 +340,7 @@ classdef SyncImagingBehavior < dj.Computed
       for iBlock = 1:numel(behavior)
         flat_behavior.trial_span = [flat_behavior.trial_span {behavior(iBlock).trial(:).span}];
         for iTrial = 1:numel(behavior(iBlock).trial)
-          flat_behavior.iter_span{end+1} = behavior(iBlock).trial(iTrial).iteration;
+          flat_behavior.iter_span{end+1} = behavior(iBlock).trial(iTrial).iteration+flat_behavior.trial_span{iTrial}(1);
         end
       end
 

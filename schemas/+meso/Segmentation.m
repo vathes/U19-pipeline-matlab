@@ -110,7 +110,7 @@ classdef Segmentation < dj.Imported
         chunkRange(iChunk,:)         = [frame_range_first(1) frame_range_last(end)];
         result.imaging_frame_range   = chunkRange(iChunk,:);
         
-        insert1(meso.SegmentationChunks, result)
+        inserti(meso.SegmentationChunks, result)
         clear result 
         
         % write global background (neuropil) activity data to meso.SegmentationBackground
@@ -119,7 +119,7 @@ classdef Segmentation < dj.Imported
         result.background_spatial    = reshape(chunkdata(iChunk).cnmf.bkgSpatial,chunkdata(iChunk).cnmf.region.ImageSize);
         result.background_temporal   = chunkdata(iChunk).cnmf.bkgTemporal;
         
-        insert1(meso.SegmentationBackground, result)
+        inserti(meso.SegmentationBackground, result)
         clear result
       end
             
