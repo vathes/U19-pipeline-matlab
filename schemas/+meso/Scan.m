@@ -19,11 +19,11 @@ classdef Scan < dj.Imported
       base_dir             = '/braininit/RigData/mesoscope/imaging/dj_debug/';%'/braininit/RigData/mesoscope/imaging/';
       folder_path          = [base_dir subj '/' session_date];
       
-      if isThisSpock
-        folder_path = ['/jukebox' folder_path];
-      else
-        folder_path = ['/Volumes' folder_path];
-      end
+%       if isThisSpock
+%         folder_path = ['/jukebox' folder_path];
+%       else
+%         folder_path = ['/Volumes' folder_path];
+%       end
       
       if isempty(dir(folder_path))
         fprintf('directory %s not found\n',folder_path)

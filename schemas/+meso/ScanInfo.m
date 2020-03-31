@@ -38,7 +38,12 @@ classdef ScanInfo < dj.Imported
       % runs a modified version of mesoscopeSetPreproc
       
       curr_dir       = pwd; 
-      scan_directory = fetch1(key,'scan_directory');
+      scan_directory = fetch1(meso.Scan & key,'scan_directory');
+      if isThisSpock
+        scan_directory = ['/jukebox' scan_directory];
+      else
+        scan_directory = ['/Volumes' scan_directory];
+      end
       cd(scan_directory)
       
       fprintf('------------ preparing %s --------------\n',scan_directory)
@@ -81,6 +86,8 @@ classdef ScanInfo < dj.Imported
       
       %% write to this table
       originalkey                   = key;
+      key_data                      = fetch(meso.Scan & originalkey);
+      key                           = key_data;
       key.file_name_base            = recInfo.FileName;
       key.scan_width                = recInfo.Width;
       key.scan_height               = recInfo.Height;
@@ -223,7 +230,7 @@ classdef ScanInfo < dj.Imported
         for iZ = 1:ndepths
           
           % FieldOfView
-          fov_key           = originalkey;
+          fov_key           = key_data;
           fov_key.fov       = ct;
           fov_key.directory = sprintf('%s/ROI%02d_z%d/',scan_directory,iROI,iZ);
           
@@ -244,7 +251,7 @@ classdef ScanInfo < dj.Imported
           inserti(meso.FieldOfView,fov_key)
           
           % FieldOfViewFiles
-          file_entries                    = originalkey;
+          file_entries                    = key_data;
           file_entries.fov                = fov_key.fov; 
           file_entries.file_number        = [];
           file_entries.fov_filename       = '';
@@ -254,9 +261,9 @@ classdef ScanInfo < dj.Imported
           fl                              = dir(sprintf('%s*.tif',fov_directory));
 
           for iF = 1:numel(fl)
-            file_entries(iF).file_number  = iF;
-            file_entries(iF).fov_filename = fl(iF).name;
-            file_entries.fov_frame_range  = [cumulativeFrames(iF)+1 cumulativeFrames(iF+1)];
+            file_entries(iF).file_number      = iF;
+            file_entries(iF).fov_filename     = fl(iF).name;
+            file_entries(iF).fov_frame_range  = [cumulativeFrames(iF)+1 cumulativeFrames(iF+1)];
           end
 
           insertn(meso.FieldOfViewFile, file_entries)
