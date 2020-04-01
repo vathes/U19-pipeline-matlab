@@ -222,7 +222,7 @@ classdef ScanInfo < dj.Imported
 % 
 %         readObj.close();
         % now move file
-        movefile(fl{iF},sprintf('originalStacks/%s',fl{iF}));
+%         movefile(fl{iF},sprintf('originalStacks/%s',fl{iF}));
       end
       
       %% write to FieldOfView and FieldOfViewFile tables
