@@ -6,8 +6,10 @@ morphology:  enum('Doughnut', 'Blob', 'Puncta', 'Filament', 'Other', 'Noise')
 %}
 
 classdef SegmentationRoiMorphologyManual < dj.Manual
-  properties(SetAccess=protected)
-    master = meso.Segmentation
+  methods(Access=protected)
+    function makeTuples(self, key)
+      self.insert(key)
+    end
   end
 end
 

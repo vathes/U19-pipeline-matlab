@@ -15,7 +15,8 @@ classdef Segmentation < dj.Imported
       
       %% imaging directory
       fov_directory = fetch1(key,'fov_directory');
-      result        = key;
+      keydata       = fetch(key);
+      result        = keydata;
       
       %% analysis params
       segmentationMethod             = 'cnmf';
@@ -94,7 +95,7 @@ classdef Segmentation < dj.Imported
       chunkRange = zeros(num_chunks,2);
       chunkdata  = [];
       for iChunk = 1:num_chunks
-        result                       = key;
+        result                       = keydata;
         chunkdata(iChunk)            = load(outputFiles{1+iChunk});
         result.segmentation_chunk_id = iChunk;
         result.tif_file_list         = chunkdata(iChunk).source.movieFile;
@@ -114,7 +115,7 @@ classdef Segmentation < dj.Imported
         clear result 
         
         % write global background (neuropil) activity data to meso.SegmentationBackground
-        result                       = key;
+        result                       = keydata;
         result.segmentation_chunk_id = iChunk;
         result.background_spatial    = reshape(chunkdata(iChunk).cnmf.bkgSpatial,chunkdata(iChunk).cnmf.region.ImageSize);
         result.background_temporal   = chunkdata(iChunk).cnmf.bkgTemporal;
@@ -129,11 +130,11 @@ classdef Segmentation < dj.Imported
       globalXY      = data.registration.globalXY;
       nROIs         = size(globalXY,2);
       totalFrames   = fetch1(meso.ScanInfo & key,'nframes');
-      keyfields     = fields(key);
+      keyfields     = fields(keydata);
       for iField = 1:numel(keyfields)
-        roi_data.(keyfields{iField})    = key.(keyfields{iField});
-        morpho_data.(keyfields{iField}) = key.(keyfields{iField});
-        trace_data.(keyfields{iField})  = key.(keyfields{iField});
+        roi_data.(keyfields{iField})    = keydata.(keyfields{iField});
+        morpho_data.(keyfields{iField}) = keydata.(keyfields{iField});
+        trace_data.(keyfields{iField})  = keydata.(keyfields{iField});
       end
       
       roi_data.roi_idx                  = [];

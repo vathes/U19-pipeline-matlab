@@ -9,5 +9,10 @@ within_reference_image                      : longblob      # 512 x 512, meta fi
 
 
 classdef MotionCorrectionWithinFile < dj.Imported
-    % ingested by meso.MotionCorrection
+  % ingested by meso.MotionCorrection
+  methods(Access=protected)
+    function makeTuples(self, key)
+      self.insert(key)
+    end
+  end
 end

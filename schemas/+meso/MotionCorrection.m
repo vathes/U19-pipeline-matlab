@@ -40,7 +40,9 @@ classdef MotionCorrection < dj.Imported
       [frameMCorr, fileMCorr]       = getMotionCorrection(movieFiles, false, 'off', cfg.mcorr{:});
  
       % insert an entry into this table as well, just the key
-      self.insert(key)
+      originalkey = key;
+      key         = fetch(originalkey);
+      self.insert(key);
       
       %% insert within file correction meso.motioncorrectionWithinFile
       within_key                        = key;
