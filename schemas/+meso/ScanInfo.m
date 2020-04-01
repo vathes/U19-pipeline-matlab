@@ -262,9 +262,10 @@ classdef ScanInfo < dj.Imported
           file_entries.fov_filename       = '';
           file_entries.file_frame_range   = '';
           
+          
           fov_directory                   = fov_key.fov_directory;
           fl                              = dir(sprintf('%s*.tif',fov_directory));
-
+          file_entries                    = repmat(file_entries,[1 numel(fl)]);
           for iF = 1:numel(fl)
             file_entries(iF).file_number       = iF;
             file_entries(iF).fov_filename      = fl(iF).name;
