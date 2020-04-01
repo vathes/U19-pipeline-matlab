@@ -6,6 +6,9 @@ background_temporal :   longblob   # time course of global background in cnmf
 %}
 
 classdef SegmentationBackground < dj.Part
+  properties(SetAccess=protected)
+    master = meso.Segmentation
+  end
 end
 
 % inserted by segmentation

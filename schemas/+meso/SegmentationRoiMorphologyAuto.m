@@ -5,6 +5,9 @@ morphology:  enum('Doughnut', 'Blob', 'Puncta', 'Filament', 'Other', 'Noise') # 
 %}
 
 classdef SegmentationRoiMorphologyAuto < dj.Part
+  properties(SetAccess=protected)
+    master = meso.Segmentation
+  end
 end
 
 % inserted by Segmentation 

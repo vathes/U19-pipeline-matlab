@@ -1,5 +1,4 @@
 %{
-% field of view information, from the original recInfo.ROI
 -> meso.FieldOfView
 file_number         : int
 ---
@@ -8,8 +7,8 @@ file_frame_range    : blob             # [first last] frame indices in this file
 %}
 
 classdef FieldOfViewFile < dj.Part
-    properties(SetAccess=protected)
-        master = meso.FieldOfView
-    end
-    % ingestion handled by meso.FieldOfView
+  properties(SetAccess=protected)
+    master = meso.FieldOfView
+  end
+  % ingestion handled by meso.FieldOfView
 end

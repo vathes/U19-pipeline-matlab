@@ -10,6 +10,9 @@ surround_spatial   :  longblob  # same as roi_spatial, for the surrounding neuro
 
 
 classdef SegmentationRoi < dj.Part
+  properties(SetAccess=protected)
+    master = meso.Segmentation
+  end
 end
 
 % inserted by segmentation
