@@ -80,6 +80,11 @@ classdef ScanInfo < dj.Imported
       recInfo.nFrames     = numel(recInfo.Timing.Frame_ts_sec);
       
       %% find out last good frame based on bleaching
+      % this crashes on spock so parpool must be deleted
+      if isThisSpock
+        if exist('poolboj','var');    delete(poolobj);         end
+        if ~isempty(gcp('nocreate')); delete(gcp('nocreate')); end
+      end
       lastGoodFrame       = selectFramesFromMeanF(scan_directory);
       cumulativeFrames    = cumsum(framesPerFile);
       lastGoodFile        = find(cumulativeFrames >= lastGoodFrame,1,'first');
@@ -119,7 +124,8 @@ classdef ScanInfo < dj.Imported
       
       %% scan image concatenates FOVs (ROIs) by adding rows, with padding between them.
       % This part parses and write tifs individually for each FOV 
-            
+      if isempty(gcp('nocreate')); poolobj = parpool; end
+      
       fieldLs = {'ImageLength','ImageWidth','BitsPerSample','Compression', ...
         'SamplesPerPixel','PlanarConfiguration','Photometric'};
       fprintf('\tparsing ROIs...\n')
