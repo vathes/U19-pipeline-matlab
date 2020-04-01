@@ -227,7 +227,7 @@ classdef ScanInfo < dj.Imported
       
       %% write to FieldOfView and FieldOfViewFile tables
       ct               = 1;
-      cumulativeFrames = [0 cumulativeFrames];
+      cumulativeFrames = [0; cumulativeFrames];
       
       for iROI = 1:nROI
         ndepths = numel(recInfo.ROI(iROI).Zs);
