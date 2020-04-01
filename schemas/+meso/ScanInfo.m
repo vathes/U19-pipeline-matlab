@@ -63,7 +63,6 @@ classdef ScanInfo < dj.Imported
       end
       
       % get recording info from headers
-      fprintf('\tsaving recInfo...\n')
       framesPerFile = zeros(numel(fl),1);
       for iF = 1:numel(fl)
         if iF == 1
@@ -80,14 +79,9 @@ classdef ScanInfo < dj.Imported
       recInfo.nFrames     = numel(recInfo.Timing.Frame_ts_sec);
       
       %% find out last good frame based on bleaching
-      % this crashes on spock so parpool must be deleted
-      if isThisSpock
-        if exist('poolboj','var');    delete(poolobj);         end
-        if ~isempty(gcp('nocreate')); delete(gcp('nocreate')); end
-      end
-      lastGoodFrame       = selectFramesFromMeanF(scan_directory);
+      lastGoodFile        = selectFilesFromMeanF(scan_directory);
       cumulativeFrames    = cumsum(framesPerFile);
-      lastGoodFile        = find(cumulativeFrames >= lastGoodFrame,1,'first');
+%       lastGoodFile        = find(cumulativeFrames >= lastGoodFrame,1,'first');
 %       lastFrameInFile     = lastGoodFrame - cumulativeFrames(max([1 lastGoodFile-1]));
       
       %% write to this table
@@ -117,7 +111,7 @@ classdef ScanInfo < dj.Imported
       key.fov_corner_points         = recInfo.Scope.fovCornerPoints;
       key.nfovs                     = sum(cell2mat(cellfun(@(x)(numel(x)),{recInfo.ROI(:).Zs},'uniformoutput',false)));
       key.nframes                   = recInfo.nFrames;
-      key.nframes_good              = lastGoodFrame;
+      key.nframes_good              = cumulativeFrames(lastGoodFile);
       key.last_good_file            = lastGoodFile;
       
       self.insert(key)
