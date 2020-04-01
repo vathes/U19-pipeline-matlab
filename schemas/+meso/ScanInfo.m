@@ -234,9 +234,9 @@ classdef ScanInfo < dj.Imported
         for iZ = 1:ndepths
           
           % FieldOfView
-          fov_key           = key_data;
-          fov_key.fov       = ct;
-          fov_key.directory = sprintf('%s/ROI%02d_z%d/',scan_directory,iROI,iZ);
+          fov_key               = key_data;
+          fov_key.fov           = ct;
+          fov_key.fov_directory = sprintf('%s/ROI%02d_z%d/',scan_directory,iROI,iZ);
           
           if ~isempty(recInfo.ROI(iROI).name)
             thisname        = sprintf('%s_z%d',recInfo.ROI(iROI).name,iZ);
@@ -245,7 +245,7 @@ classdef ScanInfo < dj.Imported
           end
           
           fov_key.fov_name                = thisname;
-          fov_key.depth                   = recInfo.ROI(iROI).Zs(iZ);
+          fov_key.fov_depth               = recInfo.ROI(iROI).Zs(iZ);
           fov_key.fov_center_xy           = recInfo.ROI(iROI).centerXY;
           fov_key.fov_rotation_degrees    = recInfo.ROI(iROI).sizeXY;
           fov_key.fov_pixel_resolution_xy = recInfo.ROI(iROI).pixelResolutionXY;
@@ -261,13 +261,13 @@ classdef ScanInfo < dj.Imported
           file_entries.fov_filename       = '';
           file_entries.file_frame_range   = '';
           
-          fov_directory                   = fov_key.directory;
+          fov_directory                   = fov_key.fov_directory;
           fl                              = dir(sprintf('%s*.tif',fov_directory));
 
           for iF = 1:numel(fl)
-            file_entries(iF).file_number      = iF;
-            file_entries(iF).fov_filename     = fl(iF).name;
-            file_entries(iF).fov_frame_range  = [cumulativeFrames(iF)+1 cumulativeFrames(iF+1)];
+            file_entries(iF).file_number       = iF;
+            file_entries(iF).fov_filename      = fl(iF).name;
+            file_entries(iF).file_frame_range  = [cumulativeFrames(iF)+1 cumulativeFrames(iF+1)];
           end
 
           insertn(meso.FieldOfViewFile, file_entries)
