@@ -36,7 +36,7 @@ classdef ScanInfo < dj.Imported
     function makeTuples(self, key)
       % ingestion triggered by the existence of Scan
       % runs a modified version of mesoscopeSetPreproc
-      
+      generalTimer   = tic;
       curr_dir       = pwd; 
       scan_directory = fetch1(meso.Scan & key,'scan_directory');
       if isThisSpock
@@ -54,8 +54,11 @@ classdef ScanInfo < dj.Imported
       % get header with parfor loop
       fprintf('\tgetting headers...\n')
       
-      fl      = dir('*tif'); % tif file list
-      fl      = {fl(:).name};
+      fl       = dir('*tif'); % tif file list
+      fl       = {fl(:).name};
+      stridx   = regexp(fl{1},'_[0-9]{5}.tif');
+      basename = fl{1}(1:stridx);
+      
       if isempty(gcp('nocreate')); poolobj = parpool; end
       
       parfor iF = 1:numel(fl)
@@ -275,7 +278,7 @@ classdef ScanInfo < dj.Imported
       %% wrap up
       delete(poolobj)
       cd(curr_dir)
-      fprintf('\tdone after %1.1f min\n',toc/60)
+      fprintf('\tdone after %1.1f min\n',toc(generalTimer)/60)
       
     end
   end
