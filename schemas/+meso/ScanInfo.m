@@ -55,6 +55,7 @@ classdef ScanInfo < dj.Imported
       fprintf('\tgetting headers...\n')
       
       fl      = dir('*tif'); % tif file list
+      fl      = {fl(:).name};
       poolobj = parpool;
       
       parfor iF = 1:numel(fl)
