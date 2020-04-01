@@ -88,7 +88,7 @@ classdef ScanInfo < dj.Imported
       originalkey                   = key;
       key_data                      = fetch(meso.Scan & originalkey);
       key                           = key_data;
-      key.file_name_base            = recInfo.FileName;
+      key.file_name_base            = recInfo.Filename;
       key.scan_width                = recInfo.Width;
       key.scan_height               = recInfo.Height;
       key.acq_time                  = recInfo.AcqTime;
