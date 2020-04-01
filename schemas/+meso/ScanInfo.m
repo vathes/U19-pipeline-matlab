@@ -271,7 +271,7 @@ classdef ScanInfo < dj.Imported
             file_entries(iF).file_frame_range  = [cumulativeFrames(iF)+1 cumulativeFrames(iF+1)];
           end
 
-          insertn(meso.FieldOfViewFile, file_entries)
+          insert(meso.FieldOfViewFile, file_entries)
         end
       end
       
