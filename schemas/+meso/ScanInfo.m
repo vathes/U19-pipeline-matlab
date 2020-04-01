@@ -56,7 +56,7 @@ classdef ScanInfo < dj.Imported
       
       fl      = dir('*tif'); % tif file list
       fl      = {fl(:).name};
-      poolobj = parpool;
+      if isempty(gcp('nocreate')); poolobj = parpool; end
       
       parfor iF = 1:numel(fl)
         [imheader{iF},parsedInfo{iF}] = parseMesoscopeTifHeader(fl{iF});
