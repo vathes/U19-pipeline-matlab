@@ -250,7 +250,7 @@ classdef ScanInfo < dj.Imported
           fov_key.fov_size_xy             = recInfo.ROI(iROI).sizeXY;
           fov_key.fov_rotation_degrees    = recInfo.ROI(iROI).rotationDegrees;
           fov_key.fov_pixel_resolution_xy = recInfo.ROI(iROI).pixelResolutionXY;
-          fov_key.fov_discrete_plane_mode = recInfo.ROI(iROI).discretePlaneMode;
+          fov_key.fov_discrete_plane_mode = boolean(recInfo.ROI(iROI).discretePlaneMode);
           
           ct = ct+1;
           inserti(meso.FieldOfView,fov_key)
