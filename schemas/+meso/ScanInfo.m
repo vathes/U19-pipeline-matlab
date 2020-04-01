@@ -278,7 +278,14 @@ classdef ScanInfo < dj.Imported
       
        
       %% wrap up
-      delete(poolobj)
+      if ~isempty(gcp('nocreate'))
+        if exist('poolobj','var')
+          delete(poolobj)
+        else
+          delete(gcp('nocreate'))
+        end
+      end
+      
       cd(curr_dir)
       fprintf('\tdone after %1.1f min\n',toc(generalTimer)/60)
       
