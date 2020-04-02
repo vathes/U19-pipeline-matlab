@@ -1,4 +1,5 @@
 %{
+# existence of an imaging session
 -> acquisition.Session
 ---
 scan_directory       : varchar(255)

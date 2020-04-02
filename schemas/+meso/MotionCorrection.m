@@ -6,72 +6,79 @@
 
 
 classdef MotionCorrection < dj.Imported
-  methods
-    function makeTuple(self, key)
+  methods (Access=protected)
+    function makeTuples(self, key)
       
-      % path
-      fov_directory = fetch1(key,'fov_directory');
+      %% analysis params
+      params         = fetch(meso.McParameterSetParameter & key, ...
+                             'mc_max_shift', 'mc_max_iter', 'mc_stop_below_shift', 'mc_black_tolerance', 'mc_median_rebin');
+      if params.mc_black_tolerance < 0; params.mc_black_tolerance = nan; end   
       
-      %% analysis parameters
-      method         = 'Linear';
-      parameterSetID = 1;
-      switch method
-        case 'Nonlinear'
-          cfg.mcorr    = {[15 15], [5 2], 0.3, 10};
-        case 'Linear'
-          [max_shift, max_iter, stop_below, black_tolerance, median_rebin] ...
-                       = fetch1(meso.McParameterSetParameter & key & sprintf('mc_parameter_set_id = %d',parameterSetID), ...
-                                'mc_max_shift', 'mc_max_iter', 'mc_stop_below_shift', 'mc_black_tolerance', 'mc_median_rebin');
-          cfg.mcorr    = {max_shift, max_iter, false, stop_below, black_tolerance, median_rebin};
-      end
-
-      %% call functions to compute motioncorrectionWithinFile and AcrossFiles and insert into the tables
-      fprintf('==[ PROCESSING ]==   %s\n', fov_directory);
-  
-      % Determine whether or not we need to use frame skipping to select only the first channel
-      [order,movieFiles]            = fetchn(meso.FieldOfViewFile & key, 'file_number', 'fov_file_name');
-      movieFiles                    = movieFiles(order);
-      info                          = cv.imfinfox(movieFiles{1}, true);
-      if numel(info.channels) > 1
-        cfg.mcorr{end+1}            = [0, numel(info.channels)-1];
+      if contains(params.mcorr_method,'NonLinear')
+        cfg.mcorr    = {params.mc_max_shift, params.mc_max_iter, params.mc_stop_below_shift, ...
+                        params.mc_black_tolerance, params.mc_median_rebin};
+      else
+        cfg.mcorr    = {params.mc_max_shift, params.mc_max_iter, false, ...
+                        params.mc_stop_below_shift, params.mc_black_tolerance, params.mc_median_rebin};
       end
       
-      % run motion correction
-      [frameMCorr, fileMCorr]       = getMotionCorrection(movieFiles, false, 'off', cfg.mcorr{:});
- 
-      % insert an entry into this table as well, just the key
+      %% get FOV list and loop pver them of necessary
       originalkey = key;
-      key         = fetch(originalkey);
-      self.insert(key);
-      
-      %% insert within file correction meso.motioncorrectionWithinFile
-      within_key                        = key;
-      within_key.FieldOfViewFile        = '';
-      within_key.within_file_x_shifts   = [];
-      within_key.within_file_y_shifts   = [];
-      within_key.within_reference_image = [];
-                        
-      for iFile = 1:numel(frameMCorr)
-        within_key(iFile).FieldOfViewFile               = movieFiles{iFile};
-        within_key(iFile).within_file_x_shifts          = frameMCorr(iFile).xShifts;
-        within_key(iFile).within_file_y_shifts          = frameMCorr(iFile).yShifts;
-        within_key(iFile).within_reference_image        = frameMCorr(iFile).reference; 
-      end
-      
-      insertn(meso.motioncorrectionWithinFile, within_key)
-      
-      %% insert within file correction meso.motioncorrectionAcrossFile
-      across_key                        = key;
-      across_key.within_file_x_shifts   = fileMCorr(iFile).xShifts;
-      across_key.within_file_y_shifts   = fileMCorr(iFile).yShifts;
-      across_key.within_reference_image = fileMCorr(iFile).reference; 
-        
-      insert1(meso.motioncorrectionAcrossFile, across_key)
-      
-      %% compute and save some stats as .mat files, intermediate step used downstream in the segmentation code
-      movieName                     = stripPath(movieFiles);
-      parfor iFile = 1:numel(movieFiles)
-        computeStatistics(movieName{iFile}, movieFiles{iFile}, frameMCorr(iFile), false);
+      fov_list    = fetchn(proj(originalkey),'fov'); % assume that key can be for all FOVs
+
+      for iFOV = 1:numel(fov_list)
+
+        % insert an entry into this table as well, just the key
+        key = fetch(key & sprintf('fov = %d',iFOV));
+        self.insert(key);
+
+        % path
+        fov_directory  = fetch1(meso.FieldOfView & key,'fov_directory');
+         
+        %% call functions to compute motioncorrectionWithinFile and AcrossFiles and insert into the tables
+        fprintf('==[ PROCESSING ]==   %s\n', fov_directory);
+
+        % Determine whether or not we need to use frame skipping to select only the first channel
+        [order,movieFiles]            = fetchn(meso.FieldOfViewFile & key, 'file_number', 'fov_filename');
+        movieFiles                    = movieFiles(order);
+        info                          = cv.imfinfox(movieFiles{1}, true);
+        if numel(info.channels) > 1
+          cfg.mcorr{end+1}            = [0, numel(info.channels)-1];
+        end
+
+        % run motion correction
+        [frameMCorr, fileMCorr]       = getMotionCorrection(movieFiles, false, 'off', cfg.mcorr{:});
+
+        %% insert within file correction meso.motioncorrectionWithinFile
+        within_key                        = key;
+        within_key.FieldOfViewFile        = '';
+        within_key.within_file_x_shifts   = [];
+        within_key.within_file_y_shifts   = [];
+        within_key.within_reference_image = [];
+        within_key                        = repmat(within_key,[1 numel(frameMCorr)]);
+
+        for iFile = 1:numel(frameMCorr)
+          within_key(iFile).FieldOfViewFile               = movieFiles{iFile};
+          within_key(iFile).within_file_x_shifts          = frameMCorr(iFile).xShifts;
+          within_key(iFile).within_file_y_shifts          = frameMCorr(iFile).yShifts;
+          within_key(iFile).within_reference_image        = frameMCorr(iFile).reference; 
+        end
+
+        insert(meso.motioncorrectionWithinFile, within_key)
+
+        %% insert within file correction meso.motioncorrectionAcrossFile
+        across_key                        = key;
+        across_key.within_file_x_shifts   = fileMCorr(iFile).xShifts;
+        across_key.within_file_y_shifts   = fileMCorr(iFile).yShifts;
+        across_key.within_reference_image = fileMCorr(iFile).reference; 
+
+        inserti(meso.motioncorrectionAcrossFile, across_key)
+
+        %% compute and save some stats as .mat files, intermediate step used downstream in the segmentation code
+        movieName                     = stripPath(movieFiles);
+        parfor iFile = 1:numel(movieFiles)
+          computeStatistics(movieName{iFile}, movieFiles{iFile}, frameMCorr(iFile), false);
+        end
       end
     end
   end

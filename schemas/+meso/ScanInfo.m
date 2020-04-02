@@ -1,4 +1,5 @@
 %{
+# metainfo about imaging session
 -> meso.Scan
 ---
 file_name_base    : varchar(255)  # base name of the file 

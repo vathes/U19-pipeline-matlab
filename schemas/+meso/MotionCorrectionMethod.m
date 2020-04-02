@@ -3,14 +3,14 @@
 # available motion correction method
 mcorr_method:           varchar(128)
 ---
-correlation_type='Normalized' : enum('Normalized', 'Non-Normalized')
-tranformation_type='Linear'   : enum('Linear', 'Non-linear')
+correlation_type='Normalized' : enum('Normalized', 'NonNormalized')
+tranformation_type='Linear'   : enum('Linear', 'NonLinear')
 %}
 
     
  classdef MotionCorrectionMethod < dj.Lookup
      properties
-        contents = {'LinerNormalized', 'Normalized', 'Linear';
-                    'NonLinerNormalized', 'Normalized', 'Nonlinear'};
+        contents = {'LinearNormalized', 'Normalized', 'Linear';
+                    'NonLinearNormalized', 'Normalized', 'NonLinear'};
      end
  end

@@ -1,4 +1,5 @@
 %{
+# list of files per FOV
 -> meso.FieldOfView
 file_number         : int
 ---

@@ -9,7 +9,7 @@ mc_parameter_description: varchar(255) # description of this parameter
 classdef McParameter < dj.Lookup
   properties
     contents = {
-               'LinearParams', 'set of parameters for linear, normalized x-corr motion correction'
+               'LinearNormalized','LinearNormalizedParams', 'set of parameters for linear, normalized x-corr motion correction'
                }
   end
 end

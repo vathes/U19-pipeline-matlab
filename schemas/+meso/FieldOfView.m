@@ -1,4 +1,5 @@
 %{
+# meta-info about specific FOV within mesoscope imagining session
 -> meso.Scan
 fov                     :  tinyint        # number of the field of view in this scan
 ---

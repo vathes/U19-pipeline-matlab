@@ -6,6 +6,8 @@ seg_parameter_set_id: int   # parameter set of a method
 
 classdef SegParameterSet < dj.Lookup
   properties
-    contents = { 1 }
+    contents = { 
+                'cnmf', 1 
+               }
   end
 end
