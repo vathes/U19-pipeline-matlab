@@ -344,7 +344,7 @@ classdef SyncImagingBehavior < dj.Computed
       end
 
       %% translate to table and insert 
-      if ~isstruct(key); key = fecth(key); end
+      if ~isstruct(key); key = fetch(key); end
       key.sync_im_frame                     = [sync(:).frame];
       key.sync_im_frame_global              = [sync(:).global];
       key.sync_behav_block_by_im_frame      = [sync(:).block];
