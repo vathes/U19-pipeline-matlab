@@ -1,6 +1,5 @@
 %{
 -> meso.FieldOfView
--> behavior.TowersSession
 ---
 sync_im_frame                      :    longblob   # frame number within tif file
 sync_im_frame_global               :    longblob   # global frame number in scan
@@ -38,10 +37,9 @@ classdef SyncImagingBehavior < dj.Computed
       totalFrames                   = 0;
       
       % path
-      fov_directory        = fetch1(key,'fov_directory');
-      [order,movieFiles]   = fetchn(meso.FieldOfViewFile & key, 'file_number', 'fov_file_name');
-      movieFiles           = movieFiles(order);
-      imaging              = struct('movieFile', movieFiles);
+      [fov_directory,order,movieFiles] = fetchn(meso.FieldOfViewFile & key,'fov_directory', 'file_number', 'fov_file_name');
+      movieFiles                       = cellfun(@(x)([fov_directory x]),movieFiles(order),'uniformoutput',false); % full path
+      imaging                          = struct('movieFile', movieFiles);
       
       fprintf('==[ SYNCHRONIZATION ]==   %s\n', fov_directory);
       
@@ -49,7 +47,7 @@ classdef SyncImagingBehavior < dj.Computed
         
         % Synchronization info
         [imaging(iFile).acquisition, imaging(iFile).epoch, imaging(iFile).frameTime, imaging(iFile).syncTime, data]   ...
-                                    = cv.getSyncInfo(movieFiles{iFile}, 'uint16', meta.frameMCorr(iFile).params.frameSkip);
+                                    = cv.getSyncInfo(movieFiles{iFile}, 'uint16', []);
         fileAcquis                  = regexp(movieFiles{iFile}, '_([0-9]+)_[0-9]+[.][^.]+$', 'tokens', 'once');
         if ~isempty(fileAcquis)
           fileAcquis                = str2double(fileAcquis{:});
@@ -345,6 +343,7 @@ classdef SyncImagingBehavior < dj.Computed
       end
 
       %% translate to table and insert 
+      if ~isstruct(key); key = fecth(key); end
       key.sync_im_frame                     = [sync(:).frame];
       key.sync_im_frame_global              = [sync(:).global];
       key.sync_behav_block_by_im_frame      = [sync(:).block];
