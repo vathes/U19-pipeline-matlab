@@ -352,7 +352,7 @@ classdef SyncImagingBehavior < dj.Computed
       key.sync_behav_iter_by_im_frame       = [sync(:).iteration];
       key.sync_im_frame_span_by_behav_block = {behav(:).span};
       key.sync_im_frame_span_by_behav_trial = flat_behavior.trial_span;
-      key.sync_im_frame_span_by_behav_iter  = flat_behavior.iteration_span;
+      key.sync_im_frame_span_by_behav_iter  = flat_behavior.iter_span;
       
       self.insert(key);
     end
