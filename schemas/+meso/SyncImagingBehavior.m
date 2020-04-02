@@ -361,6 +361,68 @@ classdef SyncImagingBehavior < dj.Computed
 end
 
 
+% %---------------------------------------------------------------------------------------------------
+function sync = mergeTrials(sync, nTrials, iBlock, trialDur, frameDeltaT)
+  
+  if nTrials < 1
+    return;
+  end
+  
+  % Mark all trials with sync info
+  syncTrials          = [sync.trial];
+  allSyncs            = 1:numel(syncTrials);
+  allTrials           = 1:nTrials;
+  trialIndex          = binarySearch(allTrials, syncTrials, -1, 0);
+  hasSync             = (trialIndex > 0);
+  syncIndex           = zeros(size(allTrials));
+  syncIndex(trialIndex(hasSync))  = allSyncs(hasSync);
+  
+  % Locate subsets with no sync info
+  [value, span]       = SplitVec(double(syncIndex > 0), 'equal', 'firstval', 'bracket');
+  span                = span(value == 0, :);
+  for iMiss = size(span,1):-1:1
+    if span(iMiss,1) > 1
+      iSync           = syncIndex( span(iMiss,1) - 1 );
+    else
+      iSync           = 0;
+    end
+    sync              = [ sync(1:iSync)                                               ...
+                        ; newTrials( span(iMiss,2) - span(iMiss,1) + 1, iBlock        ...
+                                   , trialDur, frameDeltaT, span(iMiss,1)             ...
+                                   )                                                  ...
+                        ; sync(iSync + 1:end)                                         ...
+                        ];
+  end
+  
+end
+
+%% ---------------------------------------------------------------------------------------------------
+function sync = newTrials(nTrials, iBlock, trialDur, frameDeltaT, firstTrial)
+  
+  if nargin < 5
+    firstTrial  = 1;
+  end
+
+  if isfinite(trialDur)
+    nStep       = round(trialDur / frameDeltaT);
+  else
+    nStep       = 1;
+  end
+  nSync         = nTrials * nStep;
+  noInfo        = repmat({0}, nSync, 1);
+  iTrial        = repmat(1:nTrials, nStep, 1);
+  sync          = struct( 'frame'         , noInfo                                    ...
+                        , 'global'        , noInfo                                    ...
+                        , 'block'         , repmat({iBlock}, nSync, 1)                ...
+                        , 'trial'         , num2cell(firstTrial-1 + iTrial(:))        ...
+                        , 'iteration'     , noInfo                                    ...
+                        , 'imaging'       , noInfo                                    ...
+                        , 'acquisition'   , noInfo                                    ...
+                        );
+  
+end
+
+
 %% fix logs where trial type and choice are not recorded due to bug
 function block = fixLogs(block)
   
