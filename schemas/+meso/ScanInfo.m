@@ -39,12 +39,8 @@ classdef ScanInfo < dj.Imported
       % runs a modified version of mesoscopeSetPreproc
       generalTimer   = tic;
       curr_dir       = pwd; 
-      scan_directory = fetch1(meso.Scan & key,'scan_directory');
-      if isThisSpock
-        scan_directory = ['/jukebox' scan_directory];
-      else
-        scan_directory = ['/Volumes' scan_directory];
-      end
+      scan_directory = formatFilePath(fetch1(meso.Scan & key,'scan_directory'),true,true);
+      
       cd(scan_directory)
       
       fprintf('------------ preparing %s --------------\n',scan_directory)

@@ -26,7 +26,7 @@ classdef MotionCorrection < dj.Imported
       self.insert(key);
 
       % path
-      fov_directory  = fetch1(meso.FieldOfView & key,'fov_directory');
+      fov_directory  = formatFilePath(fetch1(meso.FieldOfView & key,'fov_directory'),true,true);
 
       %% call functions to compute motioncorrectionWithinFile and AcrossFiles and insert into the tables
       fprintf('==[ PROCESSING ]==   %s\n', fov_directory);
