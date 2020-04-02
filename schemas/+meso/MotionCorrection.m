@@ -33,7 +33,7 @@ classdef MotionCorrection < dj.Imported
 
       % Determine whether or not we need to use frame skipping to select only the first channel
       [order,movieFiles]            = fetchn(meso.FieldOfViewFile & key, 'file_number', 'fov_filename');
-      movieFiles                    = cellfun(@(x)([fov_ddirectory x]),movieFiles(order),'uniformoutput',false); % full path
+      movieFiles                    = cellfun(@(x)([fov_directory x]),movieFiles(order),'uniformoutput',false); % full path
       info                          = cv.imfinfox(movieFiles{1}, true);
       if numel(info.channels) > 1
         cfg.mcorr{end+1}            = [0, numel(info.channels)-1];
