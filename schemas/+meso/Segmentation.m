@@ -74,6 +74,7 @@ classdef Segmentation < dj.Imported
       fileChunk                            = selectFileChunks(key,chunk_cfg); 
             
       %% run segmentation and populate this table
+      if isempty(gcp('nocreate')); poolobj = parpool; end
       switch segmentationMethod
         case 'cnmf'
           outputFiles                      = runCNMF(fov_directory, fileChunk, cnmf_cfg, gof_cfg); 
@@ -207,6 +208,14 @@ classdef Segmentation < dj.Imported
       insertn(meso.SegmentationRoiMorphologyAuto, morpho_data)
       insertn(meso.Trace, trace_data)
       
+      % shut down parallel pool
+      if ~isempty(gcp('nocreate'))
+        if exist('poolobj','var')
+          delete(poolobj)
+        else
+          delete(gcp('nocreate'))
+        end
+      end
     end
   end
 end

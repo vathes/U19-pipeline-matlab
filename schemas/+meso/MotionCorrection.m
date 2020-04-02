@@ -40,6 +40,8 @@ classdef MotionCorrection < dj.Imported
       end
 
       % run motion correction
+      if isempty(gcp('nocreate')); poolobj = parpool; end
+      
       [frameMCorr, fileMCorr]       = getMotionCorrection(movieFiles, false, 'off', cfg.mcorr{:});
 
       %% insert within file correction meso.motioncorrectionWithinFile
@@ -71,6 +73,14 @@ classdef MotionCorrection < dj.Imported
       movieName                     = stripPath(movieFiles);
       parfor iFile = 1:numel(movieFiles)
         computeStatistics(movieName{iFile}, movieFiles{iFile}, frameMCorr(iFile), false);
+      end
+      
+      if ~isempty(gcp('nocreate'))
+        if exist('poolobj','var')
+          delete(poolobj)
+        else
+          delete(gcp('nocreate'))
+        end
       end
     end
   end 
