@@ -18,8 +18,8 @@ classdef SyncImagingBehavior < dj.Computed
     
     function makeTuples(self, key)
       
-      %% behavior
-      data_dir  = getLocalPath(fetch1(acquisition.DataDirectory & key, 'combined_file_name'));
+      %% behav
+      data_dir  = getLocalPath(fetch1(behavior.DataDirectory & key, 'combined_file_name'));
       behavdata = load(data_dir, 'log');
       block     = behavdata.log.block;
       
@@ -127,7 +127,7 @@ classdef SyncImagingBehavior < dj.Computed
       
       poorSync                      = (deltaTime > cfg.minBehaviorSecs);
       if any(poorSync)
-        warning('processImagingInfo:HACK', 'Extremely long lags encountered between behavior frames: %s', num2str(deltaTime(poorSync)));
+        warning('processImagingInfo:HACK', 'Extremely long lags encountered between behav frames: %s', num2str(deltaTime(poorSync)));
       end
       
       %% Patch all missing chunks using the nearest past frame that has sync info
@@ -149,7 +149,7 @@ classdef SyncImagingBehavior < dj.Computed
         %     [syncBlock([iChange-1, iChange, iChange+1]), syncTrial([iChange-1, iChange, iChange+1]), syncIter([iChange-1, iChange, iChange+1])]
       end
 
-      % HACK for forcibly terminated trials that are not recorded in behavior, but still appear as part
+      % HACK for forcibly terminated trials that are not recorded in behav, but still appear as part
       % of the sync info since there is no feedback
       [imgBlock, bracket]           = SplitVec(syncBlock, 'equal', 'firstval', 'bracket');
       for iBlock = 1:numel(imgBlock)
@@ -196,7 +196,7 @@ classdef SyncImagingBehavior < dj.Computed
       end
       
       
-      % Tabulate imaging vs. behavior wall clock times
+      % Tabulate imaging vs. behav wall clock times
       blockTime                     = cellfun(@datenum, {block.start});
       [imgBlock, bracket]           = SplitVec([sync.block], 'equal', 'firstval', 'bracket');
       imgTime                       = [imaging.clockTime];
@@ -272,8 +272,8 @@ classdef SyncImagingBehavior < dj.Computed
       end
       
       
-      %% Record behavior block based sync index
-      behavior                      = struct( 'span'  , cell(size(block))                               ...
+      %% Record behav block based sync index
+      behav                      = struct( 'span'  , cell(size(block))                               ...
                                             , 'trial' , repmat( {struct('span', {}, 'iteration', {})}   ...
                                             , size(block) )                                             ...
                                             );
@@ -282,10 +282,10 @@ classdef SyncImagingBehavior < dj.Computed
           continue;
         end
         jBlock                      = find(index.block == iBlock, 1, 'first');
-        behavior(iBlock).span       = span.block(jBlock,:);
+        behav(iBlock).span       = span.block(jBlock,:);
         if isempty(jBlock)
           numTrials                 = numel(block(iBlock).trialType);
-          behavior(iBlock).trial    = struct( 'span'     , repmat({zeros(0,2)},numTrials)   ...
+          behav(iBlock).trial    = struct( 'span'     , repmat({zeros(0,2)},numTrials)   ...
                                             , 'iteration', repmat({zeros(0,2)},numTrials)   ...
                                             );
           continue;
@@ -325,20 +325,20 @@ classdef SyncImagingBehavior < dj.Computed
           
           trial(iTrial).iteration   = iteration;
         end
-        behavior(iBlock).trial      = trial;
+        behav(iBlock).trial      = trial;
         
         %     if numel(trial) ~= numel(block(iBlock).trialType)
         %       keyboard
         %     end
       end
       
-      %% flatten behavior structure for table format
+      %% flatten behav structure for table format
       flat_behavior.trial_span       = [];
       flat_behavior.iter_span        = {};
-      for iBlock = 1:numel(behavior)
-        flat_behavior.trial_span = [flat_behavior.trial_span {behavior(iBlock).trial(:).span}];
-        for iTrial = 1:numel(behavior(iBlock).trial)
-          flat_behavior.iter_span{end+1} = behavior(iBlock).trial(iTrial).iteration+flat_behavior.trial_span{iTrial}(1);
+      for iBlock = 1:numel(behav)
+        flat_behavior.trial_span = [flat_behavior.trial_span {behav(iBlock).trial(:).span}];
+        for iTrial = 1:numel(behav(iBlock).trial)
+          flat_behavior.iter_span{end+1} = behav(iBlock).trial(iTrial).iteration+flat_behavior.trial_span{iTrial}(1);
         end
       end
 
@@ -349,7 +349,7 @@ classdef SyncImagingBehavior < dj.Computed
       key.sync_behav_block_by_im_frame      = [sync(:).block];
       key.sync_behav_trial_by_im_frame      = [sync(:).trial];
       key.sync_behav_iter_by_im_frame       = [sync(:).iteration];
-      key.sync_im_frame_span_by_behav_block = {behavior(:).span};
+      key.sync_im_frame_span_by_behav_block = {behav(:).span};
       key.sync_im_frame_span_by_behav_trial = flat_behavior.trial_span;
       key.sync_im_frame_span_by_behav_iter  = flat_behavior.iteration_span;
       
