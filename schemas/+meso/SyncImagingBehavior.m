@@ -38,7 +38,7 @@ classdef SyncImagingBehavior < dj.Computed
       
       % path
       fov_directory                 = fetch1(meso.FieldOfView & key,'fov_directory');
-      [order,movieFiles]            = fetchn(meso.FieldOfViewFile & key, 'file_number', 'fov_file_name');
+      [order,movieFiles]            = fetchn(meso.FieldOfViewFile & key, 'file_number', 'fov_filename');
       movieFiles                    = cellfun(@(x)([fov_directory x]),movieFiles(order),'uniformoutput',false); % full path
       imaging                       = struct('movieFile', movieFiles);
       
