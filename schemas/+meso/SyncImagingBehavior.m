@@ -19,7 +19,7 @@ classdef SyncImagingBehavior < dj.Computed
     function makeTuples(self, key)
       
       %% behav
-      data_dir  = formatFilePath(fetch1(behavior.DataDirectory & key, 'combined_file_name'),true,true);
+      data_dir  = formatFilePath(fetch1(behavior.DataDirectory & key, 'combined_file_name'),false,true);
       behavdata = load(data_dir, 'log');
       block     = behavdata.log.block;
       
