@@ -54,8 +54,11 @@ classdef MotionCorrection < dj.Imported
 
       for iFile = 1:numel(frameMCorr)
         within_key(iFile).file_number                   = iFile;
-        keyboard
+        try
         within_key(iFile).within_file_x_shifts          = frameMCorr(iFile).xShifts;
+        catch
+          keyboard
+        end
         within_key(iFile).within_file_y_shifts          = frameMCorr(iFile).yShifts;
         within_key(iFile).within_reference_image        = frameMCorr(iFile).reference; 
       end
