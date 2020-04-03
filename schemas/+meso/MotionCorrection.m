@@ -54,11 +54,7 @@ classdef MotionCorrection < dj.Imported
 
       for iFile = 1:numel(frameMCorr)
         within_key(iFile).file_number                   = iFile;
-        try
         within_key(iFile).within_file_x_shifts          = frameMCorr(iFile).xShifts;
-        catch
-          keyboard
-        end
         within_key(iFile).within_file_y_shifts          = frameMCorr(iFile).yShifts;
         within_key(iFile).within_reference_image        = frameMCorr(iFile).reference; 
       end
@@ -67,9 +63,9 @@ classdef MotionCorrection < dj.Imported
 
       %% insert within file correction meso.motioncorrectionAcrossFile
       across_key                        = key;
-      across_key.within_file_x_shifts   = fileMCorr(iFile).xShifts;
-      across_key.within_file_y_shifts   = fileMCorr(iFile).yShifts;
-      across_key.within_reference_image = fileMCorr(iFile).reference; 
+      across_key.within_file_x_shifts   = fileMCorr.xShifts;
+      across_key.within_file_y_shifts   = fileMCorr.yShifts;
+      across_key.within_reference_image = fileMCorr.reference; 
 
       inserti(meso.MotionCorrectionAcrossFile, across_key)
 
