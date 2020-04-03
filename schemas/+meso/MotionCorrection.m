@@ -46,7 +46,7 @@ classdef MotionCorrection < dj.Imported
 
       %% insert within file correction meso.motioncorrectionWithinFile
       within_key                        = key;
-      within_key.FieldOfViewFile        = '';
+      within_key.file_number            = [];
       within_key.within_file_x_shifts   = [];
       within_key.within_file_y_shifts   = [];
       within_key.within_reference_image = [];
