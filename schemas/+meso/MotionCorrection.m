@@ -62,10 +62,10 @@ classdef MotionCorrection < dj.Imported
       insert(meso.MotionCorrectionWithinFile, within_key)
 
       %% insert within file correction meso.motioncorrectionAcrossFile
-      across_key                        = key;
-      across_key.within_file_x_shifts   = fileMCorr.xShifts;
-      across_key.within_file_y_shifts   = fileMCorr.yShifts;
-      across_key.within_reference_image = fileMCorr.reference; 
+      across_key                             = key;
+      across_key.cross_files_x_shifts        = fileMCorr.xShifts;
+      across_key.cross_files_y_shifts        = fileMCorr.yShifts;
+      across_key.cross_files_reference_image = fileMCorr.reference; 
 
       inserti(meso.MotionCorrectionAcrossFiles, across_key)
 
