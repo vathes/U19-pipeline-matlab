@@ -14,16 +14,24 @@ classdef Segmentation < dj.Imported
     function makeTuples(self, key)
       
       %% imaging directory
-      fov_directory = fetch1(key,'fov_directory');
+      fov_directory = formatFilePath(fetch1(key,'fov_directory'),true,true);
       keydata       = fetch(key);
       result        = keydata;
       
       %% analysis params
-      segmentationMethod             = 'cnmf';
-      parameterSetID                 = 1;
-      params                         = fetch1(meso.SegParameterSetParameter & key & ...
-                                              sprintf('seg_parameter_set_id = %d',parameterSetID));
-      frameRate                      = fetch1(meso.ScanInfo & key, 'frame_rate');
+      params        = fetch(meso.SegParameterSetParameter & key, ...
+                           'chunks_auto_select_behav', 'chunks_auto_select_bleach', 'chunks_towers_min_n_trials',                     ...
+                           'chunks_towers_perf_thresh', 'chunks_towers_bias_thresh', 'chunks_towers_max_frac_bad',                    ...
+                           'chunks_visguide_min_n_trials', 'chunks_visguide_perf_thresh', 'chunks_visguide_bias_thresh',              ...
+                           'chunks_visguide_max_frac_bad', 'chunks_min_num_consecutive_blocks', 'chunks_break_nonconsecutive_blocks', ...
+                           'cmnf_num_components', 'cmnf_tau', 'cmnf_p', 'cmnf_files_per_chunk', 'cnmf_proto_num_chunks',              ...
+                           'cnmf_zero_is_minimum', 'cnmf_default_timescale', 'cnmf_dff_rectification', 'cnmf_min_roi_significance',   ...
+                           'cnmf_min_num_frames', 'cnmf_max_centroid_dist', 'cnmf_min_dist_pixels', 'cnmf_min_shape_corr',            ...
+                           'cnmf_pixels_surround', 'gof_contain_energy', 'gof_core_energy', 'gof_noise_range', 'gof_max_baseline',    ...
+                           'gof_min_activation', 'gof_high_activation', 'gof_min_time_span', 'gof_bkg_time_span', 'gof_min_dff'       ...
+                           );
+
+      frameRate     = fetch1(meso.ScanInfo & key, 'frame_rate');
       
       % selectFileChunks
       chunk_cfg.auto_select_behav    = params.chunks_auto_select_behav;
@@ -131,12 +139,9 @@ classdef Segmentation < dj.Imported
       globalXY      = data.registration.globalXY;
       nROIs         = size(globalXY,2);
       totalFrames   = fetch1(meso.ScanInfo & key,'nframes');
-      keyfields     = fields(keydata);
-      for iField = 1:numel(keyfields)
-        roi_data.(keyfields{iField})    = keydata.(keyfields{iField});
-        morpho_data.(keyfields{iField}) = keydata.(keyfields{iField});
-        trace_data.(keyfields{iField})  = keydata.(keyfields{iField});
-      end
+      roi_data      = keydata;
+      morpho_data   = keydata;
+      trace_data    = keydata;
       
       roi_data.roi_idx                  = [];
       roi_data.roi_global_xy            = [];
@@ -162,8 +167,8 @@ classdef Segmentation < dj.Imported
       % loop through ROIs
       for iROI = 1:nROIs
         roi_data(iROI).roi_idx                    = iROI;  
-        morpho_data(iROI)                         = roi_data(iROI);
-        trace_data(iROI)                          = roi_data(iROI);
+        morpho_data(iROI).roi_idx                 = iROI;
+        trace_data(iROI).roi_idx                  = iROI;
         
         roi_data(iROI).roi_global_xy              = globalXY(:,iROI);
         trace_data(iROI).time_constants           = data.cnmf.timeConstants{iROI};
@@ -204,9 +209,9 @@ classdef Segmentation < dj.Imported
       end
       
       % insert in tables
-      insertn(meso.SegmentationRoi, roi_data)
-      insertn(meso.SegmentationRoiMorphologyAuto, morpho_data)
-      insertn(meso.Trace, trace_data)
+      insert(meso.SegmentationRoi, roi_data)
+      insert(meso.SegmentationRoiMorphologyAuto, morpho_data)
+      insert(meso.Trace, trace_data)
       
       % shut down parallel pool
       if ~isempty(gcp('nocreate'))
