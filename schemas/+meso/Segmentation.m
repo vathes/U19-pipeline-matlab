@@ -439,7 +439,7 @@ function [outputFiles,fileChunk] = runCNMF(moviePath, fileChunk, cfg, gofCfg, re
   acquisInfo            = cat(1, acquisInfo{:});
   acquis                = unique(acquisInfo(:,1));
   acquisPrefix          = fullfile(moviePath, acquis{1});
-    keyboard
+
   % Proto-segmentation
   if fromProtoSegments
     [protoROI, outputFiles]       ...
