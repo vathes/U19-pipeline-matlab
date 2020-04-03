@@ -470,15 +470,18 @@ function [outputFiles,fileChunk] = runCNMF(moviePath, fileChunk, cfg, gofCfg, re
       fileChunk(iChunk,:) = [fileChunkTemp(iChunk) fileChunkTemp(iChunk+1)-1];
     end
   end
+  
+  acquisInfo            = regexp(name, '(.+)[_-]([0-9]+)$', 'tokens', 'once');
+  acquisInfo            = cat(1, acquisInfo{:});
+  acquis                = unique(acquisInfo(:,1));
+  acquisPrefix          = fullfile(moviePath{iPath}, acquis{1});
 
   % Proto-segmentation
   if fromProtoSegments
-    protoChunk          = fileChunk(1:cfg.protoNumChunks:end);
-    if protoChunk(end) ~= fileChunk(end)
-      protoChunk(end+1) = fileChunk(end);
-    end
+    fileIdx             = fileChunk(1,1):fileChunk(1,2);
+    protoChunk          = fileIdx(1:cfg.protoNumChunks:end);
     [protoROI, outputFiles]       ...
-                        = getProtoSegmentation(acquisFile, protoChunk, acquisPrefix, acquisNum, repository, lazy, cfg, outputFiles, scratchDir);
+                        = getProtoSegmentation(movieFile, protoChunk, acquisPrefix, 1, repository, lazy, cfg, outputFiles, scratchDir);
   else
     protoROI            = [];
   end
@@ -492,7 +495,7 @@ function [outputFiles,fileChunk] = runCNMF(moviePath, fileChunk, cfg, gofCfg, re
     chunk(iChunk).movieFile   = stripPath(chunkFiles);
 
     [cnmf, source, roiFile, summaryFile, gofCfg.timeScale, binnedY, outputFiles]  ...
-                              = cnmfSegmentation(chunkFiles, acquisPrefix, acquisNum(iFile), protoROI, cfg, repository, lazy, outputFiles, scratchDir);
+                              = cnmfSegmentation(chunkFiles, acquisPrefix, 1, protoROI, cfg, repository, lazy, outputFiles, scratchDir);
     if ~isempty(cnmf)
       chunk(iChunk).reference = source.fileMCorr.reference;
       chunk(iChunk).numFrames = size(cnmf.temporal,2);
