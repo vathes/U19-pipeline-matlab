@@ -90,6 +90,8 @@ classdef Segmentation < dj.Imported
             
       %% run segmentation and populate this table
       if isempty(gcp('nocreate')); poolobj = parpool; end
+      
+      segmentationMethod = fetch1(meso.SegmentationMethod & key,'segmentation_method');
       switch segmentationMethod
         case 'cnmf'
           outputFiles                      = runCNMF(fov_directory, fileChunk, cnmf_cfg, gof_cfg); 
