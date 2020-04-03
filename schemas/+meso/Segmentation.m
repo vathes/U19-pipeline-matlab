@@ -447,7 +447,6 @@ function [outputFiles,fileChunk] = runCNMF(moviePath, fileChunk, cfg, gofCfg, re
   end
   
   % Get movies and associated statistics info
-  keyboard
   outputFiles           = {};
   movieFile             = rdir(fullfile(moviePath, '*.tif'));
   movieFile             = {movieFile.name};
@@ -472,11 +471,12 @@ function [outputFiles,fileChunk] = runCNMF(moviePath, fileChunk, cfg, gofCfg, re
     end
   end
   
-  acquisInfo            = regexp(moviePath{1}, '(.+)[_-]([0-9]+)$', 'tokens', 'once');
+  [~,name]              = parsePath(movieFile);
+  acquisInfo            = regexp(name, '(.+)[_-]([0-9]+)$', 'tokens', 'once');
   acquisInfo            = cat(1, acquisInfo{:});
   acquis                = unique(acquisInfo(:,1));
-  acquisPrefix          = fullfile(moviePath{1}, acquis{1});
-
+  acquisPrefix          = fullfile(moviePath, acquis{1});
+    
   % Proto-segmentation
   if fromProtoSegments
     fileIdx             = fileChunk(1,1):fileChunk(1,2);
