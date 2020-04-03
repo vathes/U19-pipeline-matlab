@@ -89,7 +89,7 @@ classdef Segmentation < dj.Imported
       fileChunk                            = selectFileChunks(key,chunk_cfg); 
             
       %% run segmentation and populate this table
-      if isempty(gcp('nocreate')); poolobj = parpool; end
+      if isempty(gcp('nocreate')); poolobj = parpool('IdleTimeout', 120); end
       
       segmentationMethod = fetch1(meso.SegmentationMethod & key,'segmentation_method');
       switch segmentationMethod
