@@ -471,10 +471,10 @@ function [outputFiles,fileChunk] = runCNMF(moviePath, fileChunk, cfg, gofCfg, re
     end
   end
   
-  acquisInfo            = regexp(name, '(.+)[_-]([0-9]+)$', 'tokens', 'once');
+  acquisInfo            = regexp(moviePath{1}, '(.+)[_-]([0-9]+)$', 'tokens', 'once');
   acquisInfo            = cat(1, acquisInfo{:});
   acquis                = unique(acquisInfo(:,1));
-  acquisPrefix          = fullfile(moviePath{iPath}, acquis{1});
+  acquisPrefix          = fullfile(moviePath{1}, acquis{1});
 
   % Proto-segmentation
   if fromProtoSegments
