@@ -1,6 +1,6 @@
 %{
 -> meso.FieldOfView
--> meso.MotionCorrectionParameterSet       # meta file, frameMCorr-method
+-> meso.McParameterSet       # meta file, frameMCorr-method
 ---
 cross_files_x_shifts                        : longblob      # nFrames x 2, meta file, fileMCorr-xShifts
 cross_files_y_shifts                        : longblob      # nFrames x 2, meta file, fileMCorr-yShifts
