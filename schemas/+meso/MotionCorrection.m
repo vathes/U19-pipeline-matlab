@@ -59,7 +59,7 @@ classdef MotionCorrection < dj.Imported
         within_key(iFile).within_reference_image        = frameMCorr(iFile).reference; 
       end
 
-      insert(meso.motioncorrectionWithinFile, within_key)
+      insert(meso.MotionCorrectionWithinFile, within_key)
 
       %% insert within file correction meso.motioncorrectionAcrossFile
       across_key                        = key;
@@ -67,7 +67,7 @@ classdef MotionCorrection < dj.Imported
       across_key.within_file_y_shifts   = fileMCorr(iFile).yShifts;
       across_key.within_reference_image = fileMCorr(iFile).reference; 
 
-      inserti(meso.motioncorrectionAcrossFile, across_key)
+      inserti(meso.MotionCorrectionAcrossFile, across_key)
 
       %% compute and save some stats as .mat files, intermediate step used downstream in the segmentation code
       movieName                     = stripPath(movieFiles);
