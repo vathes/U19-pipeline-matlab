@@ -14,9 +14,16 @@ classdef Segmentation < dj.Imported
     function makeTuples(self, key)
       
       %% imaging directory
-      fov_directory = formatFilePath(fetch1(meso.FieldOfView & key,'fov_directory'),true,true);
-      keydata       = fetch(key);
-      result        = keydata;
+      if isstruct(key)
+        fovdata       = fetch(meso.FieldOfView & key,'fov_directory');
+        fov_directory = formatFilePath(fovdata.fov_directory,true,true);
+        keydata       = key;
+      else
+        fov_directory = formatFilePath(fetch1(meso.FieldOfView & key,'fov_directory'),true,true);
+        keydata       = fetch(key);
+      end
+      
+      result          = keydata;
       
       %% analysis params
       params        = fetch(meso.SegParameterSetParameter & key, ...
