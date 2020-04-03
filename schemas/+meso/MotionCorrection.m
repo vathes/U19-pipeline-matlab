@@ -53,7 +53,7 @@ classdef MotionCorrection < dj.Imported
       within_key                        = repmat(within_key,[1 numel(frameMCorr)]);
 
       for iFile = 1:numel(frameMCorr)
-        within_key(iFile).FieldOfViewFile               = movieFiles{iFile};
+        within_key(iFile).file_number                   = iFile;
         within_key(iFile).within_file_x_shifts          = frameMCorr(iFile).xShifts;
         within_key(iFile).within_file_y_shifts          = frameMCorr(iFile).yShifts;
         within_key(iFile).within_reference_image        = frameMCorr(iFile).reference; 
