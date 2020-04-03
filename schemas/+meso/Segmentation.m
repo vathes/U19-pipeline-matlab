@@ -86,7 +86,7 @@ classdef Segmentation < dj.Imported
       
       %% select tif file chunks based on behavior and bleaching
       % fileChunk is an array of size chunks x 2, where rows are [firstFileIdx lastFileIdx]
-      fileChunk                            = selectFileChunks(key,chunk_cfg); 
+      fileChunk                            = selectFileChunks(key,chunk_cfg) 
             
       %% run segmentation and populate this table
       if isempty(gcp('nocreate')); poolobj = parpool; end
@@ -241,7 +241,7 @@ function fileChunk = selectFileChunks(key,chunk_cfg)
 % fileChunk is an array of size chunks x 2, where rows are [firstFileIdx lastFileIdx]
 
 %% check if enforcing this is actually desired
-file_ids       = fetchn(meso.FiledOfViewFiles & key,'file_number');
+file_ids       = fetchn(meso.FiledOfViewFile & key,'file_number');
 nfiles         = numel(file_ids);
 
 if ~chunk_cfg.auto_select_behav && ~chunk_cfg.auto_select_bleach && nfiles < chunk_cfg.filesPerChunk
