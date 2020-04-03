@@ -439,7 +439,7 @@ function [outputFiles,fileChunk] = runCNMF(moviePath, fileChunk, cfg, gofCfg, re
   acquisInfo            = cat(1, acquisInfo{:});
   acquis                = unique(acquisInfo(:,1));
   acquisPrefix          = fullfile(moviePath, acquis{1});
-    
+    keyboard
   % Proto-segmentation
   if fromProtoSegments
     [protoROI, outputFiles]       ...
@@ -490,7 +490,7 @@ function [prototypes, outputFiles] = getProtoSegmentation(movieFile, fileChunk, 
   %% Process input in chunks
   fig             = gobjects(0);
   prototypes      = struct();
-  for iChunk = 1:size(fileChunk,2)
+  for iChunk = 1:size(fileChunk,1)
     chunkFiles                    = movieFile(fileChunk(iChunk,1):fileChunk(iChunk,2));
     prototypes(iChunk).movieFile  = stripPath(chunkFiles);
     chunkLabel                    = sprintf('%s_%d-%d', prefix, fileChunk(iChunk,1), fileChunk(iChunk,2));
