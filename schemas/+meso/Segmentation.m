@@ -295,11 +295,11 @@ if chunk_cfg.auto_select_behav
   % tif file containing the first good behavior block to the last tif file
   % containing the last good behavior block. Further chunking will depend
   % on max num file criterion / bleaching
-  keyboard
-  isGoodBlock          = [goodSess.extractThisBlock 0];
-  frameRanges          = fetchn(meso.SyncImagingBehavior & key,'sync_im_frame_span_by_behav_block')';
-  frameRangesPerBlock  = cell2mat(frameRanges(isGoodBlock));
-  frameRangesPerFile   = cell2mat(fetchn(meso.FiledOfViewFiles & key,'file_frame_range')');
+  isGoodBlock              = [goodSess.extractThisBlock false];
+  frameRanges              = fetchn(meso.SyncImagingBehavior & key,'sync_im_frame_span_by_behav_block');
+  frameRangesPerBlock      = cell2mat(frameRanges{1}');
+  frameRangesPerGoodBlock  = frameRangesPerBlock(goodSess.extractThisBlock,:);
+  frameRangesPerFile       = cell2mat(fetchn(meso.FieldOfViewFile & key,'file_frame_range'));
   
   % break chunks of non-consecutive blocks if necessary
   if chunk_cfg.breakNonConsecBlocks
@@ -319,8 +319,8 @@ if chunk_cfg.auto_select_behav
     end
     
   else
-    fileChunk              = [find(min(frameRangesPerBlock(:)) < frameRangesPerFile(:,2), 1, 'first') ...
-                              find(max(frameRangesPerBlock(:)) > frameRangesPerFile(:,1), 1, 'last')];
+    fileChunk              = [find(min(frameRangesPerGoodBlock(:)) < frameRangesPerFile(:,2), 1, 'first') ...
+                              find(max(frameRangesPerGoodBlock(:)) > frameRangesPerFile(:,1), 1, 'last')];
   end
   
 end
