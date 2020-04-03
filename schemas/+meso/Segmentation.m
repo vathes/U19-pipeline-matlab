@@ -447,6 +447,7 @@ function [outputFiles,fileChunk] = runCNMF(moviePath, fileChunk, cfg, gofCfg, re
   end
   
   % Get movies and associated statistics info
+  keyboard
   outputFiles           = {};
   movieFile             = rdir(fullfile(moviePath, '*.tif'));
   movieFile             = {movieFile.name};
