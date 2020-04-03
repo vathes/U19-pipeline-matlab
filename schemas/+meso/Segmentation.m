@@ -86,7 +86,7 @@ classdef Segmentation < dj.Imported
       
       %% select tif file chunks based on behavior and bleaching
       % fileChunk is an array of size chunks x 2, where rows are [firstFileIdx lastFileIdx]
-      fileChunk                            = selectFileChunks(key,chunk_cfg) 
+      fileChunk                            = selectFileChunks(key,chunk_cfg); 
             
       %% run segmentation and populate this table
       if isempty(gcp('nocreate')); poolobj = parpool; end
@@ -295,6 +295,7 @@ if chunk_cfg.auto_select_behav
   % tif file containing the first good behavior block to the last tif file
   % containing the last good behavior block. Further chunking will depend
   % on max num file criterion / bleaching
+  keyboard
   isGoodBlock          = [goodSess.extractThisBlock 0];
   frameRanges          = fetchn(meso.SyncImagingBehavior & key,'sync_im_frame_span_by_behav_block')';
   frameRangesPerBlock  = cell2mat(frameRanges(isGoodBlock));
