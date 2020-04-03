@@ -61,7 +61,7 @@ classdef Segmentation < dj.Imported
       cnmf_cfg.p                     = params.cnmf_p;
       cnmf_cfg.filesPerChunk         = params.cnmf_files_per_chunk;
       cnmf_cfg.protoNumChunks        = params.cnmf_proto_num_chunks;
-      cnmf_cfg.zeroIsMinium          = params.cnmf_zero_is_minimum;
+      cnmf_cfg.zeroIsMinimum         = params.cnmf_zero_is_minimum;
       cnmf_cfg.defaultTimeScale      = params.cnmf_default_timescale;
       cnmf_cfg.timeResolution        = 1000/frameRate;
       cnmf_cfg.dFFRectification      = params.cnmf_dff_rectification;
@@ -409,19 +409,6 @@ function [outputFiles,fileChunk] = runCNMF(moviePath, fileChunk, cfg, gofCfg, re
                                         , method{:}                               ...
                                         );
 
-  % Additional analysis configuration for "goodness-of-fit"
-  if isempty(gofCfg)
-    gofCfg.containEnergy    = 0.9;            % fractional amount of energy used to specify spatial support
-    gofCfg.coreEnergy       = 0.7;            % fractional amount of energy used to specify core of component
-    gofCfg.noiseRange       = 2;              % range in which to search for modal (baseline) activation
-    gofCfg.maxBaseline      = 1.5;            % number of factors below the data noise to consider as (unambiguously) baseline
-    gofCfg.minActivation    = 3;              % number of factors above the data noise to consider activity as significant
-    gofCfg.highActivation   = 5;              % number of factors above the data noise to consider activity as significant with reduced time span
-    gofCfg.minTimeSpan      = 1;              % number of timeScale chunks to require activity to be above threshold
-    gofCfg.bkgTimeSpan      = 3;              % number of timeScale chunks for smoothing the background activity level in order to determine its "baseline"
-    gofCfg.minDeltaFoverF   = 0.3;            % minimum dF/F to be considered as a significant transient
-  end
-  
   % Get movies and associated statistics info
   outputFiles           = {};
   movieFile             = rdir(fullfile(moviePath, '*.tif'));
