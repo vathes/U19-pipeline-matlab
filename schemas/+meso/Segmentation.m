@@ -14,7 +14,7 @@ classdef Segmentation < dj.Imported
     function makeTuples(self, key)
       
       %% imaging directory
-      fov_directory = formatFilePath(fetch1(key,'fov_directory'),true,true);
+      fov_directory = formatFilePath(fetch1(meso.FieldOfView & key,'fov_directory'),true,true);
       keydata       = fetch(key);
       result        = keydata;
       
@@ -24,7 +24,7 @@ classdef Segmentation < dj.Imported
                            'chunks_towers_perf_thresh', 'chunks_towers_bias_thresh', 'chunks_towers_max_frac_bad',                    ...
                            'chunks_visguide_min_n_trials', 'chunks_visguide_perf_thresh', 'chunks_visguide_bias_thresh',              ...
                            'chunks_visguide_max_frac_bad', 'chunks_min_num_consecutive_blocks', 'chunks_break_nonconsecutive_blocks', ...
-                           'cmnf_num_components', 'cmnf_tau', 'cmnf_p', 'cmnf_files_per_chunk', 'cnmf_proto_num_chunks',              ...
+                           'cnmf_num_components', 'cnmf_tau', 'cnmf_p', 'cnmf_files_per_chunk', 'cnmf_proto_num_chunks',              ...
                            'cnmf_zero_is_minimum', 'cnmf_default_timescale', 'cnmf_dff_rectification', 'cnmf_min_roi_significance',   ...
                            'cnmf_min_num_frames', 'cnmf_max_centroid_dist', 'cnmf_min_dist_pixels', 'cnmf_min_shape_corr',            ...
                            'cnmf_pixels_surround', 'gof_contain_energy', 'gof_core_energy', 'gof_noise_range', 'gof_max_baseline',    ...
@@ -36,7 +36,7 @@ classdef Segmentation < dj.Imported
       % selectFileChunks
       chunk_cfg.auto_select_behav    = params.chunks_auto_select_behav;
       chunk_cfg.auto_select_bleach   = params.chunks_auto_select_bleach;
-      chunk_cfg.filesPerChunk        = params.cmnf_files_per_chunk;
+      chunk_cfg.filesPerChunk        = params.cnmf_files_per_chunk;
       chunk_cfg.T11_minNtrials       = params.chunks_towers_min_n_trials;
       chunk_cfg.T11_perfTh           = params.chunks_towers_perf_thresh;
       chunk_cfg.T11_biasTh           = params.chunks_towers_bias_thresh;
@@ -49,10 +49,10 @@ classdef Segmentation < dj.Imported
       chunk_cfg.breakNonConsecBlocks = params.chunks_break_nonconsecutive_blocks;
 
       % cnmf, general
-      cnmf_cfg.K                     = params.cmnf_num_components;
-      cnmf_cfg.tau                   = params.cmnf_tau;
-      cnmf_cfg.p                     = params.cmnf_p;
-      cnmf_cfg.filesPerChunk         = params.cmnf_files_per_chunk;
+      cnmf_cfg.K                     = params.cnmf_num_components;
+      cnmf_cfg.tau                   = params.cnmf_tau;
+      cnmf_cfg.p                     = params.cnmf_p;
+      cnmf_cfg.filesPerChunk         = params.cnmf_files_per_chunk;
       cnmf_cfg.protoNumChunks        = params.cnmf_proto_num_chunks;
       cnmf_cfg.zeroIsMinium          = params.cnmf_zero_is_minimum;
       cnmf_cfg.defaultTimeScale      = params.cnmf_default_timescale;
