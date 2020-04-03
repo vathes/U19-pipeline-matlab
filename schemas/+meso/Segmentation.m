@@ -89,7 +89,7 @@ classdef Segmentation < dj.Imported
       fileChunk                            = selectFileChunks(key,chunk_cfg); 
             
       %% run segmentation and populate this table
-      if isempty(gcp('nocreate')); poolobj = parpool; end
+%       if isempty(gcp('nocreate')); poolobj = parpool; end
       
       segmentationMethod = fetch1(meso.SegmentationMethod & key,'segmentation_method');
       switch segmentationMethod
@@ -388,31 +388,7 @@ function [outputFiles,fileChunk] = runCNMF(moviePath, fileChunk, cfg, gofCfg, re
   parSettings                 = parallel.Settings;
   parSettings.Pool.AutoCreate = false;
   
-  
-  % Analysis configuration
-  if isempty(cfg)
-    cfg.K                   = 400;            % number of components to be found
-    cfg.tau                 = 4;              % std of gaussian kernel (size of neuron) 
-    cfg.p                   = 2;              % order of autoregressive system (p = 0 no dynamics, p=1 just decay, p = 2, both rise and decay)
-    cfg.iterations          = 2;
-    cfg.filesPerChunk       = 100;
-    cfg.protoNumChunks      = 1;
-    cfg.zeroIsMinimum       = false;
-
-    cfg.defaultTimeScale    = 10;
-    cfg.timeResolution      = 1/4.6;             % ms, for temporal downsampling (rebinning) of data to feed to CNMF
-  %   cfg.timeResolution      = 20;             % ms, for NO temporal downsampling at 30Hz
-    cfg.dFFRectification    = 2;              % deemphasize dF/F values below this magnitude when computing component correlations
-    cfg.minROISignificance  = 3;              % minimum significance for components to retain; at least some time points must be above this threshold
-    cfg.frameRate           = 4.6;             % fps
-    cfg.minNumFrames        = 400;
-
-    cfg.maxCentroidDistance = 1;              % maximum fraction of diameter within which to search for a matching template
-    cfg.minDistancePixels   = 1;              % allow searching within this many pixels even if the diameter is very small
-    cfg.minShapeCorr        = 0.85;           % minimum shape correlation for global registration
-    cfg.pixelsSurround      = [3 13];         % number of pixels
-  end
-  
+  % segmentation settings
   if fromProtoSegments
     method                = { 'search_method' , 'dilate'                          ... % search locations when updating spatial components
                             , 'se'            , strel('disk',4)                   ... % morphological element for method ‘dilate’
@@ -479,10 +455,8 @@ function [outputFiles,fileChunk] = runCNMF(moviePath, fileChunk, cfg, gofCfg, re
     
   % Proto-segmentation
   if fromProtoSegments
-    fileIdx             = fileChunk(1,1):fileChunk(1,2);
-    protoChunk          = fileIdx(1:cfg.protoNumChunks:end);
     [protoROI, outputFiles]       ...
-                        = getProtoSegmentation(movieFile, protoChunk, acquisPrefix, 1, repository, lazy, cfg, outputFiles, scratchDir);
+                        = getProtoSegmentation(movieFile, fileChunk, acquisPrefix, lazy, cfg, outputFiles, scratchDir);
   else
     protoROI            = [];
   end
@@ -496,7 +470,7 @@ function [outputFiles,fileChunk] = runCNMF(moviePath, fileChunk, cfg, gofCfg, re
     chunk(iChunk).movieFile   = stripPath(chunkFiles);
 
     [cnmf, source, roiFile, summaryFile, gofCfg.timeScale, binnedY, outputFiles]  ...
-                              = cnmfSegmentation(chunkFiles, acquisPrefix, 1, protoROI, cfg, repository, lazy, outputFiles, scratchDir);
+                              = cnmfSegmentation(chunkFiles, acquisPrefix, iFile, protoROI, cfg, repository, lazy, outputFiles, scratchDir);
     if ~isempty(cnmf)
       chunk(iChunk).reference = source.fileMCorr.reference;
       chunk(iChunk).numFrames = size(cnmf.temporal,2);
@@ -515,7 +489,7 @@ function [outputFiles,fileChunk] = runCNMF(moviePath, fileChunk, cfg, gofCfg, re
 end
 
 %% --------------------------------------------------------------------------------------------------
-function [prototypes, outputFiles] = getProtoSegmentation(movieFile, fileChunk, prefix, fileNum, repository, lazy, cfg, outputFiles, scratchDir)
+function [prototypes, outputFiles] = getProtoSegmentation(movieFile, fileChunk, prefix, lazy, cfg, outputFiles, scratchDir)
   
   %% Look for existing work if available
   protoFile       = [prefix, '.proto-roi.mat'];
@@ -529,10 +503,10 @@ function [prototypes, outputFiles] = getProtoSegmentation(movieFile, fileChunk, 
   %% Process input in chunks
   fig             = gobjects(0);
   prototypes      = struct();
-  for iChunk = 1:numel(fileChunk) - 1
-    chunkFiles    = movieFile(fileChunk(iChunk):fileChunk(iChunk+1)-1);
+  for iChunk = 1:size(fileChunk,2)
+    chunkFiles                    = movieFile(fileChunk(iChunk,1):fileChunk(iChunk,2));
     prototypes(iChunk).movieFile  = stripPath(chunkFiles);
-    chunkLabel    = sprintf('%s_%d-%d', prefix, fileNum(fileChunk(iChunk)), fileNum(fileChunk(iChunk+1)-1));
+    chunkLabel                    = sprintf('%s_%d-%d', prefix, fileChunk(iChunk,1), fileChunk(iChunk,2));
     fprintf('====  Performing proto-segmentation of %s\n', chunkLabel);
     
     %% Read motion corrected statistics and crop the border to avoid correction artifacts
@@ -606,7 +580,7 @@ function [prototypes, outputFiles] = getProtoSegmentation(movieFile, fileChunk, 
   
   
   %% Save output and figures
-  save(protoFile, 'prototypes', 'repository', '-v7.3');
+  save(protoFile, 'prototypes', '-v7.3');
   savefig(fig, figFile, 'compact');
   close(fig);
   
