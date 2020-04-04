@@ -18,6 +18,7 @@ chunks_break_nonconsecutive_blocks: boolean # set true to break non consecuitve 
 cnmf_num_components          :   int        # number of components to be found, for initialization purposes
 cnmf_tau                     :   float      # std of gaussian kernel (size of neuron)
 cnmf_p                       :   tinyint    # order of autoregressive system (p = 0 no dynamics, p=1 just decay, p = 2, both rise and decay)
+cnmf_num_iter                :   tinyint    # number of iterations 
 cnmf_files_per_chunk         :   int        # max allowed files per segmentation chunk
 cnmf_proto_num_chunks        :   int        # how many chunks to use when initializing morphological segmentation
 cnmf_zero_is_minimum         :   boolean    # allow min fluorescence to be higher than zero
@@ -46,13 +47,13 @@ classdef SegParameterSetParameter < dj.Part
     properties(SetAccess=protected)
         master = meso.SegParameterSet
         contents = {
-          'cnmf', 1, 'cnmfParameters', true, true, 30, .6, .4, .2, 10, .8, .4, .2, 2, true, 400, 4, 2, 50, 1, false, 10, 1000/12.3, 2, 3, 12.3, 2000, 1, 1, 0.85, [3 13], 0.9, 0.7, 2, 1.5, 3, 5, 1, 3, 0.3 
+          'cnmf', 1, 'cnmfParameters', true, true, 30, .6, .4, .2, 10, .8, .4, .2, 2, true, 400, 4, 2, 2, 50, 1, false, 10, 1000/12.3, 2, 3, 12.3, 2000, 1, 1, 0.85, [3 13], 0.9, 0.7, 2, 1.5, 3, 5, 1, 3, 0.3 
           }
     end
 end
 
 % fieldls = {
-%   'segmentation_method',
+% 'segmentation_method',
 % 'seg_parameter_set_id',
 % 'seg_parameter_name',
 % 'chunks_auto_select_behav',
@@ -70,6 +71,7 @@ end
 % 'cnmf_num_components',
 % 'cnmf_tau',
 % 'cnmf_p',
+% 'cnmf_num_iter',
 % 'cnmf_files_per_chunk',
 % 'cnmf_proto_num_chunks',
 % 'cnmf_zero_is_minimum',
@@ -93,3 +95,9 @@ end
 % 'gof_bkg_time_span',
 % 'gof_min_dff',
 % };
+% 
+% data = [];
+% for iField=1:numel(fieldls)
+%   data.(fieldls{iField}) = contents{iField};
+% end
+% inserti(meso.SegParameterSetParameter,data)

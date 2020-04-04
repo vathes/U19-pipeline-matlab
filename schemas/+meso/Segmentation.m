@@ -26,7 +26,7 @@ classdef Segmentation < dj.Imported
       result          = keydata;
       
       %% analysis params
-      params        = fetch(meso.SegParameterSetParameter & key, ...
+      params        = fetch(meso.SegParameterSetParameter & key, 'cnmf_num_iter',...
                            'chunks_auto_select_behav', 'chunks_auto_select_bleach', 'chunks_towers_min_n_trials',                     ...
                            'chunks_towers_perf_thresh', 'chunks_towers_bias_thresh', 'chunks_towers_max_frac_bad',                    ...
                            'chunks_visguide_min_n_trials', 'chunks_visguide_perf_thresh', 'chunks_visguide_bias_thresh',              ...
@@ -59,6 +59,7 @@ classdef Segmentation < dj.Imported
       cnmf_cfg.K                     = params.cnmf_num_components;
       cnmf_cfg.tau                   = params.cnmf_tau;
       cnmf_cfg.p                     = params.cnmf_p;
+      cnmf_cfg.iterations            = params.cnmf_num_iter;
       cnmf_cfg.filesPerChunk         = params.cnmf_files_per_chunk;
       cnmf_cfg.protoNumChunks        = params.cnmf_proto_num_chunks;
       cnmf_cfg.zeroIsMinimum         = params.cnmf_zero_is_minimum;
