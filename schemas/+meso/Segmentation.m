@@ -100,7 +100,16 @@ classdef Segmentation < dj.Imported
           warning('suite2p is not yet supported in this pipeline')
       end
       
-      % load summary file
+      % shut down parallel pool
+      if ~isempty(gcp('nocreate'))
+        if exist('poolobj','var')
+          delete(poolobj)
+        else
+          delete(gcp('nocreate'))
+        end
+      end
+      
+      %% load summary file
       data                                 = load(outputFiles{1});
       num_chunks                           = numel(data.chunk);
       result.num_chunks                    = num_chunks;
@@ -223,14 +232,6 @@ classdef Segmentation < dj.Imported
       insert(meso.SegmentationRoiMorphologyAuto, morpho_data)
       insert(meso.Trace, trace_data)
       
-      % shut down parallel pool
-      if ~isempty(gcp('nocreate'))
-        if exist('poolobj','var')
-          delete(poolobj)
-        else
-          delete(gcp('nocreate'))
-        end
-      end
     end
   end
 end
@@ -1349,7 +1350,7 @@ function outputFiles = globalRegistration(chunk, path, prefix, repository, cfg, 
   
   fprintf('====  SAVING to %s\n', regFile);
   save(regFile, 'chunk', 'registration', 'cnmf', 'repository', '-v7.3');
-  
+  outputFiles{end+1}          = regFile;
   
   %% Update user-defined morphology information by considering that global IDs can have changed
   morphologyFile                = fullfile(path, [prefix algoLabel '.morphology.mat']);
