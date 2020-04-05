@@ -1042,10 +1042,15 @@ function outputFiles = globalRegistration(chunk, path, prefix, repository, cfg, 
   else
     regFile                     = fullfile(path, [prefix algoLabel '.mat']);
   end
-  
-  outputFiles{end+1}            = regFile;
 
   if exist(regFile,'file')
+    
+    for iFile = 1:numel(chunk)
+      roiFile                   = fullfile(path, chunk(iFile).roiFile);
+      outputFiles{end+1}        = roiFile;
+    end
+    outputFiles{end+1}          = regFile;
+    
     fprintf('====  FOUND %s, skipping global registration\n', regFile);
     return
   end
@@ -1342,8 +1347,8 @@ function outputFiles = globalRegistration(chunk, path, prefix, repository, cfg, 
   
   
   
-    fprintf('====  SAVING to %s\n', regFile);
-    save(regFile, 'chunk', 'registration', 'cnmf', 'repository', '-v7.3');
+  fprintf('====  SAVING to %s\n', regFile);
+  save(regFile, 'chunk', 'registration', 'cnmf', 'repository', '-v7.3');
   
   
   %% Update user-defined morphology information by considering that global IDs can have changed
