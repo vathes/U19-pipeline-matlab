@@ -110,6 +110,7 @@ classdef Segmentation < dj.Imported
       end
       
       %% load summary file
+      keyboard
       data                                 = load(outputFiles{1});
       num_chunks                           = numel(data.chunk);
       result.num_chunks                    = num_chunks;
