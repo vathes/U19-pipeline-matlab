@@ -99,7 +99,7 @@ classdef Segmentation < dj.Imported
         case 'suite2p'
           warning('suite2p is not yet supported in this pipeline')
       end
-      keyboard
+      
       % load summary file
       data                                 = load(outputFiles{1});
       num_chunks                           = numel(data.chunk);
@@ -112,21 +112,21 @@ classdef Segmentation < dj.Imported
       
       %% write to meso.SegmentationChunks (some session chunk-specific info)
       chunkRange = zeros(num_chunks,2);
-      chunkdata  = [];
+      chunkdata  = cell(1,num_chunks);
       for iChunk = 1:num_chunks
         result                       = keydata;
-        chunkdata(iChunk)            = load(outputFiles{1+iChunk});
+        chunkdata{iChunk}            = load(outputFiles{1+iChunk});
         result.segmentation_chunk_id = iChunk;
-        result.tif_file_list         = chunkdata(iChunk).source.movieFile;
-        result.region_image_size     = chunkdata(iChunk).source.cropping.selectSize;
-        result.region_image_x_range  = chunkdata(iChunk).source.cropping.xRange;
-        result.region_image_y_range  = chunkdata(iChunk).source.cropping.yRange;
+        result.tif_file_list         = chunkdata{iChunk}.source.movieFile;
+        result.region_image_size     = chunkdata{iChunk}.source.cropping.selectSize;
+        result.region_image_x_range  = chunkdata{iChunk}.source.cropping.xRange;
+        result.region_image_y_range  = chunkdata{iChunk}.source.cropping.yRange;
         
         % figure out imaging frame range in the chunk (with respect to whole session)
         frame_range_first            = fetch1(meso.FieldOfViewFile & key & ...
-                                              sprintf('fov_filename=%s',result.tif_file_list{1}),'file_frame_range');
+                                              sprintf('fov_filename="%s"',result.tif_file_list{1}),'file_frame_range');
         frame_range_last             = fetch1(meso.FieldOfViewFile & key & ...
-                                              sprintf('fov_filename=%s',result.tif_file_list{end}),'file_frame_range');   
+                                              sprintf('fov_filename="%s"',result.tif_file_list{end}),'file_frame_range');   
         chunkRange(iChunk,:)         = [frame_range_first(1) frame_range_last(end)];
         result.imaging_frame_range   = chunkRange(iChunk,:);
         
@@ -136,8 +136,8 @@ classdef Segmentation < dj.Imported
         % write global background (neuropil) activity data to meso.SegmentationBackground
         result                       = keydata;
         result.segmentation_chunk_id = iChunk;
-        result.background_spatial    = reshape(chunkdata(iChunk).cnmf.bkgSpatial,chunkdata(iChunk).cnmf.region.ImageSize);
-        result.background_temporal   = chunkdata(iChunk).cnmf.bkgTemporal;
+        result.background_spatial    = reshape(chunkdata{iChunk}.cnmf.bkgSpatial,chunkdata{iChunk}.cnmf.region.ImageSize);
+        result.background_temporal   = chunkdata{iChunk}.cnmf.bkgTemporal;
         
         inserti(meso.SegmentationBackground, result)
         clear result
@@ -182,7 +182,7 @@ classdef Segmentation < dj.Imported
         
         roi_data(iROI).roi_global_xy              = globalXY(:,iROI);
         trace_data(iROI).time_constants           = data.cnmf.timeConstants{iROI};
-        trace_data(iROI).initial_concentration    = data.cnmf.initConcentration{iROI};
+        trace_data(iROI).init_concentration       = data.cnmf.initConcentration{iROI};
         
         % now look in file chunks and fill activity etc
         trace_data(iROI).dff_roi                  = nan(1,totalFrames);
@@ -191,7 +191,7 @@ classdef Segmentation < dj.Imported
         trace_data(iROI).dff_roi_is_significant   = nan(1,totalFrames);
         trace_data(iROI).dff_roi_is_baseline      = nan(1,totalFrames);
 
-        for iChunk = 1:numel(chunk)
+        for iChunk = 1:numel(chunkdata)
           % find roi in chunks
           localIdx                                = data.chunk.globalID == iChunk;
           if sum(localIdx) == 0; continue; end
@@ -199,20 +199,20 @@ classdef Segmentation < dj.Imported
             
           % activity traces
           frameIdx                                = chunkRange(iChunk,1):chunkRange(iChunk,2);
-          uniqueData                              = chunkdata(iChunk).cnmf.uniqueData(localIdx,:);
+          uniqueData                              = chunkdata{iChunk}.cnmf.uniqueData(localIdx,:);
           uniqueBase                              = halfSampleMode(uniqueData(localIdx,:)');
-          surroundData                            = chunkdata(iChunk).cnmf.surroundData(localIdx,:);
+          surroundData                            = chunkdata{iChunk}.cnmf.surroundData(localIdx,:);
           trace_data(iROI).dff_roi(frameIdx)      = uniqueData / uniqueBase - 1;
           trace_data(iROI).dff_surround(frameIdx) = surroundData / uniqueBase - 1;
-          trace_data(iROI).spiking(frameIdx)      = chunkdata(iChunk).cnmf.spiking(localIdx,:);
-          trace_data(iROI).dff_roi_is_significant(frameIdx) = chunkdata(iChunk).cnmf.isSignificant(localIdx,:);
-          trace_data(iROI).dff_roi_is_baseline(frameIdx)    = chunkdata(iChunk).cnmf.isBaseline(localIdx,:);
+          trace_data(iROI).spiking(frameIdx)      = chunkdata{iChunk}.cnmf.spiking(localIdx,:);
+          trace_data(iROI).dff_roi_is_significant(frameIdx) = chunkdata{iChunk}.cnmf.isSignificant(localIdx,:);
+          trace_data(iROI).dff_roi_is_baseline(frameIdx)    = chunkdata{iChunk}.cnmf.isBaseline(localIdx,:);
           
           % roi: shape and morphological classification
           if isempty(roi_data(iROI).roi_spatial)
-            roi_data(iROI).roi_spatial      = reshape(chunkdata(iChunk).cnmf.spatial(:,localIdx),chunkdata.cnmf.region.ImageSize);
-            roi_data(iROI).surround_spatial = reshape(chunkdata(iChunk).cnmf.surround(:,localIdx),chunkdata.cnmf.region.ImageSize);
-            morpho_data(iROI).morphology    = char(chunkdata.cnmf.morphology(localIdx));
+            roi_data(iROI).roi_spatial      = reshape(chunkdata{iChunk}.cnmf.spatial(:,localIdx),chunkdata{iChunk}.cnmf.region.ImageSize);
+            roi_data(iROI).surround_spatial = reshape(chunkdata{iChunk}.cnmf.surround(:,localIdx),chunkdata{iChunk}.cnmf.region.ImageSize);
+            morpho_data(iROI).morphology    = char(chunkdata{iChunk}.cnmf.morphology(localIdx));
           end
         end
         
@@ -1326,9 +1326,12 @@ function outputFiles = globalRegistration(chunk, path, prefix, repository, cfg, 
   
   [~,algoLabel]                 = parsePath(chunk(1).roiFile);
   [~,~,algoLabel]               = parsePath(algoLabel);
-  regFile                       = fullfile(path, [prefix algoLabel '.mat']);
+  if contains(prefix,path)
+    regFile                     = [prefix algoLabel '.mat'];
+  else
+    regFile                     = fullfile(path, [prefix algoLabel '.mat']);
+  end
   
-keyboard
   fprintf('====  SAVING to %s\n', regFile);
   save(regFile, 'chunk', 'registration', 'cnmf', 'repository', '-v7.3');
   outputFiles{end+1}            = regFile;
