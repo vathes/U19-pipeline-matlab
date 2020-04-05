@@ -1328,7 +1328,7 @@ function outputFiles = globalRegistration(chunk, path, prefix, repository, cfg, 
   [~,~,algoLabel]               = parsePath(algoLabel);
   regFile                       = fullfile(path, [prefix algoLabel '.mat']);
   
-
+keyboard
   fprintf('====  SAVING to %s\n', regFile);
   save(regFile, 'chunk', 'registration', 'cnmf', 'repository', '-v7.3');
   outputFiles{end+1}            = regFile;
