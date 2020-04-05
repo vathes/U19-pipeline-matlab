@@ -99,7 +99,7 @@ classdef Segmentation < dj.Imported
         case 'suite2p'
           warning('suite2p is not yet supported in this pipeline')
       end
-      
+      keyboard
       % load summary file
       data                                 = load(outputFiles{1});
       num_chunks                           = numel(data.chunk);
@@ -469,7 +469,7 @@ function [outputFiles,fileChunk] = runCNMF(moviePath, fileChunk, cfg, gofCfg, re
 
   chunk(cellfun(@isempty, {chunk.roiFile})) = [];
   if ~isempty(chunk)
-    outputFiles     = globalRegistration(chunk, moviePath, 1, repository, cfg, outputFiles);
+    outputFiles     = globalRegistration(chunk, moviePath, acquisPrefix, repository, cfg, outputFiles);
   end
   
   outputFiles       = unique(outputFiles);
