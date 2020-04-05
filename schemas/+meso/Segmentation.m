@@ -1333,7 +1333,9 @@ function outputFiles = globalRegistration(chunk, path, prefix, repository, cfg, 
   end
   
   fprintf('====  SAVING to %s\n', regFile);
-  save(regFile, 'chunk', 'registration', 'cnmf', 'repository', '-v7.3');
+  if ~exist(regFile,'file')
+    save(regFile, 'chunk', 'registration', 'cnmf', 'repository', '-v7.3');
+  end
   outputFiles{end+1}            = regFile;
   
   
