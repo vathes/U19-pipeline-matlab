@@ -1034,7 +1034,22 @@ end
 
 %% --------------------------------------------------------------------------------------------------
 function outputFiles = globalRegistration(chunk, path, prefix, repository, cfg, outputFiles)
+  
+  [~,algoLabel]                 = parsePath(chunk(1).roiFile);
+  [~,~,algoLabel]               = parsePath(algoLabel);
+  if contains(prefix,path)
+    regFile                     = [prefix algoLabel '.mat'];
+  else
+    regFile                     = fullfile(path, [prefix algoLabel '.mat']);
+  end
+  
+  outputFiles{end+1}            = regFile;
 
+  if exist(regFile,'file')
+    fprintf('====  FOUND %s, skipping global registration\n', regFile);
+    return
+  end
+  
   %% Precompute the safe frame size to contain all centered components 
   maxSize                       = [0 0];
   for iFile = 1:numel(chunk)
@@ -1324,19 +1339,11 @@ function outputFiles = globalRegistration(chunk, path, prefix, repository, cfg, 
   registration.template         = template;
   registration.params           = cfg;
   
-  [~,algoLabel]                 = parsePath(chunk(1).roiFile);
-  [~,~,algoLabel]               = parsePath(algoLabel);
-  if contains(prefix,path)
-    regFile                     = [prefix algoLabel '.mat'];
-  else
-    regFile                     = fullfile(path, [prefix algoLabel '.mat']);
-  end
   
-  fprintf('====  SAVING to %s\n', regFile);
-  if ~exist(regFile,'file')
+  
+  
+    fprintf('====  SAVING to %s\n', regFile);
     save(regFile, 'chunk', 'registration', 'cnmf', 'repository', '-v7.3');
-  end
-  outputFiles{end+1}            = regFile;
   
   
   %% Update user-defined morphology information by considering that global IDs can have changed
