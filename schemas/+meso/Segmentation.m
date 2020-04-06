@@ -170,7 +170,8 @@ classdef Segmentation < dj.Imported
         trace_data.roi_idx                  = iROI;
         
         roi_data.roi_global_xy              = globalXY(:,iROI);
-        roi_data.roi_is_in_chunks           = [];
+        roi_data.roi_is_in_chunks           = [];   
+        roi_data.roi_spatial                = [];
         
         trace_data.time_constants           = data.cnmf.timeConstants{iROI};
         trace_data.init_concentration       = data.cnmf.initConcentration{iROI};
@@ -199,7 +200,7 @@ classdef Segmentation < dj.Imported
           trace_data.dff_roi_is_baseline(frameIdx)    = chunkdata{iChunk}.cnmf.isBaseline(localIdx,:);
           
           % roi: shape and morphological classification
-          if isempty(roi_data(iROI).roi_spatial)
+          if isempty(roi_data.roi_spatial)
             roi_data.roi_spatial      = reshape(chunkdata{iChunk}.cnmf.spatial(:,localIdx),chunkdata{iChunk}.cnmf.region.ImageSize);
             roi_data.surround_spatial = reshape(chunkdata{iChunk}.cnmf.surround(:,localIdx),chunkdata{iChunk}.cnmf.region.ImageSize);
             morpho_data.morphology    = char(chunkdata{iChunk}.cnmf.morphology(localIdx));
