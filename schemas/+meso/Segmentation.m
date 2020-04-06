@@ -100,15 +100,6 @@ classdef Segmentation < dj.Imported
           warning('suite2p is not yet supported in this pipeline')
       end
       
-      % shut down parallel pool
-      if ~isempty(gcp('nocreate'))
-        if exist('poolobj','var')
-          delete(poolobj)
-        else
-          delete(gcp('nocreate'))
-        end
-      end
-      
       %% load summary file
       data                                 = load(outputFiles{1});
       num_chunks                           = numel(data.chunk);
@@ -212,7 +203,15 @@ classdef Segmentation < dj.Imported
         inserti(meso.SegmentationRoiMorphologyAuto, morpho_data)
         inserti(meso.Trace, trace_data)
       end
-
+      
+      %% shut down parallel pool
+      if ~isempty(gcp('nocreate'))
+        if exist('poolobj','var')
+          delete(poolobj)
+        else
+          delete(gcp('nocreate'))
+        end
+      end
     end
   end
 end
