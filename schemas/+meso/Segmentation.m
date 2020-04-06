@@ -99,7 +99,7 @@ classdef Segmentation < dj.Imported
         case 'suite2p'
           warning('suite2p is not yet supported in this pipeline')
       end
-      
+      keyboard
       %% shut down parallel pool
       if ~isempty(gcp('nocreate'))
         if exist('poolobj','var')
