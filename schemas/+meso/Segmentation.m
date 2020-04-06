@@ -170,16 +170,17 @@ classdef Segmentation < dj.Imported
         trace_data.roi_idx                  = iROI;
         
         roi_data.roi_global_xy              = globalXY(:,iROI);
+        roi_data.roi_is_in_chunks           = [];
+        
         trace_data.time_constants           = data.cnmf.timeConstants{iROI};
         trace_data.init_concentration       = data.cnmf.initConcentration{iROI};
-        
-        % now look in file chunks and fill activity etc
         trace_data.dff_roi                  = nan(1,totalFrames);
         trace_data.dff_surround             = nan(1,totalFrames);
         trace_data.spiking                  = nan(1,totalFrames);
         trace_data.dff_roi_is_significant   = nan(1,totalFrames);
         trace_data.dff_roi_is_baseline      = nan(1,totalFrames);
-
+        
+        % now look in file chunks and fill activity etc
         for iChunk = 1:numel(chunkdata)
           % find roi in chunks
           localIdx                          = data.chunk.globalID == iChunk;
@@ -187,13 +188,13 @@ classdef Segmentation < dj.Imported
           roi_data.roi_is_in_chunks         = [roi_data.roi_is_in_chunks iChunk];
             
           % activity traces
-          frameIdx                                = chunkRange(iChunk,1):chunkRange(iChunk,2);
-          uniqueData                              = chunkdata{iChunk}.cnmf.uniqueData(localIdx,:);
-          uniqueBase                              = halfSampleMode(uniqueData(localIdx,:)');
-          surroundData                            = chunkdata{iChunk}.cnmf.surroundData(localIdx,:);
-          trace_data.dff_roi(frameIdx)      = uniqueData / uniqueBase - 1;
-          trace_data.dff_surround(frameIdx) = surroundData / uniqueBase - 1;
-          trace_data.spiking(frameIdx)      = chunkdata{iChunk}.cnmf.spiking(localIdx,:);
+          frameIdx                                    = chunkRange(iChunk,1):chunkRange(iChunk,2);
+          uniqueData                                  = chunkdata{iChunk}.cnmf.uniqueData(localIdx,:);
+          uniqueBase                                  = halfSampleMode(uniqueData(localIdx,:)');
+          surroundData                                = chunkdata{iChunk}.cnmf.surroundData(localIdx,:);
+          trace_data.dff_roi(frameIdx)                = uniqueData / uniqueBase - 1;
+          trace_data.dff_surround(frameIdx)           = surroundData / uniqueBase - 1;
+          trace_data.spiking(frameIdx)                = chunkdata{iChunk}.cnmf.spiking(localIdx,:);
           trace_data.dff_roi_is_significant(frameIdx) = chunkdata{iChunk}.cnmf.isSignificant(localIdx,:);
           trace_data.dff_roi_is_baseline(frameIdx)    = chunkdata{iChunk}.cnmf.isBaseline(localIdx,:);
           
