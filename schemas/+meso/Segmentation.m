@@ -99,7 +99,7 @@ classdef Segmentation < dj.Imported
         case 'suite2p'
           warning('suite2p is not yet supported in this pipeline')
       end
-      keyboard
+      
       %% shut down parallel pool
       if ~isempty(gcp('nocreate'))
         if exist('poolobj','var')
@@ -110,6 +110,15 @@ classdef Segmentation < dj.Imported
       end
       
       %% load summary file
+      reorder = false;
+      for iFile = 1:numel(outputFiles)
+        if contains(outputFiles{iFile},'.fig')
+          outputFiles{iFile} = [outputFiles{iFile}(1:end-3) 'mat'];
+          reorder = true;
+        end
+      end
+      if reorder; outputFiles = unique(outputFiles); end
+      
       data                                 = load(outputFiles{1});
       num_chunks                           = numel(data.chunk);
       result.num_chunks                    = num_chunks;
