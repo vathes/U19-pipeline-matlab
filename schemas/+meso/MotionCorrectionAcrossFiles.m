@@ -1,4 +1,5 @@
 %{
+# across tif files, x-y shifts for motion registration
 -> meso.FieldOfView
 -> meso.McParameterSet       # meta file, frameMCorr-method
 ---

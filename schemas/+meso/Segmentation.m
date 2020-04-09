@@ -1,4 +1,5 @@
 %{
+# ROI segmentation
 -> meso.FieldOfView
 -> meso.SegParameterSet
 ---
@@ -193,7 +194,7 @@ classdef Segmentation < dj.Imported
         % now look in file chunks and fill activity etc
         for iChunk = 1:numel(chunkdata)
           % find roi in chunks
-          localIdx                          = data.chunk.globalID == iChunk;
+          localIdx                          = data.chunk.globalID == iROI;
           if sum(localIdx) == 0; continue; end
           roi_data.roi_is_in_chunks         = [roi_data.roi_is_in_chunks iChunk];
             

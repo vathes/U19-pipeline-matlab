@@ -1,4 +1,5 @@
 %{
+# activity traces for each ROI
 -> meso.SegmentationRoi
 ---
 dff_roi                : longblob@mesoimaging  # delta f/f for each cell, 1 x nFrames. In case of chunks in segmentation, frames with no data are filled with NaN
