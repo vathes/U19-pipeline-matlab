@@ -1,4 +1,5 @@
 %{
+# metainformation and pixel masks for each ROI
 -> meso.Segmentation
 roi_idx            :  int       # index of the roi
 ---
