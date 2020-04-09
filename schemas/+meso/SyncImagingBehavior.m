@@ -1,15 +1,28 @@
 %{
 -> meso.FieldOfView
 ---
-sync_im_frame                      :    longblob@mesoimaging   # frame number within tif file
-sync_im_frame_global               :    longblob@mesoimaging   # global frame number in scan
-sync_behav_block_by_im_frame       :    longblob@mesoimaging   # array with behavioral block for each imaging frame
-sync_behav_trial_by_im_frame       :    longblob@mesoimaging   # array with behavioral trial for each imaging frame
-sync_behav_iter_by_im_frame        :    longblob@mesoimaging   # array with behavioral trial for each imaging frame, some extra zeros in file 1, marking that the behavior recording hasn't started yet.
-sync_im_frame_span_by_behav_block  :    longblob@mesoimaging   # cell array with first and last imaging frames for for each behavior block
-sync_im_frame_span_by_behav_trial  :    longblob@mesoimaging   # cell array with first and last imaging frames for for each behavior trial
-sync_im_frame_span_by_behav_iter   :    longblob@mesoimaging   # cell array with first and last imaging frames for for each behavior iteration within each trial
+sync_im_frame                      :    longblob   # frame number within tif file
+sync_im_frame_global               :    longblob  # global frame number in scan
+sync_behav_block_by_im_frame       :    longblob   # array with behavioral block for each imaging frame
+sync_behav_trial_by_im_frame       :    longblob  # array with behavioral trial for each imaging frame
+sync_behav_iter_by_im_frame        :    longblob   # array with behavioral trial for each imaging frame, some extra zeros in file 1, marking that the behavior recording hasn't started yet.
+sync_im_frame_span_by_behav_block  :    longblob   # cell array with first and last imaging frames for for each behavior block
+sync_im_frame_span_by_behav_trial  :    longblob  # cell array with first and last imaging frames for for each behavior trial
+sync_im_frame_span_by_behav_iter   :    longblob  # cell array with first and last imaging frames for for each behavior iteration within each trial
 %}
+
+% %{
+% -> meso.FieldOfView
+% ---
+% sync_im_frame                      :    longblob@mesoimaging   # frame number within tif file
+% sync_im_frame_global               :    longblob@mesoimaging   # global frame number in scan
+% sync_behav_block_by_im_frame       :    longblob@mesoimaging   # array with behavioral block for each imaging frame
+% sync_behav_trial_by_im_frame       :    longblob@mesoimaging   # array with behavioral trial for each imaging frame
+% sync_behav_iter_by_im_frame        :    longblob@mesoimaging   # array with behavioral trial for each imaging frame, some extra zeros in file 1, marking that the behavior recording hasn't started yet.
+% sync_im_frame_span_by_behav_block  :    longblob@mesoimaging   # cell array with first and last imaging frames for for each behavior block
+% sync_im_frame_span_by_behav_trial  :    longblob@mesoimaging   # cell array with first and last imaging frames for for each behavior trial
+% sync_im_frame_span_by_behav_iter   :    longblob@mesoimaging   # cell array with first and last imaging frames for for each behavior iteration within each trial
+% %}
 
 
 classdef SyncImagingBehavior < dj.Computed
@@ -95,12 +108,6 @@ classdef SyncImagingBehavior < dj.Computed
         totalFrames                 = totalFrames + imaging(iFile).numFrames;
       end
       meta.imaging                  = imaging;
-      
-      
-      if nargin < 2 %|| isempty(regiment)
-        warning('processImagingInfo:regiment', 'Behavioral regiment not provided, synchronization info will not be stored.');
-        return;
-      end
       
       %-------------------------------------------------------------------------------------------------
       
@@ -339,7 +346,7 @@ classdef SyncImagingBehavior < dj.Computed
       for iBlock = 1:numel(behav)
         flat_behavior.trial_span = [flat_behavior.trial_span {behav(iBlock).trial(:).span}];
         for iTrial = 1:numel(behav(iBlock).trial)
-          flat_behavior.iter_span{end+1} = behav(iBlock).trial(iTrial).iteration+flat_behavior.trial_span{iTrial}(1);
+          flat_behavior.iter_span{end+1} = behav(iBlock).trial(iTrial).iteration+behav(iBlock).trial(iTrial).span(1);
         end
       end
 
