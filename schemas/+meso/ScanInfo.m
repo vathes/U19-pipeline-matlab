@@ -10,7 +10,7 @@ n_depths                  : tinyint       # number of depths
 scan_depths               : tinyint       # depths in this scan 
 frame_rate                : float         # imaging frame rate
 inter_fov_lag_sec         : float         # time lag in secs between fovs 
-frame_ts_sec              : longblob@mesoimaging      # frame timestamps in secs 1xnFrames 
+frame_ts_sec              : blob@mesoimaging      # frame timestamps in secs 1xnFrames 
 power_percent             : float         # percentage of power used in this scan 
 channels                  : blob          # is this the channer number or total number of channels
 cfg_filename              : varchar(255)  # cfg file path 
