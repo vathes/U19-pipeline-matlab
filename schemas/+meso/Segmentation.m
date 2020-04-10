@@ -3,9 +3,9 @@
 -> meso.FieldOfView
 -> meso.SegParameterSet
 ---
-num_chunks                      : tinyint                   # number of different segmentation chunks within the session
-cross_chunks_x_shifts           : blob                      # nChunks x niter, 
-cross_chunks_y_shifts           : blob                      # nChunks x niter, 
+num_chunks                      : tinyint           # number of different segmentation chunks within the session
+cross_chunks_x_shifts           : blob              # nChunks x niter, 
+cross_chunks_y_shifts           : blob              # nChunks x niter, 
 cross_chunks_reference_image    : blob@mesoimaging          # reference image for cross-chunk registration
 %}
 
@@ -91,7 +91,7 @@ classdef Segmentation < dj.Imported
       fileChunk                            = selectFileChunks(key,chunk_cfg); 
             
       %% run segmentation and populate this table
-      if isempty(gcp('nocreate')); poolobj = parpool('IdleTimeout', 120); end
+%       if isempty(gcp('nocreate')); poolobj = parpool('IdleTimeout', 120); end
       
       segmentationMethod = fetch1(meso.SegmentationMethod & key,'segmentation_method');
       switch segmentationMethod
@@ -101,14 +101,14 @@ classdef Segmentation < dj.Imported
           warning('suite2p is not yet supported in this pipeline')
       end
       
-      %% shut down parallel pool
-      if ~isempty(gcp('nocreate'))
-        if exist('poolobj','var')
-          delete(poolobj)
-        else
-          delete(gcp('nocreate'))
-        end
-      end
+%       %% shut down parallel pool
+%       if ~isempty(gcp('nocreate'))
+%         if exist('poolobj','var')
+%           delete(poolobj)
+%         else
+%           delete(gcp('nocreate'))
+%         end
+%       end
       
       %% load summary file
       reorder = false;
@@ -126,7 +126,7 @@ classdef Segmentation < dj.Imported
       result.cross_chunks_x_shifts         = data.registration.xShifts;
       result.cross_chunks_y_shifts         = data.registration.yShifts;
       result.cross_chunks_reference_image  = data.registration.reference;
-      
+      keyboard
       self.insert(result)
       
       %% write to meso.SegmentationChunks (some session chunk-specific info)

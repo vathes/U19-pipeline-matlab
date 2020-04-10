@@ -1,5 +1,5 @@
 %{
-# registration between different segemntation chunks within a recording
+# registration between different segmentation chunks within a recording
 -> meso.Segmentation
 segmentation_chunk_id  : int    # id for the subsection of the recording this segmentation is for, for cases with multi-chunk segemntation (e.g. because of z drift)
 ---
