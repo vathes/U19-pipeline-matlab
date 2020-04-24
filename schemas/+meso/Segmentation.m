@@ -126,7 +126,6 @@ classdef Segmentation < dj.Imported
       result.cross_chunks_x_shifts         = data.registration.xShifts;
       result.cross_chunks_y_shifts         = data.registration.yShifts;
       result.cross_chunks_reference_image  = data.registration.reference;
-      keyboard
       self.insert(result)
       
       %% write to meso.SegmentationChunks (some session chunk-specific info)
@@ -201,7 +200,7 @@ classdef Segmentation < dj.Imported
           % activity traces
           frameIdx                                    = chunkRange(iChunk,1):chunkRange(iChunk,2);
           uniqueData                                  = chunkdata{iChunk}.cnmf.uniqueData(localIdx,:);
-          uniqueBase                                  = halfSampleMode(uniqueData(localIdx,:)');
+          uniqueBase                                  = halfSampleMode(uniqueData');
           surroundData                                = chunkdata{iChunk}.cnmf.surroundData(localIdx,:);
           trace_data.dff_roi(frameIdx)                = uniqueData / uniqueBase - 1;
           trace_data.dff_surround(frameIdx)           = surroundData / uniqueBase - 1;
