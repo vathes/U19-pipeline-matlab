@@ -224,7 +224,7 @@ classdef ScanInfo < dj.Imported
         end
 
         readObj.close();
-        now move file
+        % now move file
         movefile(fl{iF},sprintf('originalStacks/%s',fl{iF}));
       end
       
