@@ -91,6 +91,12 @@ classdef ScanInfo < dj.Imported
       key.file_name_base            = recInfo.Filename;
       key.scan_width                = recInfo.Width;
       key.scan_height               = recInfo.Height;
+      
+      if isempty(recInfo.AcqTime)
+        [~,thisdate]    = mouseAndDateFromFileName(scan_directory);
+        recInfo.AcqTime = [thisdate(1:4) ' ' thisdate(5:6) ' ' thisdate(7:8) ' 00 00 00.000'];
+      end
+      
       key.acq_time                  = datetime_scanImage2sql(recInfo.AcqTime);
       key.n_depths                  = recInfo.nDepths;
       key.scan_depths               = recInfo.Zs;
