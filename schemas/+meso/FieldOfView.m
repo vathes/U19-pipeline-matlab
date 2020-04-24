@@ -10,7 +10,7 @@ fov_center_xy           :  blob           # X-Y coordinate for the center of the
 fov_size_xy             :  blob           # X-Y size of the FOV in microns. One for each FOV in scan (sizeXY)
 fov_rotation_degrees    :  float          # rotation of the FOV with respect to cardinal axes in degrees. One for each FOV in scan
 fov_pixel_resolution_xy :  blob           # number of pixels for rows and columns of the FOV. One for each FOV in scan
-fov_discrete_plane_mode :  boolean        # true if FOV is only defined (acquired) at a single specifed depth in the volume. One for each FOV in scan should this be boolean?
+fov_discrete_plane_mode :  tinyint        # true if FOV is only defined (acquired) at a single specifed depth in the volume. One for each FOV in scan should this be boolean?
 %}
 
 classdef FieldOfView < dj.Imported
