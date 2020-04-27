@@ -27,26 +27,26 @@ classdef debug < dj.Imported
       % loop through ROIs
       for iROI = 1:nROIs
         
-        trace_data.sess_idx                 = sess_idx; 
-        trace_data.roi_idx                  = iROI;  
+        key.sess_idx                 = sess_idx; 
+        key.roi_idx                  = iROI;  
 
-        trace_data.time_constants           = data.cnmf.timeConstants{iROI};
-        trace_data.init_concentration       = data.cnmf.initConcentration{iROI};
-        trace_data.dff_roi                  = nan(1,totalFrames);
-        trace_data.dff_surround             = nan(1,totalFrames);
-        trace_data.spiking                  = nan(1,totalFrames);
-        trace_data.dff_roi_is_significant   = nan(1,totalFrames);
-        trace_data.dff_roi_is_baseline      = nan(1,totalFrames);
+        key.time_constants           = data.cnmf.timeConstants{iROI};
+        key.init_concentration       = data.cnmf.initConcentration{iROI};
+        key.dff_roi                  = nan(1,totalFrames);
+        key.dff_surround             = nan(1,totalFrames);
+        key.spiking                  = nan(1,totalFrames);
+        key.dff_roi_is_significant   = nan(1,totalFrames);
+        key.dff_roi_is_baseline      = nan(1,totalFrames);
 
         % activity traces
         frameIdx                                    = chunkRange(iChunk,1):chunkRange(iChunk,2);
-        trace_data.dff_roi(frameIdx)                = data.cnmf.dataDFF(iROI,:);
-        trace_data.dff_surround(frameIdx)           = data.cnmf.dataBkg(iROI,:);
-        trace_data.spiking(frameIdx)                = data.cnmf.dataDFF(iROI,:);
-        trace_data.dff_roi_is_significant(frameIdx) = data.cnmf.isSignificant(iROI,:);
-        trace_data.dff_roi_is_baseline(frameIdx)    = data.cnmf.isBaseline(iROI,:);
+        key.dff_roi(frameIdx)                = data.cnmf.dataDFF(iROI,:);
+        key.dff_surround(frameIdx)           = data.cnmf.dataBkg(iROI,:);
+        key.spiking(frameIdx)                = data.cnmf.dataDFF(iROI,:);
+        key.dff_roi_is_significant(frameIdx) = data.cnmf.isSignificant(iROI,:);
+        key.dff_roi_is_baseline(frameIdx)    = data.cnmf.isBaseline(iROI,:);
 
-        self.insert(trace_data)
+        self.insert(key)
       end
       
     end
