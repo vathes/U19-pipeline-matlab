@@ -228,6 +228,15 @@ classdef ScanInfo < dj.Imported
         movefile(fl{iF},sprintf('originalStacks/%s',fl{iF}));
       end
       
+      %% wrap up
+      if ~isempty(gcp('nocreate'))
+        if exist('poolobj','var')
+          delete(poolobj)
+        else
+          delete(gcp('nocreate'))
+        end
+      end
+      keyboard
       %% write to FieldOfView and FieldOfViewFile tables
       ct               = 1;
       cumulativeFrames = [0; cumulativeFrames];
@@ -278,17 +287,7 @@ classdef ScanInfo < dj.Imported
           insert(meso.FieldOfViewFile, file_entries)
         end
       end
-      
-       
-      %% wrap up
-      if ~isempty(gcp('nocreate'))
-        if exist('poolobj','var')
-          delete(poolobj)
-        else
-          delete(gcp('nocreate'))
-        end
-      end
-      
+
       cd(curr_dir)
       fprintf('\tdone after %1.1f min\n',toc(generalTimer)/60)
       
