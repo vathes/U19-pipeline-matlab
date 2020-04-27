@@ -37,6 +37,7 @@ classdef ScanInfo < dj.Imported
     function makeTuples(self, key)
       % ingestion triggered by the existence of Scan
       % runs a modified version of mesoscopeSetPreproc
+      keyboard
       generalTimer   = tic;
       curr_dir       = pwd; 
       scan_directory = formatFilePath(fetch1(meso.Scan & key,'scan_directory'),true,true);
@@ -236,7 +237,6 @@ classdef ScanInfo < dj.Imported
           delete(gcp('nocreate'))
         end
       end
-      keyboard
       %% write to FieldOfView and FieldOfViewFile tables
       ct               = 1;
       cumulativeFrames = [0; cumulativeFrames];
@@ -247,7 +247,7 @@ classdef ScanInfo < dj.Imported
           
           % FieldOfView
           fov_key               = key_data;
-          fov_key.fov           = ct;
+          fov_key.fov           = ct
           fov_key.fov_directory = sprintf('%s/ROI%02d_z%d/',scan_directory,iROI,iZ);
           
           if ~isempty(recInfo.ROI(iROI).name)
@@ -270,21 +270,22 @@ classdef ScanInfo < dj.Imported
           % FieldOfViewFiles
           file_entries                    = key_data;
           file_entries.fov                = fov_key.fov; 
-          file_entries.file_number        = [];
-          file_entries.fov_filename       = '';
-          file_entries.file_frame_range   = '';
+%           file_entries.file_number        = [];
+%           file_entries.fov_filename       = '';
+%           file_entries.file_frame_range   = '';
           
           
           fov_directory                   = fov_key.fov_directory;
           fl                              = dir(sprintf('%s*.tif',fov_directory));
-          file_entries                    = repmat(file_entries,[1 numel(fl)]);
+%           file_entries                    = repmat(file_entries,[1 numel(fl)]);
           for iF = 1:numel(fl)
-            file_entries(iF).file_number       = iF;
-            file_entries(iF).fov_filename      = fl(iF).name;
-            file_entries(iF).file_frame_range  = [cumulativeFrames(iF)+1 cumulativeFrames(iF+1)];
+            file_entries.file_number       = iF;
+            file_entries.fov_filename      = fl(iF).name;
+            file_entries.file_frame_range  = [cumulativeFrames(iF)+1 cumulativeFrames(iF+1)];
+            inserti(meso.FieldOfViewFile, file_entries)
           end
 
-          insert(meso.FieldOfViewFile, file_entries)
+          
         end
       end
 
