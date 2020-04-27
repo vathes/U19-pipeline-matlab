@@ -13,7 +13,7 @@ init_concentration     : float             # estimated initial calcium concentra
 %}
 
 
-classdef debug3 < dj.Imported
+classdef Debug3 < dj.Imported
   methods(Access=protected)
     function makeTuples(self, key)
       
