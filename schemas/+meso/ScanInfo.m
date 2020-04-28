@@ -37,7 +37,6 @@ classdef ScanInfo < dj.Imported
     function makeTuples(self, key)
       % ingestion triggered by the existence of Scan
       % runs a modified version of mesoscopeSetPreproc
-      keyboard
       generalTimer   = tic;
       curr_dir       = pwd; 
       scan_directory = formatFilePath(fetch1(meso.Scan & key,'scan_directory'),true,true);
