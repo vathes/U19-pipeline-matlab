@@ -130,7 +130,7 @@ classdef ScanInfo < dj.Imported
       key.nframes                   = recInfo.nFrames;
       key.nframes_good              = cumulativeFrames(lastGoodFile);
       key.last_good_file            = lastGoodFile;
-      
+      keyboard
       self.insert(key)
       
       %% scan image concatenates FOVs (ROIs) by adding rows, with padding between them.
