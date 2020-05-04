@@ -133,6 +133,7 @@ classdef ScanInfo < dj.Imported
       keyboard
       self.insert(key)
       
+      nROI                          = recInfo.nROIs;
       %% scan image concatenates FOVs (ROIs) by adding rows, with padding between them.
       % This part parses and write tifs individually for each FOV 
       if ~skipParsing
@@ -142,7 +143,6 @@ classdef ScanInfo < dj.Imported
           'SamplesPerPixel','PlanarConfiguration','Photometric'};
         fprintf('\tparsing ROIs...\n')
 
-        nROI        = recInfo.nROIs;
         ROInr       = arrayfun(@(x)(x.pixelResolutionXY(2)),recInfo.ROI);
         ROInc       = arrayfun(@(x)(x.pixelResolutionXY(1)),recInfo.ROI);
         interROIlag = recInfo.interROIlag_sec;
@@ -266,7 +266,7 @@ classdef ScanInfo < dj.Imported
           fov_key.fov_size_xy             = recInfo.ROI(iROI).sizeXY;
           fov_key.fov_rotation_degrees    = recInfo.ROI(iROI).rotationDegrees;
           fov_key.fov_pixel_resolution_xy = recInfo.ROI(iROI).pixelResolutionXY;
-          fov_key.fov_discrete_plane_mode = boolean(recInfo.ROI(iROI).discretePlaneMode);
+          fov_key.fov_discrete_plane_mode = recInfo.ROI(iROI).discretePlaneMode;%boolean(recInfo.ROI(iROI).discretePlaneMode);
           
           ct = ct+1;
           inserti(meso.FieldOfView,fov_key)
