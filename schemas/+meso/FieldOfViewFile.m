@@ -11,5 +11,10 @@ classdef FieldOfViewFile < dj.Part
   properties(SetAccess=protected)
     master = meso.FieldOfView
   end
+  methods(Access=protected)
+    function makeTuples(self, key)
+      self.insert(key)
+    end
+  end
   % ingestion handled by meso.FieldOfView
 end
