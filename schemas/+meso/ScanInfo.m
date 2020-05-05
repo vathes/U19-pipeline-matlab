@@ -285,6 +285,9 @@ classdef ScanInfo < dj.Imported
             file_entries.file_number       = iF;
             file_entries.fov_filename      = fl(iF).name;
             file_entries.file_frame_range  = [cumulativeFrames(iF)+1 cumulativeFrames(iF+1)];
+            
+            file_entries
+            
             inserti(meso.FieldOfViewFile, file_entries)
           end
         end
