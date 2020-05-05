@@ -273,23 +273,20 @@ classdef ScanInfo < dj.Imported
           % FieldOfViewFiles
           file_entries                    = key_data;
           file_entries.fov                = fov_key.fov; 
-%           file_entries.file_number        = [];
-%           file_entries.fov_filename       = '';
-%           file_entries.file_frame_range   = '';
-          
+          file_entries.file_number        = [];
+          file_entries.fov_filename       = '';
+          file_entries.file_frame_range   = '';
           
           fov_directory                   = fov_key.fov_directory;
           fl                              = dir(sprintf('%s*.tif',fov_directory));
-%           file_entries                    = repmat(file_entries,[1 numel(fl)]);
+          file_entries                    = repmat(file_entries,[1 numel(fl)]);
           for iF = 1:numel(fl)
-            file_entries.file_number       = iF;
-            file_entries.fov_filename      = fl(iF).name;
-            file_entries.file_frame_range  = [cumulativeFrames(iF)+1 cumulativeFrames(iF+1)];
+            file_entries(iF).file_number       = iF;
+            file_entries(iF).fov_filename      = fl(iF).name;
+            file_entries(iF).file_frame_range  = [cumulativeFrames(iF)+1 cumulativeFrames(iF+1)];
             
-            file_entries
-            
-            inserti(meso.FieldOfViewFile, file_entries)
           end
+          insert(meso.FieldOfViewFile, file_entries)
         end
       end
       
