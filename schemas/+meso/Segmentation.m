@@ -214,12 +214,6 @@ classdef Segmentation < dj.Imported
             roi_data.surround_spatial = reshape(chunkdata{iChunk}.cnmf.surround(:,localIdx),chunkdata{iChunk}.cnmf.region.ImageSize);
             morpho_data.morphology    = char(chunkdata{iChunk}.cnmf.morphology(localIdx));
           end
-          
-          trace_data.dff_roi      = trace_data.dff_roi(1:100);
-          trace_data.dff_surround= trace_data.dff_roi(1:100);
-          trace_data.spiking= trace_data.dff_roi(1:100);
-          trace_data.dff_roi_is_significant= trace_data.dff_roi(1:100);
-          trace_data.dff_roi_is_baseline= trace_data.dff_roi(1:100);
         end
         
         % insert in tables
