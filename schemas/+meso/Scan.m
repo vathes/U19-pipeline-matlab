@@ -17,7 +17,7 @@ classdef Scan < dj.Imported
       % find subject and date from acquisition.Session table
       subj                 = lower(fetch1(subject.Subject & key, 'subject_nickname'));
       session_date         = erase(fetch1(acquisition.Session & key, 'session_date'), '-');
-      base_dir             = formatFilePath('/braininit/RigData/mesoscope/imaging/dj_debug/',true,true);%'/braininit/RigData/mesoscope/imaging/';
+      base_dir             = formatFilePath('/braininit/RigData/mesoscope/imaging/',true,true);
       folder_path          = [base_dir subj '/' session_date];
       
 %       if isThisSpock
