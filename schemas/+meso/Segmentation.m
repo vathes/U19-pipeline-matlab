@@ -1029,8 +1029,7 @@ function outputFiles = globalRegistration(chunk, path, prefix, repository, cfg, 
   [~,algoLabel]                 = parsePath(chunk(1).roiFile);
   [~,~,algoLabel]               = parsePath(algoLabel);
   
-  keyboard
-  if contains(prefix,path)
+  if sum(ismember(path,prefix)) == numel(path)  
     regFile                     = [prefix algoLabel '.mat'];
   else
     regFile                     = fullfile(path, [prefix algoLabel '.mat']);
