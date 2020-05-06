@@ -1028,6 +1028,8 @@ function outputFiles = globalRegistration(chunk, path, prefix, repository, cfg, 
   
   [~,algoLabel]                 = parsePath(chunk(1).roiFile);
   [~,~,algoLabel]               = parsePath(algoLabel);
+  
+  keyboard
   if contains(prefix,path)
     regFile                     = [prefix algoLabel '.mat'];
   else
@@ -1335,9 +1337,7 @@ function outputFiles = globalRegistration(chunk, path, prefix, repository, cfg, 
   registration.template         = template;
   registration.params           = cfg;
   
-  
-  
-  
+
   fprintf('====  SAVING to %s\n', regFile);
   save(regFile, 'chunk', 'registration', 'cnmf', 'repository', '-v7.3');
   outputFiles{end+1}          = regFile;
