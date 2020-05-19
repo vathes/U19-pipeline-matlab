@@ -118,7 +118,7 @@ classdef Segmentation < dj.Imported
           reorder = true;
         end
       end
-      if reorder; outputFiles = unique(outputFiles); end
+      if reorder; outputFiles = unique(outputFiles,'stable'); end
       
       data                                 = load(outputFiles{1});
       num_chunks                           = numel(data.chunk);
