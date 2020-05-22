@@ -210,8 +210,8 @@ classdef Segmentation < dj.Imported
           
           % roi: shape and morphological classification
           if isempty(roi_data.roi_spatial)
-            roi_data.roi_spatial      = reshape(chunkdata{iChunk}.cnmf.spatial(:,localIdx),chunkdata{iChunk}.cnmf.region.ImageSize);
-            roi_data.surround_spatial = reshape(chunkdata{iChunk}.cnmf.surround(:,localIdx),chunkdata{iChunk}.cnmf.region.ImageSize);
+            roi_data.roi_spatial      = reshape(full(chunkdata{iChunk}.cnmf.spatial(:,localIdx)),chunkdata{iChunk}.cnmf.region.ImageSize);
+            roi_data.surround_spatial = reshape(full(chunkdata{iChunk}.cnmf.surround(:,localIdx)),chunkdata{iChunk}.cnmf.region.ImageSize);
             morpho_data.morphology    = char(chunkdata{iChunk}.cnmf.morphology(localIdx));
           end
         end
