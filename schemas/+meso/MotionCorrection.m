@@ -76,13 +76,13 @@ classdef MotionCorrection < dj.Imported
         computeStatistics(movieName{iFile}, movieFiles{iFile}, frameMCorr(iFile), false);
       end
       
-      if ~isempty(gcp('nocreate'))
-        if exist('poolobj','var')
-          delete(poolobj)
-        else
-          delete(gcp('nocreate'))
-        end
-      end
+%       if ~isempty(gcp('nocreate'))
+%         if exist('poolobj','var')
+%           delete(poolobj)
+%         else
+%           delete(gcp('nocreate'))
+%         end
+%       end
     end
   end 
 end

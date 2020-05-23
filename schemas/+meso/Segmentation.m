@@ -91,7 +91,7 @@ classdef Segmentation < dj.Imported
       fileChunk                            = selectFileChunks(key,chunk_cfg); 
             
       %% run segmentation and populate this table
-%       if isempty(gcp('nocreate')); poolobj = parpool('IdleTimeout', 120); end
+      if isempty(gcp('nocreate')); parpool('IdleTimeout', 120); end
       
       segmentationMethod = fetch1(meso.SegmentationMethod & key,'segmentation_method');
       switch segmentationMethod
@@ -166,7 +166,7 @@ classdef Segmentation < dj.Imported
       end
             
       %% write ROI-specific info into relevant tables
-      
+      fprintf('inserting data in ROI tables...\n')
       % initialize data structures
       globalXY      = data.registration.globalXY;
       nROIs         = size(globalXY,2);
