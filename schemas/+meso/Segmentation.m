@@ -101,6 +101,10 @@ classdef Segmentation < dj.Imported
           warning('suite2p is not yet supported in this pipeline')
       end
       
+      % just 'posthoc' files
+      fileidx     = logical(cellfun(@(x)(sum(contains(x,'posthoc')>0)),outputFiles));
+      outputFiles = outputFiles(fileidx);
+
 %       %% shut down parallel pool
 %       if ~isempty(gcp('nocreate'))
 %         if exist('poolobj','var')
