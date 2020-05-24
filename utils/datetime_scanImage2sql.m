@@ -5,8 +5,18 @@ function date_out = datetime_scanImage2sql(date_in)
 
 fullLength = numel(date_in);
 spaces     = [0 regexp(date_in,' ') fullLength];
-date_out   = '';
 
+% sometimes there are two consecutive spaces
+isConsec = [0 diff(spaces)];
+if any(isConsec == 1)
+  idx        = spaces(isConsec==1);
+  date_in     = [date_in(1:idx-1) date_in(idx+1:end)];
+  fullLength = numel(date_in);
+  spaces     = [0 regexp(date_in,' ') fullLength];
+end
+
+date_out   = '';
+  
 for iEntry = 1:numel(spaces)-1
   if iEntry < 3
     date_out = [date_out date_in(spaces(iEntry)+1:spaces(iEntry+1)-1) '-'];
