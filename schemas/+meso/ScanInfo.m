@@ -110,7 +110,7 @@ classdef ScanInfo < dj.Imported
       
       key.acq_time                  = datetime_scanImage2sql(recInfo.AcqTime);
       key.n_depths                  = recInfo.nDepths;
-      key.scan_depths               = recInfo.Zs; 
+      key.scan_depths               = 0;%recInfo.Zs; % HACK - intital table definition had this defined as tinyint, will do arbitrary value to avoid dropping
       key.frame_rate                = recInfo.frameRate;
       key.inter_fov_lag_sec         = recInfo.interROIlag_sec;
       key.frame_ts_sec              = recInfo.Timing.Frame_ts_sec;
