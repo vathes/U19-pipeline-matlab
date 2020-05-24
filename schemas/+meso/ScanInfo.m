@@ -7,7 +7,7 @@ scan_width                : int           # width of scanning in pixels
 scan_height               : int           # height of scanning in pixels 
 acq_time                  : datetime      # acquisition time 
 n_depths                  : tinyint       # number of depths 
-scan_depths               : tinyint       # depths in this scan 
+scan_depths               : blob          # depth values in this scan 
 frame_rate                : float         # imaging frame rate
 inter_fov_lag_sec         : float         # time lag in secs between fovs 
 frame_ts_sec              : longblob      # frame timestamps in secs 1xnFrames 
@@ -110,7 +110,7 @@ classdef ScanInfo < dj.Imported
       
       key.acq_time                  = datetime_scanImage2sql(recInfo.AcqTime);
       key.n_depths                  = recInfo.nDepths;
-      key.scan_depths               = recInfo.Zs;
+      key.scan_depths               = recInfo.Zs; 
       key.frame_rate                = recInfo.frameRate;
       key.inter_fov_lag_sec         = recInfo.interROIlag_sec;
       key.frame_ts_sec              = recInfo.Timing.Frame_ts_sec;
