@@ -10,7 +10,10 @@ spaces     = [0 regexp(date_in,' ') fullLength];
 isConsec = [0 diff(spaces)];
 if any(isConsec == 1)
   idx        = spaces(isConsec==1);
-  date_in     = [date_in(1:idx-1) date_in(idx+1:end)];
+  for iSpace = 1:numel(idx)
+    date_in  = [date_in(1:idx(iSpace)-1) date_in(idx(iSpace)+1:end)];
+    idx      = idx -1;
+  end       
   fullLength = numel(date_in);
   spaces     = [0 regexp(date_in,' ') fullLength];
 end
