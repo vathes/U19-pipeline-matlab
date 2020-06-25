@@ -103,8 +103,8 @@ classdef TowersBlock < dj.Imported
                     tuple_trial.i_arm_entry = exists_helper(trial,'iArmEntry');
                     tuple_trial.i_blank = exists_helper(trial,'iBlank');
                     tuple_trial.i_turn_entry = exists_helper(trial,'iTurnEntry');
-                    tuple_trial.i_cue_entry = exists_helper(trial,'trial.iCueEntry');
-                    tuple_trial.i_mem_entry = exists_helper(trial,'trial.iMemEntry');
+                    tuple_trial.i_cue_entry = exists_helper(trial,'iCueEntry');
+                    tuple_trial.i_mem_entry = exists_helper(trial,'iMemEntry');
                     tuple_trial.iterations = trial.iterations;
                     tuple_trial.position = trial.position;
                     tuple_trial.velocity = trial.velocity;
