@@ -10,21 +10,27 @@ for iuser = 1:length(users)
     for ianimal = 1:numel(animals)
         animal = animals(ianimal);
         subject_nickname = animals_nicknames{ianimal};
+        
+    try
         logs = db.pullDailyLogs(user, subject_nickname);
-       
-        key_weigh = animal;
-        key_status = animal;
-        key_notification = animal;
-        key_water_admin = animal;
-        key_health = animal;
-        key_session = animal;
-        key_towers_session = animal;
+    catch
+        fprintf(sprintf('Animal %s no in the google spreadsheet\n', subject_nickname))
+        continue
+    end
+     
         for log = logs
+            %reset all keys to only contain animal information
             key_weigh = animal;
-             % ingest weighing
-             if ~isempty(log.weight)
+            key_status = animal;
+            key_notification = animal;
+            key_water_admin = animal;
+            key_health = animal;
+            key_session = animal;
+            key_towers_session = animal;
+            
+            % ingest weighing
+            if ~isempty(log.weight)
                 key_weigh.weight = log.weight;
-                
                 if ~isempty(log.weighTime)
                     key_weigh.weighing_time = sprintf('%d-%02d-%02d %02d:%02d:00', ...
                         log.date(1), log.date(2), log.date(3), log.weighTime(1), log.weighTime(2));
@@ -32,19 +38,17 @@ for iuser = 1:length(users)
                     key_weigh.weighing_time = sprintf('%d-%02d-%02d 12:00:00', ...
                         log.date(1), log.date(2), log.date(3));
                 end
-                
                 if ~isempty(log.weighPerson)
                     key_weigh.weigh_person = fetch1(lab.User & sprintf('user_nickname="%s"', log.weighPerson), 'user_id');
                 end
-                
                 if ~isempty(log.weighLocation)
                     key_loc.location = log.weighLocation;
                     inserti(lab.Location, key_loc)
                 end
                 key_weigh.location = log.weighLocation;
                 inserti(action.Weighing, key_weigh)
-                
             end
+            
             % ingest water administration info
             if ~isempty(log.received)
                 key_water_admin.administration_date = sprintf('%d-%02d-%02d', ...
@@ -55,21 +59,19 @@ for iuser = 1:length(users)
                 key_water_admin.watertype_name = 'Unknown';
                 inserti(action.WaterAdministration, key_water_admin)
             end
+            
             % ingest health status
             key_health.status_date = sprintf('%d-%02d-%02d', ...
                     log.date(1), log.date(2), log.date(3));
-  
             if ~isempty(log.normal)
                 key_health.normal_behavior = log.normal.strcmp('Yes');
             end
             if ~isempty(log.bcs)
                 key_health.bcs = log.bcs;
             end
-            
             if ~isempty(log.activity)
                 key_health.activity = log.activity;
             end
-           
             if ~isempty(log.eatDrink)
                 key_health.eat_drink = log.eatDrink;
             end
@@ -79,7 +81,6 @@ for iuser = 1:length(users)
             if ~isempty(log.posture)
                 key_health.posture_grooming = log.posture;
             end
-              
             if ~isempty(log.comments)
                 key_health.comments = log.comments;
             end
@@ -94,6 +95,7 @@ for iuser = 1:length(users)
                     inserti(action.ActionRecord, key_action)
                 end
             end
+            
             % ingest notification
             if ~isempty(log.cageNotice) || ~isempty(log.healthNotice) || ~isempty(log.weightNotice)
                 key_notification.notification_date = sprintf('%d-%02d-%02d', ...
@@ -101,15 +103,12 @@ for iuser = 1:length(users)
                 if ~isempty(log.cageNotice)
                     key_notification.cage_notice = log.cageNotice;
                 end
-
                 if ~isempty(log.healthNotice)
                     key_notification.health_notice = log.healthNotice;
                 end
-
                 if ~isempty(log.weightNotice)
                     key_notification.weight_notice = log.weightNotice;
                 end
-            
                 inserti(action.Notification, key_notification)
             end
             
