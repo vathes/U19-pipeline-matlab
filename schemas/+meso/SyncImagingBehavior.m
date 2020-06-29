@@ -39,6 +39,7 @@ classdef SyncImagingBehavior < dj.Computed
       
       % path
       fov_directory                 = fetch1(meso.FieldOfView & key,'fov_directory');
+      fov_directory                 = formatFilePath(fov_directory, false, true);
       [order,movieFiles]            = fetchn(meso.FieldOfViewFile & key, 'file_number', 'fov_filename');
       movieFiles                    = cellfun(@(x)([fov_directory x]),movieFiles(order),'uniformoutput',false); % full path
       imaging                       = struct('movieFile', movieFiles);
@@ -334,7 +335,7 @@ classdef SyncImagingBehavior < dj.Computed
       for iBlock = 1:numel(behav)
         flat_behavior.trial_span = [flat_behavior.trial_span {behav(iBlock).trial(:).span}];
         for iTrial = 1:numel(behav(iBlock).trial)
-          flat_behavior.iter_span{end+1} = behav(iBlock).trial(iTrial).iteration+behav(iBlock).trial(iTrial).span(1);
+          flat_behavior.iter_span{end+1} = behav(iBlock).trial(iTrial).iteration-1 + behav(iBlock).trial(iTrial).span(1);
         end
       end
 
