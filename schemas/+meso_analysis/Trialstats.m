@@ -3,7 +3,7 @@
 -> meso.Scan
 trial_idx                    : int       # virmen trial struct number
 ---
-
+ 
 went_right                   : tinyint   # true when mouse turned right
 went_left                    : tinyint   # true when mouse turned left
 is_right_trial               : tinyint   # true when trial type is right
@@ -67,12 +67,13 @@ trial_start_meso_frame=NULL  : int       # imaging frame id corresponding to tri
 cue_entry_meso_frame=NULL    : int       # imaging frame id corresponding to cue period start
 mem_entry_meso_frame=NULL    : int       # imaging frame id corresponding to delay period start
 arm_entry_meso_frame=NULL    : int       # imaging frame id corresponding to entry in the side arm
+trial_end_meso_frame=NULL    : int       # imaging frame id corresponding to trial end (= reward time in correct trials)
 iti_meso_frame=NULL          : int       # imaging frame id corresponding to start of ITI
 timeout_meso_frame=NULL      : int       # imaging frame id corresponding to start of extra ITI (ie timeout) for error trials
-trial_end_meso_frame=NULL    : int       # imaging frame id corresponding to trial end
+iti_end_meso_frame=NULL      : int       # imaging frame id corresponding to end of ITI (last frame before next trial)
 %}
-
-
+ 
+ 
 classdef Trialstats < dj.Computed
   methods(Access=protected)
     function makeTuples(self, key)
@@ -106,7 +107,7 @@ classdef Trialstats < dj.Computed
                            'dy_by_meso_frame','dtheta_by_meso_frame','cues_by_meso_frame_right',                     ...
                            'cues_by_meso_frame_left','trial_start_meso_frame','cue_entry_meso_frame',                ...
                            'mem_entry_meso_frame','arm_entry_meso_frame','timeout_meso_frame',                       ...
-                           'iti_meso_frame','trial_end_meso_frame'  ...
+                           'iti_meso_frame','trial_end_meso_frame','iti_end_meso_frame'  ...
                            };
       for iVar = 1:numel(var_list)
         results.(var_list{iVar}) = [];
@@ -134,18 +135,18 @@ classdef Trialstats < dj.Computed
     end
   end
 end
-
-
+ 
+ 
 % =========================================================================
 %% get flattened log
 function lg = getFlattenedLog(key)
-
+ 
 %% load data from dj and create flattened format
 blockData  = fetch(behavior.TowersBlock & key,'level');
 nBlocks    = numel(blockData);
-
+ 
 lg         = initLog; % start empty matrices
-
+ 
 for iBlock = 1:nBlocks
   % some trial data (choice, trial type, excess travel)
   trialData  = fetch(behavior.TowersBlockTrial & key & sprintf('block = %d',iBlock),          ...
@@ -238,7 +239,7 @@ for iBlock = 1:nBlocks
   lg.run_speed_instant(end+1:end+nTrials)           = inst_speed;
   lg.total_stem_displacement(end+1:end+nTrials)     = total_stem_displace;
   lg.run_speed_avg_stem(end+1:end+nTrials)          = single(speed_avg_stem);
-
+ 
   % key frames (virmen iterations)
   i_cue_entry = nan(1,numel(position));
   i_mem_entry = nan(1,numel(position));
@@ -252,6 +253,7 @@ for iBlock = 1:nBlocks
     i_cue_entry(iTrial) = find(position{iTrial}(:,2) >= 0, 1, 'first');
     i_mem_entry(iTrial) = find(position{iTrial}(:,2) >= 200, 1, 'first');
     i_arm_entry(iTrial) = find(abs(position{iTrial}(:,1)) > 1, 1, 'first'); % using y position is not good when they cut the corner, use x instead
+    i_reward(iTrial)    = size(position{iTrial},1);
     i_iti(iTrial)       = size(position{iTrial},1)+1; % iti starts after last recorded position
     if choice(iTrial) ~= trialType(iTrial)
       i_timeout(iTrial) = find(time{iTrial} >= time{iTrial}(i_iti(iTrial))+3,1,'first'); % for error trials, extra timeout is 3 s after regular iti
@@ -339,11 +341,11 @@ for iBlock = 1:nBlocks
   lg.cue_offset_time_right(end+1:end+nTrials)   = off_r;
   lg.cue_offset_time_left(end+1:end+nTrials)    = off_l;
   
-
+ 
 end
-
+ 
 %% record more easy-access variables
-
+ 
 % trial selection booleans
 lg.went_right      = lg.choice == analysisParams.rightCode;
 lg.went_left       = lg.choice == analysisParams.leftCode;
@@ -355,7 +357,7 @@ lg.is_towers_task  = lg.currMaze == 11 | lg.currMaze == 10;
 lg.is_visguided_task    = lg.currMaze == 12 | lg.currMaze == 4;
 lg.is_excess_travel     = lg.excess_travel > 0.1;
 lg.is_not_excess_travel = lg.excess_travel <= 0.1;
-
+ 
 % divide position and displacement axes
 lg.position_x     = cellfun(@(x)(x(:,1)),lg.pos,'uniformOutput',false);
 lg.position_y     = cellfun(@(x)(x(:,2)),lg.pos,'uniformOutput',false);
@@ -363,7 +365,7 @@ lg.position_theta = cellfun(@(x)(x(:,3)),lg.pos,'uniformOutput',false);
 lg.dx             = cellfun(@(x)(x(:,1)),lg.displ,'uniformOutput',false);
 lg.dy             = cellfun(@(x)(x(:,2)),lg.displ,'uniformOutput',false);
 lg.dtheta         = cellfun(@(x)(x(:,3)),lg.displ,'uniformOutput',false);
-
+ 
 % cues and effective durations
 lg.ncues_right             = single(cell2mat(cellfun(@(x)(numel(x)),lg.cue_pos_right,'uniformOutput',false)));
 lg.ncues_left              = single(cell2mat(cellfun(@(x)(numel(x)),lg.cue_pos_left,'uniformOutput',false)));
@@ -374,7 +376,7 @@ lg.is_hard                 = lg.trial_difficulty >= nanmedian(lg.trial_difficult
 lg.is_easy                 = lg.trial_difficulty < nanmedian(lg.trial_difficulty);
 lg.has_distractor_towers   = (lg.is_left_trial & lg.ncues_right > 0) | (lg.is_right_trial & lg.ncues_left > 0);
 lg.has_no_distractor_towers= (lg.is_left_trial & lg.ncues_right == 0) | (lg.is_right_trial & lg.ncues_left == 0);
-
+ 
 maxr = cellfun(@max,lg.cue_pos_right,'UniformOutput',false);
 maxl = cellfun(@max,lg.cue_pos_left,'UniformOutput',false);
 minr = cellfun(@min,lg.cue_pos_right,'UniformOutput',false);
@@ -385,7 +387,7 @@ for iT = 1:numel(maxr)
 end
 lg.true_cue_period_length_cm  = maxrl - minrl;
 lg.true_mem_period_length_cm  = 300 - lg.true_cue_period_length_cm;
-
+ 
 maxr = cellfun(@max,lg.cue_onset_time_right,'UniformOutput',false);
 maxl = cellfun(@max,lg.cue_onset_time_left,'UniformOutput',false);
 minr = cellfun(@min,lg.cue_onset_time_right,'UniformOutput',false);
@@ -398,37 +400,37 @@ for iT = 1:numel(maxr)
 end
 lg.true_cue_period_dur_sec = maxrl - minrl;
 lg.true_mem_period_dur_sec = mem - maxrl;
-
+ 
 %% info
 lg.info.frameDtVirmen = mode(diff(lg.time{1}));
-
+ 
 %% imaging sync
-
+ 
 % field of view key
 imagingSessKey          = fetch(meso.FieldOfView & key & 'fov=2');
-
+ 
 % frame rate
 framerate               = fetch1(meso.ScanInfo & key, 'frame_rate');
 lg.info.frameDtImaging  = 1/framerate;
-
+ 
 % sync info
 syncInfo                = fetch(meso.SyncImagingBehavior & imagingSessKey,                                                       ...
                                'sync_im_frame','sync_im_frame_global','sync_behav_block_by_im_frame',                            ...
                                'sync_behav_trial_by_im_frame','sync_behav_iter_by_im_frame','sync_im_frame_span_by_behav_block', ...
                                'sync_im_frame_span_by_behav_trial','sync_im_frame_span_by_behav_iter'                            ...
                               );
-
+ 
 % imaging sync
 lg                      = extractFrameTimeByTrials_mesoscope(lg,syncInfo,imagingSessKey);
   
-
-
+ 
+ 
 end
-
+ 
 % =========================================================================
 %% initialize vectors
 function lg = initLog 
-
+ 
 lg.currMaze                  = [];
 lg.is_first_trial_in_block   = [];
 lg.block_id                  = [];
@@ -460,18 +462,18 @@ lg.i_arm_entry               = [];
 lg.i_reward                  = [];
 lg.i_iti                     = [];
 lg.i_timeout                 = [];
-
+ 
 end
-
+ 
 % =========================================================================
 %% sync with imaging
 function lg = extractFrameTimeByTrials_mesoscope(lg,syncInfo,imagingSessKey)
-
+ 
 % lg = extractFrameTimeByTrials_mesoscope(lg,syncInfo)
 % aligns behavioral events to imaging frames on a trial-by-trial basis.
 % Both provides imaging frame equivalents for every virmen frame and bins
 % behavioral events at imaging frame frame
-
+ 
 lg.meso_frame_per_virmen_iter = cellfun(@(x)(x(:,1)),syncInfo.sync_im_frame_span_by_behav_iter,'uniformOutput',false);
 ntrials                       = numel(syncInfo.sync_im_frame_span_by_behav_trial);
 lg.meso_frame_unique_ids      = cell(1,ntrials);
@@ -482,7 +484,7 @@ lg.binned_pos                 = cell(1,ntrials);
 lg.binned_displ               = cell(1,ntrials);
   
 for iTrial = 1:ntrials
-
+ 
   uniqueFrames                     = unique(lg.meso_frame_per_virmen_iter{iTrial});
   lg.meso_frame_unique_ids{iTrial} = uniqueFrames;
   
@@ -503,7 +505,7 @@ for iTrial = 1:ntrials
     lg.binned_displ{iTrial}(iFrame,:) = nanmean(lg.displ{iTrial}(idx,:),1);
     pos_range                         = lg.pos{iTrial}(idx,:);
     lg.binned_pos{iTrial}(iFrame,:)   = nanmean(pos_range,1);
-
+ 
     % number of towers within imaging frame
     if isempty(pos_range); continue; end
     lg.cues_by_meso_frame_right{iTrial}(iFrame) = sum(lg.cue_pos_right{iTrial} > pos_range(1,2) & lg.cue_pos_right{iTrial} <= pos_range(end,2));
@@ -511,7 +513,7 @@ for iTrial = 1:ntrials
     
   end
 end
-
+ 
 % divide position and displacement axes
 lg.position_x_by_meso_frame     = cellfun(@(x)(x(:,1)),lg.binned_pos,'uniformOutput',false);
 lg.position_y_by_meso_frame     = cellfun(@(x)(x(:,2)),lg.binned_pos,'uniformOutput',false);
@@ -519,30 +521,30 @@ lg.position_theta_by_meso_frame = cellfun(@(x)(x(:,3)),lg.binned_pos,'uniformOut
 lg.dx_by_meso_frame             = cellfun(@(x)(x(:,1)),lg.binned_displ,'uniformOutput',false);
 lg.dy_by_meso_frame             = cellfun(@(x)(x(:,2)),lg.binned_displ,'uniformOutput',false);
 lg.dtheta_by_meso_frame         = cellfun(@(x)(x(:,3)),lg.binned_displ,'uniformOutput',false);
-
+ 
 % key frames 
 lg = getKeyFrames(lg,syncInfo,imagingSessKey);
-
+ 
 end
-
+ 
 % =========================================================================
 %% imaging frames of key trial events
 function lg = getKeyFrames(lg,syncInfo,key)
-
+ 
 % get first and last frame for each trial
 span_perTrial = syncInfo.sync_im_frame_span_by_behav_trial;
 iter2frame    = syncInfo.sync_im_frame_span_by_behav_iter;
 globalFrame   = syncInfo.sync_im_frame_global;
-
+ 
 span_perTrial = cell2mat(span_perTrial'); % reformat to tr x 2
-
+ 
 lg.trial_start_meso_frame = span_perTrial(:,1);
-lg.trial_end_meso_frame   = span_perTrial(:,2);
-
+lg.iti_end_meso_frame     = span_perTrial(:,2);
+ 
 % rebinFactor as calculated in runNeuronSegmentation_mesoscope()
 [timeResolution, frameRate] = fetchn(meso.SegParameterSetParameter & key,'cnmf_time_resolution','cnmf_frame_rate');
 rebinFactor                 = ceil(timeResolution / (1000/frameRate));
-
+ 
 % in case cnmf resolution ~= native imaging resolution
 frame2globalFrame           = num2cell(1 + floor( (globalFrame - 1) / rebinFactor ));
 %% DEAL WITH THIS: Due to temporal downsampling the same CNMF data point can be assigned to two different
@@ -550,15 +552,16 @@ frame2globalFrame           = num2cell(1 + floor( (globalFrame - 1) / rebinFacto
 %        doesn't make sense for dF/F to be assigned to two trials. An arbitrary choice is made to
 %        assign these ambiguous frames to the first trial (for reasons of causality of responses)
 % convert virmen iteration w/in trial index to global frame number
-
+ 
 lg.cue_entry_meso_frame = event_iter2frame(lg.i_cue_entry, iter2frame, frame2globalFrame);
 lg.mem_entry_meso_frame = event_iter2frame(lg.i_mem_entry, iter2frame, frame2globalFrame);
 lg.arm_entry_meso_frame = event_iter2frame(lg.i_arm_entry, iter2frame, frame2globalFrame);
+lg.trial_end_meso_frame = event_iter2frame(lg.i_reward, iter2frame, frame2globalFrame);
 lg.iti_meso_frame       = event_iter2frame(lg.i_iti, iter2frame, frame2globalFrame);
 lg.timeout_meso_frame   = event_iter2frame(lg.i_timeout, iter2frame, frame2globalFrame);
-
+ 
 end
-
+ 
 % =========================================================================
 %% virmen iteration to imaging frame
 function [event_frame] = event_iter2frame(event_iteration, iter2frame, frame2globalFrame)
@@ -566,18 +569,19 @@ function [event_frame] = event_iter2frame(event_iteration, iter2frame, frame2glo
  
 event_frame     = nan(size(event_iteration));
 index           = nan(size(event_iteration));
-
+ 
 % make sure iteration index is valid (>0 and within the trial's iteration duration)
 isValid         = event_iteration > 0 & event_iteration <= cellfun(@(it) size(it,1), iter2frame); 
-
+ 
 % index interation to frame mapping with iteration for event of interest
 index(isValid)  = cellfun(@(i2f,ei) i2f(ei,1), iter2frame(isValid), num2cell(event_iteration(isValid)));
 isValid         = index > 0;
-
+ 
 % convert to global frame ID (would be different if multiple acquisitions)
 frame2globalFrame     = cell2mat(frame2globalFrame);
 event_frame(isValid)  = frame2globalFrame(index(isValid));
-
+ 
 end
-
+ 
+ 
 
