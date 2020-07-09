@@ -33,7 +33,7 @@ classdef TowersBlock < dj.Imported
                 tuple.block = iBlock;
                 tuple_trial = tuple;
                 tuple.task = 'Towers';
-                tuple.n_trials = length(block);
+                tuple.n_trials = length(block.trial);
                 tuple.first_trial = block.firstTrial;
                 tuple.block_duration = block.duration;
                 tuple.block_start_time = sprintf('%d-%02d-%02d %02d:%02d:00', ...
