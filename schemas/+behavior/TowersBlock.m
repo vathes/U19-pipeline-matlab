@@ -27,7 +27,6 @@ classdef TowersBlock < dj.Imported
                 tuple = key;
                 block = log.block(iBlock);
                 tuple.block = iBlock;
-                tuple_trial = tuple;
                 tuple.task = 'Towers';
                 tuple.n_trials = length(block);
                 tuple.first_trial = block.firstTrial;
@@ -47,8 +46,6 @@ classdef TowersBlock < dj.Imported
                 correct_counter = 0;
                 for itrial = 1:length(block.trial)
                     trial = block.trial(itrial);
-                    tuple_trial.trial_type = trial.trialType.char; 
-                    tuple_trial.choice = trial.choice.char;
                     correct_counter = correct_counter + strcmp(trial.trialType.char, trial.choice.char);
                 end
                 perf = correct_counter/length(block.trial);
@@ -61,6 +58,11 @@ classdef TowersBlock < dj.Imported
                 
                 for itrial = 1:length(block.trial)
                     trial = block.trial(itrial);
+                    
+                    tuple = key;
+                    tuple.block = iBlock;                
+                    tuple_trial = tuple;  %% STart with an emty tube to store data
+
                     tuple_trial.trial_idx = itrial;
                     tuple_trial.trial_type = trial.trialType.char; 
                     tuple_trial.choice = trial.choice.char;
