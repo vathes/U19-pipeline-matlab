@@ -63,9 +63,9 @@ classdef TowersBlock < dj.Imported
                 for itrial = 1:length(block.trial)
                     trial = block.trial(itrial);
                     
-                    tuple = key;
+                    tuple = key; %% Start with an emty tube to trial data
                     tuple.block = iBlock;                
-                    tuple_trial = tuple;  %% STart with an emty tube to store data
+                    tuple_trial = tuple;  
 
                     tuple_trial.trial_idx = itrial;
                     tuple_trial.trial_type = trial.trialType.char; 
