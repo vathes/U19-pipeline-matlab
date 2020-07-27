@@ -2,10 +2,9 @@
 -> behavior.TowersBlockTrial
 ---
 video_path:                 varchar(255)         # video directory + filename for each trial
-video_file:                 blob@trialvideo  # 
 %}
 
-classdef TowersBlockTrialVideo2 < dj.Computed
+classdef TowersBlockTrialVideo < dj.Imported
    % properties(SetAccess=protected)
    %     master = behavior.TowersBlock
    % end
