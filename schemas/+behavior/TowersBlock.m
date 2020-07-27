@@ -11,6 +11,7 @@ reward_mil                  : float                         # in mL, reward volu
 reward_scale                : tinyint                       # scale of the reward in this block
 easy_block                  : bool                          # true if the difficulty reduces during the session
 block_performance           : float                         # performance in the current block
+level                       : int                           # maze number (difficulty) of this block
 %}
 
 classdef TowersBlock < dj.Imported
@@ -20,15 +21,18 @@ classdef TowersBlock < dj.Imported
     methods(Access=protected)
         function makeTuples(self, key)
             
-            data_dir = getLocalPath(fetch1(acquisition.DataDirectory & key, 'combined_file_name'));
+            data_dir = getLocalPath(fetch1(behavior.DataDirectory & key, 'combined_file_name'));
             data = load(data_dir, 'log');
             log = data.log;
+
             for iBlock = 1:length(log.block)
                 tuple = key;
                 block = log.block(iBlock);
+                block = fixLogs(block); % fix bug for mesoscope recordings where choice is not recorded (but view angle is)
+                
                 tuple.block = iBlock;
                 tuple.task = 'Towers';
-                tuple.n_trials = length(block);
+                tuple.n_trials = length(block.trial);
                 tuple.first_trial = block.firstTrial;
                 tuple.block_duration = block.duration;
                 tuple.block_start_time = sprintf('%d-%02d-%02d %02d:%02d:00', ...
@@ -101,8 +105,8 @@ classdef TowersBlock < dj.Imported
                     tuple_trial.i_arm_entry = exists_helper(trial,'iArmEntry');
                     tuple_trial.i_blank = exists_helper(trial,'iBlank');
                     tuple_trial.i_turn_entry = exists_helper(trial,'iTurnEntry');
-                    tuple_trial.i_cue_entry = exists_helper(trial,'trial.iCueEntry');
-                    tuple_trial.i_mem_entry = exists_helper(trial,'trial.iMemEntry');
+                    tuple_trial.i_cue_entry = exists_helper(trial,'iCueEntry');
+                    tuple_trial.i_mem_entry = exists_helper(trial,'iMemEntry');
                     tuple_trial.iterations = trial.iterations;
                     tuple_trial.position = trial.position;
                     tuple_trial.velocity = trial.velocity;
@@ -130,3 +134,36 @@ function [s] = exists_helper(trial, fieldname)
        s = 0;
     end 
 end
+
+%% fix logs where trial type and choice are not recorded due to bug
+function block = fixLogs(block)
+  
+for iBlock = 1:numel(block)
+  nTrials = numel(block(iBlock).trial);
+  for iTrial = 1:nTrials
+    if isempty(block(iBlock).trial(iTrial).trialType)
+      if numel(block(iBlock).trial(iTrial).cuePos{1}) > numel(block(iBlock).trial(iTrial).cuePos{1})
+        block(iBlock).trial(iTrial).trialType = Choice.L;
+      else
+        block(iBlock).trial(iTrial).trialType = Choice.R;
+      end
+    end
+    if isempty(block(iBlock).trial(iTrial).choice)
+      pos = block(iBlock).trial(iTrial).position;
+      if pos(end,2) < 300
+        block(iBlock).trial(iTrial).choice   = Choice.nil;
+      else
+        if pos(end,3) > 0
+          block(iBlock).trial(iTrial).choice = Choice.L;
+        else
+          block(iBlock).trial(iTrial).choice = Choice.R;
+        end
+      end
+    end
+  end
+  block(iBlock).trialType      = [block(iBlock).trial(:).trialType];
+  block(iBlock).medianTrialDur = median([block(iBlock).trial(:).duration]);
+end
+  
+end
+

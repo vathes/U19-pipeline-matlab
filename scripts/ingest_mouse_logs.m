@@ -10,7 +10,13 @@ for iuser = 1:length(users)
     for ianimal = 1:numel(animals)
         animal = animals(ianimal);
         subject_nickname = animals_nicknames{ianimal};
+        
+    try
         logs = db.pullDailyLogs(user, subject_nickname);
+    catch
+        fprintf(sprintf('Animal %s no in the google spreadsheet\n', subject_nickname))
+        continue
+    end
      
         for log = logs
             %reset all keys to only contain animal information
