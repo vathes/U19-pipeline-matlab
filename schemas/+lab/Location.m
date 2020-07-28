@@ -3,7 +3,9 @@
 # This could be a room, a rig or a bench.
 location:                   varchar(32)
 -----
+-> lab.AcquisitionType
 location_description='':    varchar(255)
+
 %}
 
 classdef Location < dj.Lookup
