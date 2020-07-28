@@ -31,9 +31,8 @@ classdef TowersBlock < dj.Imported
                 block = fixLogs(block); % fix bug for mesoscope recordings where choice is not recorded (but view angle is)
                 
                 tuple.block = iBlock;
-                tuple_trial = tuple;
                 tuple.task = 'Towers';
-                tuple.n_trials = length(block);
+                tuple.n_trials = length(block.trial);
                 tuple.first_trial = block.firstTrial;
                 tuple.block_duration = block.duration;
                 tuple.block_start_time = sprintf('%d-%02d-%02d %02d:%02d:00', ...
@@ -51,8 +50,6 @@ classdef TowersBlock < dj.Imported
                 correct_counter = 0;
                 for itrial = 1:length(block.trial)
                     trial = block.trial(itrial);
-                    tuple_trial.trial_type = trial.trialType.char; 
-                    tuple_trial.choice = trial.choice.char;
                     correct_counter = correct_counter + strcmp(trial.trialType.char, trial.choice.char);
                 end
                 perf = correct_counter/length(block.trial);
@@ -65,6 +62,11 @@ classdef TowersBlock < dj.Imported
                 
                 for itrial = 1:length(block.trial)
                     trial = block.trial(itrial);
+                    
+                    tuple = key; %% Start with an emty tube to trial data
+                    tuple.block = iBlock;                
+                    tuple_trial = tuple;  
+
                     tuple_trial.trial_idx = itrial;
                     tuple_trial.trial_type = trial.trialType.char; 
                     tuple_trial.choice = trial.choice.char;
