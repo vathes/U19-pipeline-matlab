@@ -1,10 +1,11 @@
 %{
 # time binned activity by trialStruct
 -> meso.Segmentation
+-> meso_analysis.BinningParameters
 ---
  
 standardized_time : longblob  # linearly interpolated behavioral epoch ID per imaging frame
- 
+binned_time       : blob      #
 %}
  
  
@@ -59,9 +60,16 @@ classdef StandardizedTime < dj.Computed
                 behaviorByFrame(frame_span{trialNum}(1):frame_span{trialNum}(2)) = location;
                 %results.standardize_time = behaviorByFrame;
             end
+            %%
             
+            epochBinning = fetch1(meso_analysis.BinningParameters & key, 'epoch_binning');
+            binned_time   = accumfun(2, @(x,y,z) butlast(linspace(x,y,z)), ...
+                                         0:numel(epochBinning)-1, 1:numel(epochBinning), epochBinning);
+            
+            
+            %%
             key.standardized_time = behaviorByFrame;
-            
+            key.binned_time = binned_time;
             
             self.insert(key);
         end
