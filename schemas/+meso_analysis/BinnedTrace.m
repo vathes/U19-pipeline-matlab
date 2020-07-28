@@ -2,6 +2,8 @@
 # time binned activity by trial
 -> meso.Segmentation
 -> meso_analysis.BinningParameters
+-> meso_analysis.TrialSelectionParams
+
 global_roi_idx         : int   # roi_idx in SegmentationRoi table
 trial_idx              : int   # trial number as in meso_analysis.Trialstats
  
@@ -39,7 +41,7 @@ classdef BinnedTrace < dj.Computed
       else
         isgood               = strcmp(morpho,'Doughnut') | strcmp(morpho,'Blob');
       end
-      isallnan               = sum(isnan(dff),2) == size(dff,2);
+      isallnan               = sum(~isfinite(dff),2) == size(dff,2); % some neurons are nan'd or inf'd out
       isgood                 = isgood & ~isallnan;
       
       dff(~isgood,:)         = [];
@@ -51,7 +53,7 @@ classdef BinnedTrace < dj.Computed
         'sync_behav_trial_by_im_frame', 'sync_behav_iter_by_im_frame', 'sync_im_frame_span_by_behav_block','sync_im_frame_span_by_behav_trial','sync_im_frame_span_by_behav_iter');
  
  
-    %% get trialBinsByFrame (which trial corresponds to each imaging frame) wrt segmented frames
+    %% get trial info wrt segmented frames
       segmented_frames = ~all(isnan(dff));
  
       % this is trial within block, we need trial within session
@@ -69,10 +71,40 @@ classdef BinnedTrace < dj.Computed
       trial_by_im_frame = nan(size(trial_wi_block_by_im_frame));
       trial_by_im_frame(trial_wi_block_by_im_frame>0) = trial_wi_block_by_im_frame(trial_wi_block_by_im_frame>0)+trial2add-1;
  
-      % now can select for good trials based on session trial idx
-      [trial_idx, isNotExcessTravel] = fetchn(meso_analysis.Trialstats & key, 'trial_idx','is_not_excess_travel');
-      good_trial_idx     = trial_idx(logical(isNotExcessTravel) &...
-                             is_within_segmentation);
+      %% now that trials are wrt segmented frames, can select for good trials based on session trial idx in .TrialStats
+      trial_stats = fetch(meso_analysis.Trialstats & key, 'trial_idx','is_not_excess_travel','mean_perf_block', ...
+                                        'mean_bias_block','mean_perf_block','is_towers_task','is_visguided_task','block_id');
+      trial_idx = [trial_stats.trial_idx];
+      
+      block_id  = [trial_stats.block_id]; % 1 x num trials
+      [n_trials,~, bin]  = histcounts(block_id, 'BinMethod','integers'); %1 x num blocks
+      n_trials  = n_trials(bin); % 1 x num trials
+                                    
+      trial_selection_parameters = fetch(meso_analysis.TrialSelectionParams & key,'no_excess_travel','towers_perf_thresh',...
+                                 'towers_bias_thresh','visguide_perf_thresh','visguide_bias_thresh','min_trials_per_block');
+      
+      if logical(trial_selection_parameters.no_excess_travel)            
+         good_running = logical([trial_stats.is_not_excess_travel]);  
+      else
+         good_running = true(size([trial_stats.is_not_excess_travel]));
+      end
+      
+      good_towers_trials = good_running &  n_trials > trial_selection_parameters.min_trials_per_block & ...
+                           [trial_stats.is_towers_task] & ...
+                           [trial_stats.mean_perf_block] >= trial_selection_parameters.towers_perf_thresh & ...
+                           [trial_stats.mean_bias_block] <= trial_selection_parameters.towers_bias_thresh;
+      
+      good_visguide_trials = good_running &  n_trials > trial_selection_parameters.min_trials_per_block & ...
+                           [trial_stats.is_visguided_task] & ...
+                           [trial_stats.mean_perf_block] > trial_selection_parameters.visguide_perf_thresh & ...
+                           [trial_stats.mean_bias_block] < trial_selection_parameters.visguide_bias_thresh;
+                       
+      good_trial     = good_towers_trials | good_visguide_trials;
+                       
+      good_trial_idx = trial_idx(good_trial & is_within_segmentation');
+
+                         
+      %% Get trial bins (which trial bin # corresponds to each imaging frame)
       good_trial_frames  = ismember(trial_by_im_frame, good_trial_idx);      
       
       trial_by_im_frame = trial_by_im_frame(good_trial_frames);
@@ -80,9 +112,9 @@ classdef BinnedTrace < dj.Computed
       
       trial_bin_by_im_frame = binarySearch(trial_out_idx, trial_by_im_frame, -1, -1);
  
-      %% get epoch bins 
-      epochEdges       = getEpochEdges(key);
-      standardizedTime = fetch1(meso_analysis.StandardizedTime & key, 'standardized_time');
+      %% Get epoch bins 
+%       epochEdges       = getEpochEdges(key);
+      [standardizedTime, epochEdges] = fetchn(meso_analysis.StandardizedTime & key, 'standardized_time', 'binned_time');
  
       epoch_by_frame     = standardizedTime(segmented_frames & good_trial_frames);
       epoch_bin_by_frame = binarySearch(epochEdges, epoch_by_frame, -1, -1);
@@ -110,11 +142,11 @@ end
  
  
 % =======================================================================
-function epochEdges = getEpochEdges(key)
-  epochBinning = fetch1(meso_analysis.BinningParameters & key, 'epoch_binning');
-  epochEdges   = accumfun(2, @(x,y,z) butlast(linspace(x,y,z)), ...
-                             0:numel(epochBinning)-1, 1:numel(epochBinning), epochBinning);
-end
+% function epochEdges = getEpochEdges(key)
+%   epochBinning = fetch1(meso_analysis.BinningParameters & key, 'epoch_binning');
+%   epochEdges   = accumfun(2, @(x,y,z) butlast(linspace(x,y,z)), ...
+%                              0:numel(epochBinning)-1, 1:numel(epochBinning), epochBinning);
+% end
  
 % =======================================================================
 % SUE ANNS averageInBin function, renamed 
