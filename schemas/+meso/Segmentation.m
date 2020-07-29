@@ -212,6 +212,12 @@ classdef Segmentation < dj.Imported
           trace_data.dff_roi_is_significant(frameIdx) = chunkdata{iChunk}.cnmf.isSignificant(localIdx,:);
           trace_data.dff_roi_is_baseline(frameIdx)    = chunkdata{iChunk}.cnmf.isBaseline(localIdx,:);
           
+          % first compute correction factor cf with MIkas function
+          cf = mikasfunction();
+          corrected_F = uniqueData - cf*surroundData;
+          uniqueBase_corrected = halfSampleMode(corrected_F');
+          corrected_dff = corrected_F / uniqueBase_corrected -1;
+          
           % roi: shape and morphological classification
           if isempty(roi_data.roi_spatial)
             roi_data.roi_spatial      = reshape(full(chunkdata{iChunk}.cnmf.spatial(:,localIdx)),chunkdata{iChunk}.cnmf.region.ImageSize);
