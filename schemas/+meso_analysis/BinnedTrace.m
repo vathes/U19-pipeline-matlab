@@ -4,12 +4,12 @@
 -> meso_analysis.BinningParameters
 -> meso_analysis.TrialSelectionParams
 
-global_roi_idx         : int   # roi_idx in SegmentationRoi table
-trial_idx              : int   # trial number as in meso_analysis.Trialstats
+global_roi_idx         : int           # roi_idx in SegmentationRoi table
+trial_idx              : int           # trial number as in meso_analysis.Trialstats
  
 ---
  
-binned_dff             : blob  # binned Dff, 1 row per neuron per trialStruct
+binned_dff             : blob@meso  # binned Dff, 1 row per neuron per trialStruct
  
 %}
  
@@ -25,8 +25,10 @@ classdef BinnedTrace < dj.Computed
       end
       
       %% retrieve dff data
-      [dff,global_idx] = fetchn(meso.Trace & key, 'dff_roi','roi_idx');
-      dff              = cell2mat(dff); % neurons by frames 
+      data = fetch(meso.Trace & key, 'dff_roi','roi_idx');
+      dff = cell2mat({data.dff_roi}');
+      global_idx = [data.roi_idx]';
+      %dff              = cell2mat(dff); % neurons by frames 
       
       %% use manual curation to select only good rois
       goodMorphoOnly = fetch1(meso_analysis.BinningParameters & key, 'good_morpho_only');
@@ -49,8 +51,7 @@ classdef BinnedTrace < dj.Computed
       
       %% get behavioral trial info
  
-      syncinfo = fetch(meso.SyncImagingBehavior & key, 'sync_im_frame', 'sync_im_frame_global','sync_behav_block_by_im_frame', ...
-        'sync_behav_trial_by_im_frame', 'sync_behav_iter_by_im_frame', 'sync_im_frame_span_by_behav_block','sync_im_frame_span_by_behav_trial','sync_im_frame_span_by_behav_iter');
+      syncinfo = fetch(meso.SyncImagingBehavior & key, '*');
  
  
     %% get trial info wrt segmented frames
@@ -115,7 +116,8 @@ classdef BinnedTrace < dj.Computed
       %% Get epoch bins 
 %       epochEdges       = getEpochEdges(key);
       [standardizedTime, epochEdges] = fetchn(meso_analysis.StandardizedTime & key, 'standardized_time', 'binned_time');
- 
+        standardizedTime = standardizedTime{:};
+        epochEdges = epochEdges{:};
       epoch_by_frame     = standardizedTime(segmented_frames & good_trial_frames);
       epoch_bin_by_frame = binarySearch(epochEdges, epoch_by_frame, -1, -1);
       
