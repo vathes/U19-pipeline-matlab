@@ -1,11 +1,11 @@
-function ingest_acq_session(subject_id, user, rig, find_paths)
+function ingest_acq_session(subject_id, user_folder, rig, find_paths)
 %INGEST_ACQ_SESSION
 % Look for missing behavioral files in bucket and add them to u19_acquisition.session
 %
 % Inputs
-%  subject   = subject of the sessions
-%  user      = user that ran the session
-%  rig       = rigname of the session
+%  subject      = subject of the sessions
+%  user_folder  = user that ran the session
+%  rig          = rigname of the session
 
 % Execute function to find or generate paths in spock tree
 if nargin < 4
@@ -21,26 +21,6 @@ if isempty(subject_db)
     error('There is no such subject in the database')
 end
 
-%Check for user in database (id or nickname)
-status = true;
-%Check user_id
-user_key.user_id = user;
-user_db = fetch(lab.User & user_key, 'user_id', 'user_nickname');
-if isempty(user_db)
-    status = false;
-end
-%if is not there check user nickname
-if ~status
-    user_key2.user_nickname = user;
-    user_db = fetch(lab.User & user_key2, 'user_id', 'user_nickname');
-end
-%user not found or user is not the same
-if isempty(user_db)
-    error('User not found in database')
-elseif ~strcmp(user_db.user_id, subject_db.user_id)
-    warning('User provided and subject''s user are not same user')
-end
-
 %Check rig existence
 rigkey.location = rig;
 rig_db = fetch(lab.Location & rigkey, 'location', 'bucket_default_path');
@@ -52,17 +32,10 @@ rig_directory = lab.utils.format_bucket_path(rig_db.bucket_default_path);
 lab.utils.assert_mounted_location(rig_directory);
 
 % Get user directory for specific rig
-user_directory = fullfile(rig_directory, user_db.user_nickname);
-bucket_directory = fullfile(rig_db.bucket_default_path, user_db.user_nickname);
+user_directory = fullfile(rig_directory, user_folder);
+bucket_directory = fullfile(rig_db.bucket_default_path, user_folder);
 
 %Mark an error if there is no drectory for user in that rig (nickname or user id)
-if ~exist(user_directory, 'dir')
-    status = false;
-end
-if ~status
-    user_directory   = fullfile(rig_directory, user_db.user_id);
-    bucket_directory = fullfile(bucket_directory, user_db.user_id);
-end
 if ~exist(user_directory, 'dir')
     disp(['looking inside this directory: ' user_directory])
     warning('No directory found for inserted user')
