@@ -36,6 +36,9 @@ for block_idx = 1:length(log.block)
     %Calculate correct trials for block    
     for itrial = 1:length(trialstruct.trial)
         trial = trialstruct.trial(itrial);
+        if isempty(trial.trialType)
+            break;
+        end
         correct_number = correct_number + strcmp(trial.trialType.char, trial.choice.char);
         counter = counter + 1;
     end
@@ -57,7 +60,7 @@ key_session.stimulus_commit   = commit;
 
 %Session code_version
 key_session.session_code_version = {log.version.mazeVersion, log.version.codeVersion};
-key_session
+
 %and insert this session:
 insert(acquisition.Session, key_session)
 
