@@ -8,7 +8,7 @@ function filelist = RecFindFiles(path, pattern, filelist, depth)
     end
     if depth>0
         for dir = listdir
-            disp(['Looking at ', dir{1}, ' ... and continuing.'])
+            %disp(['Looking at ', dir{1}, ' ... and continuing.'])
             filelist = RecFindFiles(dir{1}, pattern, filelist, depth-1);
         end
     end
@@ -44,7 +44,7 @@ function [listdir, listfile] = FindFiles(reper, stc)
             if isempty(ii)
                 continue;
             end
-            disp(['Found: ', name, ' ... and continuing.']);
+            %disp(['Found: ', name, ' ... and continuing.']);
             nf=nf+1;
             listfile{nf}=fullfile(reper,S(i).name);
         end

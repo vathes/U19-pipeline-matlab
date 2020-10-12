@@ -71,6 +71,7 @@ end
 %Get all files of corresponding subject
 current_directory = fileparts(mfilename('fullpath'));
 if find_paths
+    disp(['looking inside this directory: ' user_directory])
     subj_files = RecFindFiles(user_directory, subject_db.subject_fullname, {}, 7);
     save(fullfile(current_directory, 'subj_files.mat'), 'subj_files')
 else
