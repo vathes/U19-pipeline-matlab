@@ -98,8 +98,8 @@ else
     % Insert acq session
     session_db = fetch(acquisition.Session & sessionkey);
     if ~isempty(session_db)
-        disp(['acq.Session already in database for ', subject_db.subject_fullname, ...
-              ' for date: ', date_str])
+        %disp(['acq.Session already in database for ', subject_db.subject_fullname, ...
+        %      ' for date: ', date_str])
     else
         disp(['Inserting acq.Session for ', subject_db.subject_fullname, ...
               ' for date: ', date_str])
@@ -110,8 +110,8 @@ else
     %Insert acq session started
     session_started_db = fetch(acquisition.SessionStarted & sessionkey);
     if ~isempty(session_started_db)
-        disp(['acq.SessionStarted already in database for ', subject_db.subject_fullname, ...
-              ' for date: ', date_str])
+        %disp(['acq.SessionStarted already in database for ', subject_db.subject_fullname, ...
+        %      ' for date: ', date_str])
     else
         disp(['Inserting acq.SessionStarted for ', subject_db.subject_fullname, ...
               ' for date: ', date_str])
