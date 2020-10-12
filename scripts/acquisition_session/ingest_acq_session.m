@@ -1,4 +1,4 @@
-function ingest_acq_session(subject_id, user, rig)
+function ingest_acq_session(subject_id, user, rig, find_paths)
 %INGEST_ACQ_SESSION
 % Look for missing behavioral files in bucket and add them to u19_acquisition.session
 %
@@ -6,6 +6,11 @@ function ingest_acq_session(subject_id, user, rig)
 %  subject   = subject of the sessions
 %  user      = user that ran the session
 %  rig       = rigname of the session
+
+% Execute function to find or generate paths in spock tree
+if nargin < 4
+    find_paths = 1;
+end
 
 
 %Cher for subject in database
@@ -64,11 +69,13 @@ if ~exist(user_directory, 'dir')
 end
 
 %Get all files of corresponding subject
-%subj_files = RecFindFiles(user_directory, subject_db.subject_fullname, {}, 7);
-
 current_directory = fileparts(mfilename('fullpath'));
-%save(fullfile(current_directory, 'subj_files.mat'), 'subj_files')
-load(fullfile(current_directory, 'subj_files.mat'), 'subj_files')
+if find_paths
+    subj_files = RecFindFiles(user_directory, subject_db.subject_fullname, {}, 7);
+    save(fullfile(current_directory, 'subj_files.mat'), 'subj_files')
+else
+    load(fullfile(current_directory, 'subj_files.mat'), 'subj_files')
+end
 
 bucket_subj_files = cellfun(@(x) strrep(x, user_directory, bucket_directory), subj_files, ...
                     'UniformOutput', false);
