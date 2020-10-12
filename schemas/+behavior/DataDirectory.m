@@ -10,8 +10,6 @@ classdef DataDirectory < dj.Computed
     
     properties
         popRel = acquisition.Session & 'session_location != "wide-field"'
-        %Just for now, some mikas mice are asigned to luca's bucket directory
-        lucas_forzed = {'gps1', 'gps2', 'gps3', 'gps4', 'gps5', 'gps6', 'gps7'}
     end
 
 	methods(Access=protected)
@@ -20,15 +18,7 @@ classdef DataDirectory < dj.Computed
             
             [rig, subj, session_date] = fetch1(...
                 subject.Subject * acquisition.Session & key, 'session_location', 'subject_nickname', 'session_date');
-            
-            %Just for now, some mikas mice are asigned to luca's bucket directory
-            lucas_mice = find(strcmp(self.lucas_forzed, subj),1);
-            if ~isempty(lucas_mice)
-                user = 'lucas';
-            else
-                user = fetch1(lab.User*subject.Subject & key, 'user_nickname');
-            end
-            
+            user = fetch1(lab.User*subject.Subject & key, 'user_nickname');
             session_date = erase(session_date, '-');  
 
             if strcmp('Bezos3', rig)
