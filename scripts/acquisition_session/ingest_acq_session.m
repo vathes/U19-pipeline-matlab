@@ -64,6 +64,7 @@ if ~status
     bucket_directory = fullfile(bucket_directory, user_db.user_id);
 end
 if ~exist(user_directory, 'dir')
+    disp(['looking inside this directory: ' user_directory])
     warning('No directory found for inserted user')
     return
 end
