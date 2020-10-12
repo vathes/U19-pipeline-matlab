@@ -20,7 +20,12 @@ end
 
 %Remove bucket "base" dir from path 
 bucket_base_dir  = path_record.bucket_path{:};
-extra_bucket_dir = strrep(bucket_dir,bucket_base_dir, '');
+
+if contains(bucket_dir, '/mnt/bucket/')
+    extra_bucket_dir = strrep(bucket_dir,bucket_base_dir, '');
+else
+    extra_bucket_dir = strrep(bucket_dir,['/' path_record.global_path{:}], '');
+end
 
 %If we are in spock already directory is the bucket_path column
 if u19_dj_utils.is_this_spock()
