@@ -103,7 +103,7 @@ else
     else
         disp(['Inserting acq.Session for ', subject_db.subject_fullname, ...
               ' for date: ', date_str])
-        %insert_acq_session(file, subject_db.subject_fullname);
+        insert_acq_session(file, subject_db.subject_fullname);
      
     end
     
@@ -115,7 +115,7 @@ else
     else
         disp(['Inserting acq.SessionStarted for ', subject_db.subject_fullname, ...
               ' for date: ', date_str])
-        %insert_acq_session_started(file, bucket_file, rig_db.bucket_default_path, subject_db.subject_fullname);
+        insert_acq_session_started(file, bucket_file, rig_db.bucket_default_path, subject_db.subject_fullname);
         
     end
 end
