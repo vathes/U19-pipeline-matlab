@@ -1,10 +1,5 @@
 function format_dir = format_bucket_path(bucket_dir)
 
-%If we are in spock already directory is the same
-if u19_dj_utils.is_this_spock()
-    format_dir = bucket_dir;
-    return
-end
 
 %Get all path table from u19_lab.Path ("official sites")
 [path_table] = lab.utils.get_path_table();
@@ -27,8 +22,10 @@ end
 bucket_base_dir  = path_record.bucket_path{:};
 extra_bucket_dir = strrep(bucket_dir,bucket_base_dir, '');
 
-
-if ispc
+%If we are in spock already directory is the bucket_path column
+if u19_dj_utils.is_this_spock()
+    baseDir = path_record.bucket_path{:};
+elseif ispc
     %For pc the accesible path is the net_location field
     baseDir  = path_record.net_location{:};
     
@@ -39,6 +36,7 @@ else
     %For mac and linux the accesible path is the local_path field
     baseDir = path_record.local_path{:};
 end
+
 
 %Format the local directory 
 format_dir = fullfile(baseDir, extra_bucket_dir);
