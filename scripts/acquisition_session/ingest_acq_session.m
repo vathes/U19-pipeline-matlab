@@ -12,6 +12,7 @@ if nargin < 4
     find_paths = 1;
 end
 
+verbose = 0;
 
 %Cher for subject in database
 subj_key.subject_fullname = subject_id;
@@ -46,7 +47,8 @@ end
 current_directory = fileparts(mfilename('fullpath'));
 if find_paths
     disp(['looking inside this directory: ' user_directory])
-    subj_files = RecFindFiles(user_directory, subject_db.subject_fullname, {}, 7);
+
+    subj_files = RecFindFiles(user_directory, subject_db.subject_fullname, {}, 7, verbose);
     save(fullfile(current_directory, 'subj_files.mat'), 'subj_files')
 else
     load(fullfile(current_directory, 'subj_files.mat'), 'subj_files')

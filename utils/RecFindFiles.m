@@ -1,15 +1,21 @@
-function filelist = RecFindFiles(path, pattern, filelist, depth)
+function filelist = RecFindFiles(path, pattern, filelist, depth, verbose)
     % Lists all files in the repository path, that contains the string
     % patter.
     % The results are appended to 'Filelist', and depth in decreased.
+    if nargin < 5
+        verbose = 1;
+    end
+    
     [listdir, listfile] = FindFiles(path, pattern); % Lists content of this hirarchy
     for file = listfile
         filelist{end+1} = file;
     end
     if depth>0
         for dir = listdir
-            %disp(['Looking at ', dir{1}, ' ... and continuing.'])
-            filelist = RecFindFiles(dir{1}, pattern, filelist, depth-1);
+            if verbose
+                disp(['Looking at ', dir{1}, ' ... and continuing.'])
+            end
+            filelist = RecFindFiles(dir{1}, pattern, filelist, depth-1, verbose);
         end
     end
 end
