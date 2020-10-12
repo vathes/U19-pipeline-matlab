@@ -1,4 +1,4 @@
-function ingest_acq_session(subject_id, user, rig, dates)
+function ingest_acq_session(subject_id, user, rig)
 %INGEST_ACQ_SESSION
 % Look for missing behavioral files in bucket and add them to u19_acquisition.session
 %
@@ -6,7 +6,6 @@ function ingest_acq_session(subject_id, user, rig, dates)
 %  subject   = subject of the sessions
 %  user      = user that ran the session
 %  rig       = rigname of the session
-%  dates     = date range of the session
 
 
 %Cher for subject in database
@@ -49,22 +48,30 @@ lab.utils.assert_mounted_location(rig_directory);
 
 % Get user directory for specific rig
 user_directory = fullfile(rig_directory, user_db.user_nickname);
+bucket_directory = fullfile(rig_db.bucket_default_path, user_db.user_nickname);
 
 %Mark an error if there is no drectory for user in that rig (nickname or user id)
 if ~exist(user_directory, 'dir')
     status = false;
 end
 if ~status
-    user_directory = fullfile(rig_directory, user_db.user_id);
+    user_directory   = fullfile(rig_directory, user_db.user_id);
+    bucket_directory = fullfile(bucket_directory, user_db.user_id);
 end
 if ~exist(user_directory, 'dir')
-    error('No directory found for inserted user')
+    warning('No directory found for inserted user')
+    return
 end
 
 %Get all files of corresponding subject
-subj_files = RecFindFiles(user_directory, subject_db.subject_fullname, {}, 7);
-save('subj_files.mat', 'subj_files')
-load('subj_files.mat', 'subj_files')
+%subj_files = RecFindFiles(user_directory, subject_db.subject_fullname, {}, 7);
+
+current_directory = fileparts(mfilename('fullpath'));
+%save(fullfile(current_directory, 'subj_files.mat'), 'subj_files')
+load(fullfile(current_directory, 'subj_files.mat'), 'subj_files')
+
+bucket_subj_files = cellfun(@(x) strrep(x, user_directory, bucket_directory), subj_files, ...
+                    'UniformOutput', false);
 
 
 if isempty(subj_files)
@@ -72,40 +79,60 @@ if isempty(subj_files)
 end
             
 % For all directories that end with subject id            
-date_pattern = '.mat';   
-dates_nodash = strrep(dates, '-', '');
+matfile_pattern = '.mat';   
 for i=1:length(subj_files)         
 
 % Check if file is for given date
-file = subj_files{i}{1}
-ismatfile = regexp(file, date_pattern, 'once');
+file = subj_files{i}{1};
+bucket_file = bucket_subj_files{i}{1};
+
+ismatfile = regexp(file, matfile_pattern, 'once');
 
 % If is not a mat file is not a behavior session file
 if isempty(ismatfile)
     continue
 end
 
-% Check the date of the file and if it correspond to given date array
-idx_dates = cellfun(@(x) regexp(file,x,'once'), dates_nodash,'UniformOutput',false);
-idx_dates = find(~cellfun(@isempty, idx_dates));
+% Look for date in file and get the corresponding string
+date_idx = regexp(file, '[0-9]{8}');
+if ~isempty(date_idx)
+    date_str = file(date_idx:date_idx+7);
+    date_str = [date_str(1:4) '-' date_str(5:6) '-' date_str(7:8)];
+end
+
 
 % The file has other date not in array
-if isempty(idx_dates)
+if isempty(date_str)
     disp(['Dates do not match this file ', file])
     continue
 % The file is of one of the dates in the array
 else
-    date = dates{idx_dates(1)}
+
     %Check if session already in database
     sessionkey.subject_fullname = subject_db.subject_fullname;
-    sessionkey.session_date = date;
-    session_db = fetch(acquisition.Session & sessionkey)
+    sessionkey.session_date = date_str;
+    
+    
+    % Insert acq session
+    session_db = fetch(acquisition.Session & sessionkey);
     if ~isempty(session_db)
         disp(['Session already in database for ', subject_db.subject_fullname, ...
-              'for date: ', date])
+              ' for date: ', date_str])
     else
         disp('Inserting session in db');
-        insert_acq_session(file, subject_db.subject_fullname);
+        %insert_acq_session(file, subject_db.subject_fullname);
+     
+    end
+    
+    %Insert acq session started
+    session_started_db = fetch(acquisition.SessionStarted & sessionkey);
+    if ~isempty(session_started_db)
+        disp(['Session started already in database for ', subject_db.subject_fullname, ...
+              ' for date: ', date_str])
+    else
+        disp('Inserting session started in db');
+        %insert_acq_session_started(file, bucket_file, rig_db.bucket_default_path, subject_db.subject_fullname);
+        
     end
 end
 
