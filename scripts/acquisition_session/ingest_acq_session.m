@@ -125,10 +125,11 @@ else
     % Insert acq session
     session_db = fetch(acquisition.Session & sessionkey);
     if ~isempty(session_db)
-        disp(['Session already in database for ', subject_db.subject_fullname, ...
+        disp(['acq.Session already in database for ', subject_db.subject_fullname, ...
               ' for date: ', date_str])
     else
-        disp('Inserting session in db');
+        disp(['Inserting acq.Session for ', subject_db.subject_fullname, ...
+              ' for date: ', date_str])
         %insert_acq_session(file, subject_db.subject_fullname);
      
     end
@@ -136,10 +137,11 @@ else
     %Insert acq session started
     session_started_db = fetch(acquisition.SessionStarted & sessionkey);
     if ~isempty(session_started_db)
-        disp(['Session started already in database for ', subject_db.subject_fullname, ...
+        disp(['acq.SessionStarted already in database for ', subject_db.subject_fullname, ...
               ' for date: ', date_str])
     else
-        disp('Inserting session started in db');
+        disp(['Inserting acq.SessionStarted for ', subject_db.subject_fullname, ...
+              ' for date: ', date_str])
         %insert_acq_session_started(file, bucket_file, rig_db.bucket_default_path, subject_db.subject_fullname);
         
     end
