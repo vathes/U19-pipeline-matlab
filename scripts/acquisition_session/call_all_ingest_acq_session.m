@@ -17,7 +17,7 @@ users_dirsT.user_id = categorical(users_dirsT.user_id);
 user_array = cell2struct(users_dirs(:,1),{'user_id'},2);
 
 %Just check after certain date
-from_date = '2018-09-01';
+from_date = '2020-09-01';
 sess_Date_key = ['session_date >= ''' from_date ''''];
 
 %Get unique combination (subject - locations)
