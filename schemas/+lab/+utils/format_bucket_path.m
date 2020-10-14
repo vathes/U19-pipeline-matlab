@@ -5,7 +5,7 @@ function format_dir = format_bucket_path(bucket_dir)
 [path_table] = lab.utils.get_path_table();
 
 %Get OS of the system
-system = u19_dj_utils.get_OS();
+system = get_OS();
 
 %Check the base dir corresponds to which global path
 idx_basedir = cellfun(@(s) contains(bucket_dir, s), path_table.global_path);

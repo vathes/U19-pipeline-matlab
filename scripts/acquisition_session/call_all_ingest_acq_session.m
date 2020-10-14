@@ -13,22 +13,21 @@ users_dirs = { ...
 users_dirsT  = cell2table(users_dirs, ...
     'VariableNames',{'user_id' 'user_folder_name'});
 users_dirsT.user_id = categorical(users_dirsT.user_id);
+% Create a user_struct to filter only these users in query
+user_array = cell2struct(users_dirs(:,1),{'user_id'},2);
 
 %Just check after certain date
-from_date = '2020-09-01';
+from_date = '2018-09-01';
 sess_Date_key = ['session_date >= ''' from_date ''''];
 
-%Get all sessions 
-fields_query = {'user_id', 'subject_fullname', 'session_location'};
-session_struct = fetch(acquisition.Session * subject.Subject & sess_Date_key, fields_query{:});
-
-%Remove data and session number from table (ony unique subject-location)
-session_struct = rmfield(session_struct, 'session_date');
-session_struct = rmfield(session_struct, 'session_number');
-
-%Get unique subject-location combinations
-session_table = struct2table(session_struct);
-unique_sessions = unique(session_table,'rows');
+%Get unique combination (subject - locations)
+new_sessions  = acquisition.Session & sess_Date_key;
+session_struct = fetch(proj(subject.Subject & user_array, 'user_id') * proj(lab.Location) & ...
+                       proj(new_sessions,'session_location->location'), '*');
+                        
+                        
+%Transform to table and make a categorical index
+unique_sessions = struct2table(session_struct);
 unique_sessions.user_id = categorical(unique_sessions.user_id);
 
 %Just keep in table sessions from users_dirs we stated
@@ -46,11 +45,11 @@ for i=1:size(unique_sessions,1)
     
     disp(['ingestion for ' ...
             ' subject: ' unique_sessions{i,'subject_fullname'}{:} ...
-            ' location: ' unique_sessions{i,'session_location'}{:} ...
+            ' location: ' unique_sessions{i,'location'}{:} ...
             ' local folder: ' unique_sessions{i,'user_folder_name'}{:} ...
             ])
     
     ingest_acq_session(unique_sessions{i,'subject_fullname'}{:},...
                        unique_sessions{i,'user_folder_name'}{:}, ...
-                       unique_sessions{i,'session_location'}{:})
+                       unique_sessions{i,'location'}{:})
 end

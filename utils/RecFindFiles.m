@@ -1,6 +1,5 @@
 function filelist = RecFindFiles(path, pattern, filelist, depth, verbose)
-    % Lists all files in the repository path, that contains the string
-    % patter.
+    % Lists all files in the repository path, that contains the string pattern.
     % The results are appended to 'Filelist', and depth in decreased.
     if nargin < 5
         verbose = 1;

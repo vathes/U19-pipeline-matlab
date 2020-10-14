@@ -16,7 +16,7 @@ function [bucket_path, local_path] =  get_path_from_official_dir(baseDir)
 % local_path ==  '/Volumes/Bezos-center/RigData/scope/bay3''
 
 %Get OS of the system
-system = u19_dj_utils.get_OS();
+system = get_OS();
 
 %Get all path table from u19_lab.Path ("official sites")
 [path_table] = lab.utils.get_path_table();

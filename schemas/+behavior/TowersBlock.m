@@ -16,14 +16,15 @@ level                       : int                           # maze number (diffi
 
 classdef TowersBlock < dj.Imported
     properties
-        popRel = proj(acquisition.Session, 'level->na_level') * ...
+        %keySource = acquisition.Session & acquisition.SessionStarted 
+        keySource = proj(acquisition.Session, 'level->na_level') * ...
                  proj(acquisition.SessionStarted, 'session_location->na_location', 'remote_path_behavior_file')
     end
     methods(Access=protected)
         function makeTuples(self, key)
             
             %data_dir = getLocalPath(fetch1(behavior.DataDirectory & key, 'combined_file_name'));
-            data_dir = getLocalPath(fetch1(self.popRel & key, 'remote_path_behavior_file'));
+            data_dir = getLocalPath(fetch1(acquisition.SessionStarted & key, 'remote_path_behavior_file'));
             data = load(data_dir, 'log');
             log = data.log;
 
