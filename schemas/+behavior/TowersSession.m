@@ -26,7 +26,7 @@ classdef TowersSession < dj.Imported
             data = load(data_dir, 'log');
             log = data.log;
             
-            self.insertFromBehavioralData(key, log);
+            self.insertBehTowersSessionFromData(key, log);
             
             %                 [key.rewarded_side, key.chosen_side, key.num_towers_l, key.num_towers_r] = fetchn(...
             %                     acquisition.TowersBlockTrial & key, 'trial_type', 'choice','cue_presence_left', 'cue_presence_right');
@@ -46,7 +46,7 @@ classdef TowersSession < dj.Imported
     
     methods
         
-        function insertFromBehavioralData(self, key,  log)
+        function insertBehTowersSessionFromData(self, key,  log)
             
             %Write stimulus_set
             key.stimulus_set = log.animal.stimulusSet;
