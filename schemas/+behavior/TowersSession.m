@@ -12,10 +12,6 @@ num_towers_l:          blob      # Number of towers shown to the left x tumber o
 
 classdef TowersSession < dj.Imported
     
-    properties (Constant)
-        towersKey = struct('task', 'Towers');
-    end
-    
     properties
         %keySource = acquisition.Session & acquisition.SessionStarted
         keySource = acquisition.Session & struct('task', 'Towers');
@@ -30,6 +26,31 @@ classdef TowersSession < dj.Imported
             data = load(data_dir, 'log');
             log = data.log;
             
+            self.insertFromBehavioralData(key, log);
+            
+            %                 [key.rewarded_side, key.chosen_side, key.num_towers_l, key.num_towers_r] = fetchn(...
+            %                     acquisition.TowersBlockTrial & key, 'trial_type', 'choice','cue_presence_left', 'cue_presence_right');
+            %                 key.maze_id = fetchn(acquisition.TowersBlock * acquisition.TowersBlockTrial & key , 'block_level');
+            %
+            %                 key.num_towers_l = cellfun(@sum, key.num_towers_l);
+            %                 key.num_towers_r = cellfun(@sum, key.num_towers_r);
+            %
+            %                 % compute various statistics on activity
+            %                 self.insert(key);
+            %                 sprintf(['Computed statistics for mouse ', key.subject_id, ' on date ', key.session_date, '.']);
+            
+        end
+        
+    end
+    
+    
+    methods
+        
+        function insertFromBehavioralData(self, key,  log)
+            
+            %Write stimulus_set
+            key.stimulus_set = log.animal.stimulusSet;
+            
             %Initialize variables to concatenate
             key.rewarded_side = [];
             key.chosen_side = [];
@@ -42,7 +63,7 @@ classdef TowersSession < dj.Imported
                 trialstruct = log.block(block_idx);
                 
                 rewarded_side = double([trialstruct.trial.trialType]);
-                chosen_side = double([trialstruct.trial.choice]); 
+                chosen_side = double([trialstruct.trial.choice]);
                 %Repeat maze id for each trial
                 maze_id = repmat(trialstruct.mazeID, size(chosen_side));
                 
@@ -58,12 +79,9 @@ classdef TowersSession < dj.Imported
                 key.maze_id = [key.maze_id maze_id];
                 key.num_towers_r = [key.num_towers_r num_towers_r];
                 key.num_towers_l = [key.num_towers_l num_towers_l];
-                
-                
+                       
             end
             
-            
-            key.stimulus_set = log.animal.stimulusSet;
             % Squal not saved in behavorial file before 2020-11-01
             if isfield(log.version.rig, 'squal')
                 key.ball_squal = log.version.rig.squal;
@@ -71,21 +89,11 @@ classdef TowersSession < dj.Imported
                 key.ball_squal = -1;
             end
             
-            
+            %Finally insert record
             self.insert(key);
             
             
-            %                 [key.rewarded_side, key.chosen_side, key.num_towers_l, key.num_towers_r] = fetchn(...
-            %                     acquisition.TowersBlockTrial & key, 'trial_type', 'choice','cue_presence_left', 'cue_presence_right');
-            %                 key.maze_id = fetchn(acquisition.TowersBlock * acquisition.TowersBlockTrial & key , 'block_level');
-            %
-            %                 key.num_towers_l = cellfun(@sum, key.num_towers_l);
-            %                 key.num_towers_r = cellfun(@sum, key.num_towers_r);
-            %
-            %                 % compute various statistics on activity
-            %                 self.insert(key);
-            %                 sprintf(['Computed statistics for mouse ', key.subject_id, ' on date ', key.session_date, '.']);
-            
         end
+        
     end
 end
