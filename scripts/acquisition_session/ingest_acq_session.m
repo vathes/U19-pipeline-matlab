@@ -136,7 +136,7 @@ for i=1:length(subj_files)
             if isfield(log, 'session')
                 status = true;
             else
-                disp(['File does not match expected Towers behavioral file: ', acqsession_file]
+                disp(['File does not match expected Towers behavioral file: ', acqsession_file])
             end
         catch
             disp(['Could not open behavioral file: ', acqsession_file])
