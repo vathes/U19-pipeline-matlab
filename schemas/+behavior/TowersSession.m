@@ -22,12 +22,23 @@ classdef TowersSession < dj.Imported
             
             %Get behavioral file to load
             data_dir = getLocalPath(fetch1(acquisition.SessionStarted & key, 'remote_path_behavior_file'));
-            data = load(data_dir, 'log');
-            log = data.log;
             
-            self.insertTowersSessionFromFile(key, log);
-                        
-        end    
+            %Load behavioral file
+            try
+                data = load(data_dir,'log');
+                log = data.log;
+                %Check if it is a real behavioral file
+                if isfield(log, 'session')
+                    %Insert Blocks and trails from BehFile
+                    self.insertTowersSessionFromFile(key, log);
+                else
+                    disp(['File does not match expected Towers behavioral file: ', acqsession_file]
+                end
+            catch
+                disp(['Could not open behavioral file: ', acqsession_file])
+            end
+            
+        end
     end
     
     methods
@@ -71,7 +82,12 @@ classdef TowersSession < dj.Imported
                 key.maze_id = [key.maze_id maze_id];
                 key.num_towers_r = [key.num_towers_r num_towers_r];
                 key.num_towers_l = [key.num_towers_l num_towers_l];
-                       
+                
+            end
+            
+            %Support when behavioral files has 2 "versions"
+            if length(log.version) > 1
+                log.version = log.version(1);
             end
             
             % Squal not saved in behavorial file before 2020-11-01

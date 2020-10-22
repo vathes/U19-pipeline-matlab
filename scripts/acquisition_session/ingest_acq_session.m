@@ -126,39 +126,40 @@ for i=1:length(subj_files)
         sessionkey.subject_fullname = subject_db.subject_fullname;
         sessionkey.session_date = date_str;
         sessionkey.session_number = 0;
-        
+
+        status = false;
         %Load behavioral file
-        %data = load(file, 'log');
-        %log = data.log;
-        
+        try
+            data = load(file,'log');
+            log = data.log;
+            %Check if it is a real behavioral file
+            if isfield(log, 'session')
+                status = true;
+            else
+                disp(['File does not match expected Towers behavioral file: ', acqsession_file]
+            end
+        catch
+            disp(['Could not open behavioral file: ', acqsession_file])
+        end
         
         %Insert acq session started
         session_started_db = fetch(acquisition.SessionStarted & sessionkey);
-        if ~isempty(session_started_db)
-            %disp(['acq.SessionStarted already in database for ', subject_db.subject_fullname, ...
-            %      ' for date: ', date_str])
-        else
+        if isempty(session_started_db) && status
             disp(['Inserting acq.SessionStarted for ', subject_db.subject_fullname, ...
                 ' for date: ', date_str])
-            %acquisition.SessionStarted.insertSessionStartedFromFile_Towers(...
-            %    sessionkey,log, bucket_file, rig_db.bucket_default_path)           
-            insert_acq_session_started(file, bucket_file, rig_db.bucket_default_path, subject_db.subject_fullname);
-            
+            acquisition.SessionStarted.insertSessionStartedFromFile_Towers(...
+                sessionkey,log, bucket_file, rig_db.bucket_default_path);            
         end
         
         
         % Insert acq session
         session_db = fetch(acquisition.Session & sessionkey);
-        if ~isempty(session_db)
-            %disp(['acq.Session already in database for ', subject_db.subject_fullname, ...
-            %      ' for date: ', date_str])
-        else
+        if isempty(session_db) && status
             disp(['Inserting acq.Session for ', subject_db.subject_fullname, ...
                 ' for date: ', date_str])
             
-            %acquisition.Session.insertSessionFromFile_Towers(sessionkey,log)
-            insert_acq_session(file, subject_db.subject_fullname);
-            
+            acquisition.Session.insertSessionFromFile_Towers(sessionkey,log)
+               
         end
         
     end
@@ -166,144 +167,6 @@ for i=1:length(subj_files)
 end
 
 end
-
-function insert_acq_session(acqsession_file, subject, log)
-%INSERT_ACQ_SESSION insert u19_acquisition.session info when file is provided
-%
-% Input
-% acqsession_file  = entire file path for towers task behavior file
-
-log = struct();
-try
-	load(acqsession_file,'log')
-catch err
-	disp('Could not load behavioral file')
-end
-
-if isfield(log, 'session')
-%primary key values
-key_session.subject_fullname = subject;
-key_session.session_date = sprintf('%d-%02d-%02d', log.session.start(1), log.session.start(2), log.session.start(3));
-key_session.session_number = 0;
-
-key_session.session_start_time = sprintf('%d-%02d-%02d %02d:%02d:00', log.session.start(1), log.session.start(2), log.session.start(3), log.session.start(4), log.session.start(5));
-key_session.session_end_time = sprintf('%d-%02d-%02d %02d:%02d:00', log.session.end(1), log.session.end(2), log.session.end(3), log.session.end(4), log.session.end(5));
-
-key_session.stimulus_bank = log.block.stimulusBank;
-key_session.task = 'Towers';
-
-if length(log.version) > 1
-	log.version = log.version(1)
-end
-
-
-key_session.session_location = log.version.rig.rig;
-key_session.set_id = 1;
-
-
-%Get session_performance
-correct_number = 0;
-counter = 0;
-for block_idx = 1:length(log.block)
-    trialstruct = log.block(block_idx);
-    
-    %Get stimulus_bank and level from last block of session
-    key_session.stimulus_bank = trialstruct.stimulusBank;
-    key_session.level = trialstruct.mainMazeID;
-    
-    %Calculate correct trials for block
-    for itrial = 1:length(trialstruct.trial)
-        trial = trialstruct.trial(itrial);
-        if isempty(trial.trialType)
-            break;
-        end
-        correct_number = correct_number + strcmp(trial.trialType.char, trial.choice.char);
-        counter = counter + 1;
-    end
-end
-if counter ~= 0
-	key_session.session_performance = correct_number*100 / counter;
-else
-	key_session.session_performance = 0;
-end
-
-if isstruct(log.animal) && isfield(log.animal, 'protocol')
-    protocol3 = func2str(log.animal.protocol);
-else
-    protocol3 = '';
-end
-
-
-%Prepare session_protocol
-session_protocol = [ func2str(log.version.code) '.m' ' ', ...
-    log.version.name '.mat' ' ', ...
-    protocol3];
-
-key_session.session_protocol = session_protocol;
-
-%Get commit version of session
-commit = strsplit(log.version.repository);
-commit = commit{1};
-key_session.stimulus_commit   = commit;
-
-
-%Session code_version
-key_session.session_code_version = {log.version.mazeVersion, log.version.codeVersion};
-
-%and insert this session:
-insert(acquisition.Session, key_session)
-end
-end
-
-
-function insert_acq_session_started(acqsession_file, bucket_file_path, rig_default_path, subject)
-%INSERT_ACQ_SESSION STARTED insert u19_acquisition.sessionstarted info when file is provided
-%
-% Input
-% acqsession_file  = entire file path for towers task behavior file
-
-local_default_path = 'C:/Data';
-
-log = struct();
-try
-	load(acqsession_file,'log')
-catch err
-	disp('Could not open behavioral file')
-end
-
-if isfield(log, 'session')
-
-%primary key values
-key_session.subject_fullname = subject;
-key_session.session_date = sprintf('%d-%02d-%02d', log.session.start(1), log.session.start(2), log.session.start(3));
-key_session.session_number = 0;
-key_session.remote_path_behavior_file = bucket_file_path;
-
-
-key_session.session_start_time = sprintf('%d-%02d-%02d %02d:%02d:00', log.session.start(1), log.session.start(2), log.session.start(3), log.session.start(4), log.session.start(5));
-
-if length(log.version) > 1
-	log.version = log.version(1)
-end
-
-key_session.session_location = log.version.rig.rig;
-
-
-% Get local path from bucket path and rig default path
-local_path = strrep(bucket_file_path, rig_default_path, local_default_path);
-local_path = fullfile(local_path);
-local_path = strrep(local_path, '/', '\');
-
-key_session.local_path_behavior_file  = local_path;
-
-
-insert(acquisition.SessionStarted, key_session);
-
-end
-
-
-end
-
 
 
 

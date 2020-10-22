@@ -23,15 +23,25 @@ classdef TowersBlock < dj.Imported
     methods(Access=protected)
         function makeTuples(self, key)
             
-            %data_dir = getLocalPath(fetch1(behavior.DataDirectory & key, 'combined_file_name'));
             data_dir = getLocalPath(fetch1(acquisition.SessionStarted & key, 'remote_path_behavior_file'));
-            data = load(data_dir, 'log');
-            log = data.log;
             
-            %Insert Blocks and trails from BehFile
-            self.insertTowersBlockFromFile(key,log)
+            %Load behavioral file
+            try
+                data = load(data_dir,'log');
+                log = data.log;
+                %Check if it is a real behavioral file
+                if isfield(log, 'session')
+                    %Insert Blocks and trails from BehFile
+                    self.insertTowersBlockFromFile(key,log)
+                else
+                    disp(['File does not match expected Towers behavioral file: ', acqsession_file]
+                end
+            catch
+                disp(['Could not open behavioral file: ', acqsession_file])
+            end
             
         end
+            
     end
     
     % Public methods

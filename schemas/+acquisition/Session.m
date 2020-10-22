@@ -27,13 +27,25 @@ classdef Session < dj.Imported
             data_dir = fetch(acquisition.SessionStarted & key, {'task', 'remote_path_behavior_file'});
             
             if strcmp(data_dir.task, 'Towers')
-                getLocalPath(data_dir.remote_path_behavior_file)
-                data = load(data_dir, 'log');
-                log = data.log;
-                self.insertSessionFromFile_Towers(key, log);
+                acqsession_file = getLocalPath(data_dir.remote_path_behavior_file);
+                
+                %Load behavioral file
+                try
+                    data = load(acqsession_file,'log');
+                    log = data.log;
+                    %Check if it is a real behavioral file
+                    if isfield(log, 'session')
+                        self.insertSessionFromFile_Towers(key, log);
+                    else
+                        disp(['File does not match expected Towers behavioral file: ', acqsession_file]
+                    end
+                catch 
+                    disp(['Could not open behavioral file: ', acqsession_file])
+                end
+                
             end
-                        
-        end    
+            
+        end
     end
     
     
@@ -46,12 +58,23 @@ classdef Session < dj.Imported
             % key  = structure with required fields: (subject_fullname, date, session_no)
             % log          = behavioral file as stored in Virmen
             
-                                    
+            
+            %primary key values
+            key.subject_fullname = subject;
+            key.session_date = sprintf('%d-%02d-%02d', log.session.start(1), log.session.start(2), log.session.start(3));
+            key.session_number = 0;
+            
             key.session_start_time = sprintf('%d-%02d-%02d %02d:%02d:00', log.session.start(1), log.session.start(2), log.session.start(3), log.session.start(4), log.session.start(5));
             key.session_end_time = sprintf('%d-%02d-%02d %02d:%02d:00', log.session.end(1), log.session.end(2), log.session.end(3), log.session.end(4), log.session.end(5));
             
             key.stimulus_bank = log.block.stimulusBank;
             key.task = 'Towers';
+            
+            %Support when behavioral files has 2 "versions"
+            if length(log.version) > 1
+                log.version = log.version(1);
+            end
+                  
             key.session_location = log.version.rig.rig;
             key.set_id = 1;
             
@@ -63,10 +86,8 @@ classdef Session < dj.Imported
                 trialstruct = log.block(block_idx);
                 
                 %Get stimulus_bank and level from last block of session
-                if block_idx == length(log.block)
-                    key.stimulus_bank = trialstruct.stimulusBank;
-                    key.level = trialstruct.mainMazeID;
-                end
+                key.stimulus_bank = trialstruct.stimulusBank;
+                key.level = trialstruct.mainMazeID;
                 
                 %Calculate correct trials for block
                 for itrial = 1:length(trialstruct.trial)
@@ -78,16 +99,24 @@ classdef Session < dj.Imported
                     counter = counter + 1;
                 end
             end
+            %Calculate performance, (support when 0 trials)
             if counter ~= 0
                 key.session_performance = correct_number*100 / counter;
             else
                 key.session_performance = 0;
             end
             
+            %Check for log.animal.protocol in file, not all beh files have it
+            if isstruct(log.animal) && isfield(log.animal, 'protocol')
+                protocol3 = func2str(log.animal.protocol);
+            else
+                protocol3 = '';
+            end
+            
             %Prepare session_protocol
             session_protocol = [ func2str(log.version.code) '.m' ' ', ...
                 log.version.name '.mat' ' ', ...
-                func2str(log.animal.protocol)];
+                protocol3];
             
             key.session_protocol = session_protocol;
             
