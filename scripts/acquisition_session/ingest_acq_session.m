@@ -54,13 +54,42 @@ else
     load(fullfile(current_directory, 'subj_files.mat'), 'subj_files')
 end
 
+if isempty(subj_files)
+    disp(['No files found for subject ', subject_db.subject_fullname])
+end
+
+%Get all files of corresponding subject guessing new subject_fullname
+if isempty(subj_files)
+    disp(['looking inside this directory for guess subject: ' user_directory])
+    
+    idx_underscore = strfind(subject_db.subject_fullname, '_');
+    guess_subject = '';
+    if ~isempty(idx_underscore)
+        guess_subject = strrep(subject_db.subject_fullname, subject_db.subject_fullname(1:idx_underscore(1)), '');
+    end
+    subj_files = RecFindFiles(user_directory, guess_subject, {}, 7, verbose);
+    if isempty(subj_files) && ~isempty(guess_subject)
+        disp(['No files found for subject (guess) ', guess_subject])
+    end
+end
+
+%Get all files of corresponding subject guessing new subject_fullname with lower case 
+if isempty(subj_files)
+    disp(['looking inside this directory: ' user_directory])
+    
+    idx_underscore = strfind(subject_db.subject_fullname, '_');
+    if ~isempty(idx_underscore)
+        guess_subject = lower(strrep(subject_db.subject_fullname, subject_db.subject_fullname(1:idx_underscore(1)), ''));
+    end
+    subj_files = RecFindFiles(user_directory, guess_subject, {}, 7, verbose);
+    if isempty(subj_files)
+        disp(['No files found for subject (guess) ', subject_db.subject_fullname])
+    end
+end
+
+
 bucket_subj_files = cellfun(@(x) strrep(x, user_directory, bucket_directory), subj_files, ...
     'UniformOutput', false);
-
-
-if isempty(subj_files)
-    warning(['No files found for subject ', subject_db.subject_fullname])
-end
 
 % For all directories that end with subject id
 matfile_pattern = '.mat';
@@ -132,9 +161,14 @@ function insert_acq_session(acqsession_file, subject)
 % Input
 % acqsession_file  = entire file path for towers task behavior file
 
+log = struct();
+try
+	load(acqsession_file,'log')
+catch err
+	disp('Could not load behavioral file')
+end
 
-load(acqsession_file,'log')
-
+if isfield(log, 'session')
 %primary key values
 key_session.subject_fullname = subject;
 key_session.session_date = sprintf('%d-%02d-%02d', log.session.start(1), log.session.start(2), log.session.start(3));
@@ -145,6 +179,12 @@ key_session.session_end_time = sprintf('%d-%02d-%02d %02d:%02d:00', log.session.
 
 key_session.stimulus_bank = log.block.stimulusBank;
 key_session.task = 'Towers';
+
+if length(log.version) > 1
+	log.version = log.version(1)
+end
+
+
 key_session.session_location = log.version.rig.rig;
 key_session.set_id = 1;
 
@@ -156,10 +196,8 @@ for block_idx = 1:length(log.block)
     trialstruct = log.block(block_idx);
     
     %Get stimulus_bank and level from last block of session
-    if block_idx == length(log.block)
-        key_session.stimulus_bank = trialstruct.stimulusBank;
-        key_session.level = trialstruct.mainMazeID;
-    end
+    key_session.stimulus_bank = trialstruct.stimulusBank;
+    key_session.level = trialstruct.mainMazeID;
     
     %Calculate correct trials for block
     for itrial = 1:length(trialstruct.trial)
@@ -171,7 +209,11 @@ for block_idx = 1:length(log.block)
         counter = counter + 1;
     end
 end
-key_session.session_performance = correct_number*100 / counter;
+if counter ~= 0
+	key_session.session_performance = correct_number*100 / counter;
+else
+	key_session.session_performance = 0;
+end
 
 %Prepare session_protocol
 session_protocol = [ func2str(log.version.code) '.m' ' ', ...
@@ -191,7 +233,7 @@ key_session.session_code_version = {log.version.mazeVersion, log.version.codeVer
 
 %and insert this session:
 insert(acquisition.Session, key_session)
-
+end
 end
 
 
@@ -203,7 +245,14 @@ function insert_acq_session_started(acqsession_file, bucket_file_path, rig_defau
 
 local_default_path = 'C:/Data';
 
-load(acqsession_file,'log')
+log = struct();
+try
+	load(acqsession_file,'log')
+catch err
+	disp('Could not open behavioral file')
+end
+
+if isfield(log, 'session')
 
 %primary key values
 key_session.subject_fullname = subject;
@@ -213,6 +262,11 @@ key_session.remote_path_behavior_file = bucket_file_path;
 
 
 key_session.session_start_time = sprintf('%d-%02d-%02d %02d:%02d:00', log.session.start(1), log.session.start(2), log.session.start(3), log.session.start(4), log.session.start(5));
+
+if length(log.version) > 1
+	log.version = log.version(1)
+end
+
 key_session.session_location = log.version.rig.rig;
 
 
@@ -226,6 +280,7 @@ key_session.local_path_behavior_file  = local_path;
 
 insert(acquisition.SessionStarted, key_session);
 
+end
 
 
 end
