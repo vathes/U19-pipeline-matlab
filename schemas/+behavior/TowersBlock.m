@@ -34,7 +34,7 @@ classdef TowersBlock < dj.Imported
                     %Insert Blocks and trails from BehFile
                     self.insertTowersBlockFromFile(key,log)
                 else
-                    disp(['File does not match expected Towers behavioral file: ', acqsession_file]
+                    disp(['File does not match expected Towers behavioral file: ', acqsession_file])
                 end
             catch
                 disp(['Could not open behavioral file: ', acqsession_file])

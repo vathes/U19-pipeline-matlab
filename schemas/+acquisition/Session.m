@@ -37,7 +37,7 @@ classdef Session < dj.Imported
                     if isfield(log, 'session')
                         self.insertSessionFromFile_Towers(key, log);
                     else
-                        disp(['File does not match expected Towers behavioral file: ', acqsession_file]
+                        disp(['File does not match expected Towers behavioral file: ', acqsession_file])
                     end
                 catch 
                     disp(['Could not open behavioral file: ', acqsession_file])
