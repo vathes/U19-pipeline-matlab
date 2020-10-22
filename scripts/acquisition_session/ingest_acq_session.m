@@ -1,9 +1,10 @@
 function ingest_acq_session(subject_id, user_folder, rig, find_paths)
 %INGEST_ACQ_SESSION
-% Look for missing behavioral files in bucket and add them to u19_acquisition.session
+% Look for missing behavioral files in bucket and add them to u19_acquisition.session % u19_acquisition.SessionStarted
+% Only inserts one session per day
 %
 % Inputs
-%  subject      = subject of the sessions
+%  subject      = subject_fullname of the session
 %  user_folder  = user that ran the session
 %  rig          = rigname of the session
 
@@ -124,6 +125,26 @@ for i=1:length(subj_files)
         %Check if session already in database
         sessionkey.subject_fullname = subject_db.subject_fullname;
         sessionkey.session_date = date_str;
+        sessionkey.session_number = 0;
+        
+        %Load behavioral file
+        data = load(file, 'log');
+        log = data.log;
+        
+        
+        %Insert acq session started
+        session_started_db = fetch(acquisition.SessionStarted & sessionkey);
+        if ~isempty(session_started_db)
+            %disp(['acq.SessionStarted already in database for ', subject_db.subject_fullname, ...
+            %      ' for date: ', date_str])
+        else
+            disp(['Inserting acq.SessionStarted for ', subject_db.subject_fullname, ...
+                ' for date: ', date_str])
+            %acquisition.SessionStarted.insertSessionStartedFromFile_Towers(...
+            %    sessionkey,log, bucket_file, rig_db.bucket_default_path)           
+            insert_acq_session_started(file, bucket_file, rig_db.bucket_default_path, subject_db.subject_fullname);
+            
+        end
         
         
         % Insert acq session
@@ -134,28 +155,19 @@ for i=1:length(subj_files)
         else
             disp(['Inserting acq.Session for ', subject_db.subject_fullname, ...
                 ' for date: ', date_str])
+            
+            %acquisition.Session.insertSessionFromFile_Towers(sessionkey,log)
             insert_acq_session(file, subject_db.subject_fullname);
             
         end
         
-        %Insert acq session started
-        session_started_db = fetch(acquisition.SessionStarted & sessionkey);
-        if ~isempty(session_started_db)
-            %disp(['acq.SessionStarted already in database for ', subject_db.subject_fullname, ...
-            %      ' for date: ', date_str])
-        else
-            disp(['Inserting acq.SessionStarted for ', subject_db.subject_fullname, ...
-                ' for date: ', date_str])
-            insert_acq_session_started(file, bucket_file, rig_db.bucket_default_path, subject_db.subject_fullname);
-            
-        end
     end
     
 end
 
 end
 
-function insert_acq_session(acqsession_file, subject)
+function insert_acq_session(acqsession_file, subject, log)
 %INSERT_ACQ_SESSION insert u19_acquisition.session info when file is provided
 %
 % Input

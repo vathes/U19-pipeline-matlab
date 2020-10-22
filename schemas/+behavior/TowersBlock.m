@@ -16,9 +16,9 @@ level                       : int                           # maze number (diffi
 
 classdef TowersBlock < dj.Imported
     properties
-        %keySource = acquisition.Session & acquisition.SessionStarted 
-        keySource = proj(acquisition.Session, 'level->na_level') * ...
-                 proj(acquisition.SessionStarted, 'session_location->na_location', 'remote_path_behavior_file')
+        %keySource = acquisition.Session & acquisition.SessionStarted
+        %keySource = proj(acquisition.Session, 'level->na_level') * ...
+        %         proj(acquisition.SessionStarted, 'session_location->na_location', 'remote_path_behavior_file')
     end
     methods(Access=protected)
         function makeTuples(self, key)
@@ -27,7 +27,23 @@ classdef TowersBlock < dj.Imported
             data_dir = getLocalPath(fetch1(acquisition.SessionStarted & key, 'remote_path_behavior_file'));
             data = load(data_dir, 'log');
             log = data.log;
-
+            
+            %Insert Blocks and trails from BehFile
+            self.insertTowersBlockFromFile(key,log)
+            
+        end
+    end
+    
+    % Public methods
+    methods     
+        function insertTowersBlockFromFile(self, key,log)
+            % Insert blocks and blocktrials record from behavioralfile
+            % Called at the end of training or when populating towersBlock
+            % Input
+            % self = behavior.TowersBlock instance
+            % key  = behavior.TowersSession key (subject_fullname, date, session_no)
+            % log  = behavioral file as stored in Virmen
+            
             for iBlock = 1:length(log.block)
                 tuple = key;
                 block = log.block(iBlock);
@@ -67,11 +83,11 @@ classdef TowersBlock < dj.Imported
                     trial = block.trial(itrial);
                     
                     tuple = key; %% Start with an emty tube to trial data
-                    tuple.block = iBlock;                
-                    tuple_trial = tuple;  
-
+                    tuple.block = iBlock;
+                    tuple_trial = tuple;
+                    
                     tuple_trial.trial_idx = itrial;
-                    tuple_trial.trial_type = trial.trialType.char; 
+                    tuple_trial.trial_type = trial.trialType.char;
                     tuple_trial.choice = trial.choice.char;
                     tuple_trial.trial_time = trial.time;
                     tuple_trial.trial_abs_start = trial.start;
@@ -102,7 +118,7 @@ classdef TowersBlock < dj.Imported
                     if ~isempty(trial.cuePos{2})
                         tuple_trial.cue_pos_right = trial.cuePos{2};
                     end
-
+                    
                     tuple_trial.trial_duration = trial.duration;
                     tuple_trial.excess_travel = trial.excessTravel;
                     tuple_trial.i_arm_entry = exists_helper(trial,'iArmEntry');
@@ -129,44 +145,44 @@ classdef TowersBlock < dj.Imported
         end
     end
 end
-    
+
 function [s] = exists_helper(trial, fieldname)
-    if isfield(trial, fieldname)
-       s = trial.(fieldname);
-    else
-       s = 0;
-    end 
+if isfield(trial, fieldname)
+    s = trial.(fieldname);
+else
+    s = 0;
+end
 end
 
 %% fix logs where trial type and choice are not recorded due to bug
 function block = fixLogs(block)
-  
+
 for iBlock = 1:numel(block)
-  nTrials = numel(block(iBlock).trial);
-  for iTrial = 1:nTrials
-    if isempty(block(iBlock).trial(iTrial).trialType)
-      if numel(block(iBlock).trial(iTrial).cuePos{1}) > numel(block(iBlock).trial(iTrial).cuePos{1})
-        block(iBlock).trial(iTrial).trialType = Choice.L;
-      else
-        block(iBlock).trial(iTrial).trialType = Choice.R;
-      end
-    end
-    if isempty(block(iBlock).trial(iTrial).choice)
-      pos = block(iBlock).trial(iTrial).position;
-      if pos(end,2) < 300
-        block(iBlock).trial(iTrial).choice   = Choice.nil;
-      else
-        if pos(end,3) > 0
-          block(iBlock).trial(iTrial).choice = Choice.L;
-        else
-          block(iBlock).trial(iTrial).choice = Choice.R;
+    nTrials = numel(block(iBlock).trial);
+    for iTrial = 1:nTrials
+        if isempty(block(iBlock).trial(iTrial).trialType)
+            if numel(block(iBlock).trial(iTrial).cuePos{1}) > numel(block(iBlock).trial(iTrial).cuePos{1})
+                block(iBlock).trial(iTrial).trialType = Choice.L;
+            else
+                block(iBlock).trial(iTrial).trialType = Choice.R;
+            end
         end
-      end
+        if isempty(block(iBlock).trial(iTrial).choice)
+            pos = block(iBlock).trial(iTrial).position;
+            if pos(end,2) < 300
+                block(iBlock).trial(iTrial).choice   = Choice.nil;
+            else
+                if pos(end,3) > 0
+                    block(iBlock).trial(iTrial).choice = Choice.L;
+                else
+                    block(iBlock).trial(iTrial).choice = Choice.R;
+                end
+            end
+        end
     end
-  end
-  block(iBlock).trialType      = [block(iBlock).trial(:).trialType];
-  block(iBlock).medianTrialDur = median([block(iBlock).trial(:).duration]);
+    block(iBlock).trialType      = [block(iBlock).trial(:).trialType];
+    block(iBlock).medianTrialDur = median([block(iBlock).trial(:).duration]);
 end
-  
+
 end
 

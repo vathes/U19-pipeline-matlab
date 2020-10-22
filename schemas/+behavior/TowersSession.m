@@ -13,7 +13,6 @@ num_towers_l:          blob      # Number of towers shown to the left x tumber o
 classdef TowersSession < dj.Imported
     
     properties
-        %keySource = acquisition.Session & acquisition.SessionStarted
         keySource = acquisition.Session & struct('task', 'Towers');
     end
     
@@ -26,27 +25,20 @@ classdef TowersSession < dj.Imported
             data = load(data_dir, 'log');
             log = data.log;
             
-            self.insertBehTowersSessionFromData(key, log);
-            
-            %                 [key.rewarded_side, key.chosen_side, key.num_towers_l, key.num_towers_r] = fetchn(...
-            %                     acquisition.TowersBlockTrial & key, 'trial_type', 'choice','cue_presence_left', 'cue_presence_right');
-            %                 key.maze_id = fetchn(acquisition.TowersBlock * acquisition.TowersBlockTrial & key , 'block_level');
-            %
-            %                 key.num_towers_l = cellfun(@sum, key.num_towers_l);
-            %                 key.num_towers_r = cellfun(@sum, key.num_towers_r);
-            %
-            %                 % compute various statistics on activity
-            %                 self.insert(key);
-            %                 sprintf(['Computed statistics for mouse ', key.subject_id, ' on date ', key.session_date, '.']);
-            
-        end
-        
+            self.insertTowersSessionFromFile(key, log);
+                        
+        end    
     end
-    
     
     methods
         
-        function insertBehTowersSessionFromData(self, key,  log)
+        function insertTowersSessionFromFile(self, key,  log)
+            % Insert towers session record from behavioralfile
+            % Called at the end of training or when populating TowersSession
+            % Input
+            % self = behavior.Session instance
+            % key  = acquisition.Session key (subject_fullname, date, session_no)
+            % log  = behavioral file as stored in Virmen
             
             %Write stimulus_set
             key.stimulus_set = log.animal.stimulusSet;
