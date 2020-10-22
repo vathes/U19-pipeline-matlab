@@ -128,8 +128,8 @@ for i=1:length(subj_files)
         sessionkey.session_number = 0;
         
         %Load behavioral file
-        data = load(file, 'log');
-        log = data.log;
+        %data = load(file, 'log');
+        %log = data.log;
         
         
         %Insert acq session started
