@@ -147,7 +147,7 @@ for i=1:length(subj_files)
         if isempty(session_started_db) && status
             disp(['Inserting acq.SessionStarted for ', subject_db.subject_fullname, ...
                 ' for date: ', date_str])
-            acquisition.SessionStarted.insertSessionStartedFromFile_Towers(...
+            insertSessionStartedFromFile_Towers(insertSessionStartedFromFile_Towers, ...
                 sessionkey,log, bucket_file, rig_db.bucket_default_path);            
         end
         
@@ -158,7 +158,7 @@ for i=1:length(subj_files)
             disp(['Inserting acq.Session for ', subject_db.subject_fullname, ...
                 ' for date: ', date_str])
             
-            acquisition.Session.insertSessionFromFile_Towers(sessionkey,log)
+            insertSessionFromFile_Towers(acquisition.Session, sessionkey,log)
                
         end
         
