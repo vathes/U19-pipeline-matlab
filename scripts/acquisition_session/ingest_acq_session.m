@@ -227,10 +227,17 @@ else
 	key_session.session_performance = 0;
 end
 
+if isstruct(log.animal) && isfield(log.animal, 'protocol')
+    protocol3 = func2str(log.animal.protocol);
+else
+    protocol3 = '';
+end
+
+
 %Prepare session_protocol
 session_protocol = [ func2str(log.version.code) '.m' ' ', ...
     log.version.name '.mat' ' ', ...
-    func2str(log.animal.protocol)];
+    protocol3];
 
 key_session.session_protocol = session_protocol;
 
