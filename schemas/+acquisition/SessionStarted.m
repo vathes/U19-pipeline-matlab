@@ -16,7 +16,7 @@ classdef SessionStarted < dj.Manual
     
     
     methods
-        function insertSessionStartedFromFile_Towers(self,key,log, bucket_file_path)
+        function insertSessionStartedFromFile_Towers(self,key,log, bucket_file_path, rig_default_path)
             % Insert sessionStarted record from towers task behavioralfile
             % Called at the end of training or when populating session
             % Input
