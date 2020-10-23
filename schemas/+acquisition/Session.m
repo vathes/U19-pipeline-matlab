@@ -58,12 +58,7 @@ classdef Session < dj.Imported
             % key  = structure with required fields: (subject_fullname, date, session_no)
             % log          = behavioral file as stored in Virmen
             
-            
-            %primary key values
-            key.subject_fullname = subject;
-            key.session_date = sprintf('%d-%02d-%02d', log.session.start(1), log.session.start(2), log.session.start(3));
-            key.session_number = 0;
-            
+                        
             key.session_start_time = sprintf('%d-%02d-%02d %02d:%02d:00', log.session.start(1), log.session.start(2), log.session.start(3), log.session.start(4), log.session.start(5));
             key.session_end_time = sprintf('%d-%02d-%02d %02d:%02d:00', log.session.end(1), log.session.end(2), log.session.end(3), log.session.end(4), log.session.end(5));
             
