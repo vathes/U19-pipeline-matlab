@@ -78,7 +78,7 @@ classdef Session < dj.Imported
             key.set_id = 1;
             
             %Get session_performance
-            [key.session_performance, num_trails, key.level, key.stimulus_bank] = getSessionPerformance(log.block);
+            [key.session_performance, num_trails, key.level, key.stimulus_bank] = self.getSessionPerformance(log.block);
                         
             %Check for log.animal.protocol in file, not all beh files have it
             if isstruct(log.animal) && isfield(log.animal, 'protocol')
@@ -126,13 +126,13 @@ classdef Session < dj.Imported
             update(acquisition.Session & key, 'session_location', session_location)
 
             %Get session_performance
-            [session_performance, num_trails, level] = getSessionPerformance(log.block);
+            [session_performance, num_trails, level] = self.getSessionPerformance(log.block);
             update(acquisition.Session & key, 'session_performance', session_performance)
             update(acquisition.Session & key, 'level', level)
              
         end
         
-        function [session_performance, num_trials, level, stimulus_bank] = getSessionPerformance(block)
+        function [session_performance, num_trials, level, stimulus_bank] = getSessionPerformance(self, block)
             % Calculate SessionPerformance for session
             % Inputs
             % block         = block field of behavioral file

@@ -7,12 +7,12 @@ function location_info =  check_location(location)
 
 % Check for location in db
 keylocation.location = location;
-location_info = fetchn(lab.Location & keylocation, '*');
+location_info = fetch(lab.Location & keylocation, '*');
 if ~isempty(location_info)
     return
 else
  % If location doesn't exist insert it (in the future have a "test location for everything)
-   inserti(lab.Location, location)
+   insert(lab.Location, keylocation)
    location_info(1).location = location;
 end
 

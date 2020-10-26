@@ -1,4 +1,4 @@
-function [status] =  check_subject(subject)
+function [status] =  check_subject(subject_name)
 %CHECK_SUBJECT, check if subject already in the database
 %Input
 % subject       = name of the subject to check
@@ -6,8 +6,8 @@ function [status] =  check_subject(subject)
 % status        = true if exist in the database, false otherwise
 
 % Check for location in db
-keysubject.subject_fullname = subject;
-subject_info = fetch(subject.Location & keysubject);
+keysubject.subject_fullname = subject_name;
+subject_info = fetch(subject.Subject & keysubject);
 if ~isempty(subject_info)
     status = true;
 else
