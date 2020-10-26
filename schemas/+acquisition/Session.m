@@ -50,6 +50,7 @@ classdef Session < dj.Imported
     
     
     methods
+        
         function insertSessionFromFile_Towers(self,key,log)
             % Insert session record from behavioralfile in towersTask
             % Called at the end of training or when populating session
@@ -70,37 +71,15 @@ classdef Session < dj.Imported
                 log.version = log.version(1);
             end
                   
+            % Check if location exist, and if not insert it
+            lab.utils.check_location(log.version.rig.rig);
             key.session_location = log.version.rig.rig;
+            
             key.set_id = 1;
             
-            
             %Get session_performance
-            correct_number = 0;
-            counter = 0;
-            for block_idx = 1:length(log.block)
-                trialstruct = log.block(block_idx);
-                
-                %Get stimulus_bank and level from last block of session
-                key.stimulus_bank = trialstruct.stimulusBank;
-                key.level = trialstruct.mainMazeID;
-                
-                %Calculate correct trials for block
-                for itrial = 1:length(trialstruct.trial)
-                    trial = trialstruct.trial(itrial);
-                    if isempty(trial.trialType)
-                        break;
-                    end
-                    correct_number = correct_number + strcmp(trial.trialType.char, trial.choice.char);
-                    counter = counter + 1;
-                end
-            end
-            %Calculate performance, (support when 0 trials)
-            if counter ~= 0
-                key.session_performance = correct_number*100 / counter;
-            else
-                key.session_performance = 0;
-            end
-            
+            [key.session_performance, num_trails, key.level, key.stimulus_bank] = getSessionPerformance(log.block);
+                        
             %Check for log.animal.protocol in file, not all beh files have it
             if isstruct(log.animal) && isfield(log.animal, 'protocol')
                 protocol3 = func2str(log.animal.protocol);
@@ -127,6 +106,68 @@ classdef Session < dj.Imported
             %and insert this session:
             insert(acquisition.Session, key)
             
+        end
+        
+        function updateSessionFromFile_Towers(self,key,log)
+            % Update session record from behavioralfile in towersTask
+            % Called at the end of training or when populating session
+            % Input
+            % self         = acquisition.Session instance
+            % key  = structure with required fields: (subject_fullname, date, session_no)
+            % log          = behavioral file as stored in Virmen
+            
+            %Update end time
+            session_end_time = sprintf('%d-%02d-%02d %02d:%02d:00', log.session.end(1), log.session.end(2), log.session.end(3), log.session.end(4), log.session.end(5));
+            update(acquisition.Session & key, 'session_end_time', session_end_time)
+            
+            % Check if location exist, and if not insert it
+            lab.utils.check_location(log.version.rig.rig);
+            session_location = log.version.rig.rig;
+            update(acquisition.Session & key, 'session_location', session_location)
+
+            %Get session_performance
+            [session_performance, num_trails, level] = getSessionPerformance(log.block);
+            update(acquisition.Session & key, 'session_performance', session_performance)
+            update(acquisition.Session & key, 'level', level)
+             
+        end
+        
+        function [session_performance, num_trials, level, stimulus_bank] = getSessionPerformance(block)
+            % Calculate SessionPerformance for session
+            % Inputs
+            % block         = block field of behavioral file
+            % Outputs
+            % performance   = performance during session
+            % num_trials    = number of trials in session
+            % level         = last level (maze) in session
+            % stimulus_bank = path to stimulus bank used during session
+            
+             %Get session_performance
+            correct_number = 0;
+            num_trials = 0;
+            for block_idx = 1:length(block)
+                trialstruct = block(block_idx);
+                
+                %Get stimulus_bank and level from last block of session
+                stimulus_bank = trialstruct.stimulusBank;
+                level = trialstruct.mainMazeID;
+                
+                %Calculate correct trials for block
+                for itrial = 1:length(trialstruct.trial)
+                    trial = trialstruct.trial(itrial);
+                    if isempty(trial.trialType)
+                        break;
+                    end
+                    correct_number = correct_number + strcmp(trial.trialType.char, trial.choice.char);
+                    num_trials = num_trials + 1;
+                end
+            end
+            %Calculate performance, (support when 0 trials)
+            if num_trials ~= 0
+                session_performance = correct_number*100 / num_trials;
+            else
+                session_performance = 0;
+            end
         end
         
     end
