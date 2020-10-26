@@ -26,8 +26,7 @@ if ~isempty(default_rig_path_location)
         fileparts(strrep(local_path,local_path_token,''));
     
     % Format the new location
-    remote_location = fullfile(default_rig_path_location,extPath, ...
-        'data', animalID, [filename, ext]);
+    remote_location = fullfile(default_rig_path_location,extPath, [filename, ext]);
     remote_location = strrep(remote_location,'\','/');
     remote_location = strrep(remote_location,'//','/');
 else
