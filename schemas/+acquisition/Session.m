@@ -1,8 +1,6 @@
 %{
 # General information of a session
--> subject.Subject
-session_date                : date                          # date of experiment
-session_number              : int                           # number
+-> acquisition.SessionStarted
 ---
 session_start_time          : datetime                      # start time
 session_end_time=null       : datetime                      # end time
