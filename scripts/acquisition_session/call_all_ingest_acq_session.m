@@ -21,11 +21,11 @@ users_dirsT.user_id = categorical(users_dirsT.user_id);
 user_array = cell2struct(users_dirs(:,1),{'user_id'},2);
 
 %Just check after certain date
-from_date = '2020-09-01';
+from_date = '2020-11-01';
 sess_Date_key = ['session_date >= ''' from_date ''''];
 
 %Get unique combination (subject - locations)
-new_sessions  = acquisition.Session & sess_Date_key;
+new_sessions  = acquisition.SessionStarted & sess_Date_key;
 %all_locations_session = proj(lab.Location) & proj(new_sessions,'session_location->location');
 %session_struct = fetch(proj(subject.Subject & user_array, 'user_id') * all_locations_session, '*');
 
