@@ -22,7 +22,8 @@ classdef Session < dj.Imported
         function makeTuples(self, key)
             
             %Get behavioral file to load
-            data_dir = fetch(acquisition.SessionStarted & key, {'task', 'remote_path_behavior_file'});
+            fields = {'task', 'remote_path_behavior_file'};
+            data_dir = fetch(acquisition.SessionStarted & key, fields{:});
             
             if strcmp(data_dir.task, 'Towers')
                 acqsession_file = getLocalPath(data_dir.remote_path_behavior_file);
