@@ -53,7 +53,11 @@ classdef TowersSession < dj.Imported
             % log  = behavioral file as stored in Virmen
             
             %Write stimulus_set
-            key.stimulus_set = log.animal.stimulusSet;
+            if isstruct(log.animal) && isfield(log.animal, 'stimulusSet')
+                key.stimulus_set = log.animal.stimulusSet;
+            else
+                key.stimulus_set = -1;
+            end
             
             %Initialize variables to concatenate
             key.rewarded_side = [];
