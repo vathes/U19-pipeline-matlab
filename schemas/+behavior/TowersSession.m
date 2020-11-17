@@ -72,8 +72,15 @@ classdef TowersSession < dj.Imported
                 
                 %Separate cueCombo to get towersR and towersL
                 cueCombo = {trialstruct.trial.cueCombo};
-                num_towers_r = cellfun(@(x) sum(x(Choice.R,:)), cueCombo);
-                num_towers_l = cellfun(@(x) sum(x(Choice.L,:)), cueCombo);
+                % Get last cueCombo on cell
+                idx_empty_cueCombo = find(cellfun(@isempty, cueCombo),1,'first');
+                if isempty(idx_empty_cueCombo)
+                    idx_endCues = length(cueCombo);
+                else
+                    idx_endCues = idx_empty_cueCombo-1;
+                end
+                num_towers_r = cellfun(@(x) sum(x(Choice.R,:)), cueCombo(1:idx_endCues));
+                num_towers_l = cellfun(@(x) sum(x(Choice.L,:)), cueCombo(1:idx_endCues));
                 
                 
                 %Concatenate variables

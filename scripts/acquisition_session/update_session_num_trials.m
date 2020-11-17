@@ -1,5 +1,5 @@
 
-
+key = struct();
 key.num_trials = -1;
 session_table_relvar = acquisition.Session * behavior.TowersSession;
 
