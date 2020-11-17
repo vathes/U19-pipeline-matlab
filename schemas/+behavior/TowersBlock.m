@@ -38,7 +38,8 @@ classdef TowersBlock < dj.Imported
                 else
                     disp(['File does not match expected Towers behavioral file: ', data_dir])
                 end
-            catch
+            catch err
+                disp(err)
                 disp(['Could not open behavioral file: ', data_dir])
             end
             

@@ -36,7 +36,8 @@ classdef TowersSession < dj.Imported
                 else
                     disp(['File does not match expected Towers behavioral file: ', data_dir])
                 end
-            catch
+            catch err
+                disp(err)
                 disp(['Could not open behavioral file: ', data_dir])
             end
             
@@ -54,7 +55,7 @@ classdef TowersSession < dj.Imported
             % log  = behavioral file as stored in Virmen
             
             %Write stimulus_set
-            if isstruct(log.animal) && isfield(log.animal, 'stimulusSet')
+            if isstruct(log.animal) && isfield(log.animal, 'stimulusSet') && ~isnan(log.animal.stimulusSet)
                 key.stimulus_set = log.animal.stimulusSet;
             else
                 key.stimulus_set = -1;

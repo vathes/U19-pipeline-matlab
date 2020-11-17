@@ -40,7 +40,8 @@ classdef Session < dj.Imported
                     else
                         disp(['File does not match expected Towers behavioral file: ', acqsession_file])
                     end
-                catch 
+                catch err
+                    disp(err)
                     disp(['Could not open behavioral file: ', acqsession_file])
                 end
                 
