@@ -22,10 +22,11 @@ classdef TowersSession < dj.Imported
             
             %Get behavioral file to load
             data_dir = fetch1(acquisition.SessionStarted & key, 'remote_path_behavior_file');
-            [~, data_dir] = lab.utils.get_path_from_official_dir(data_dir);
+            
             
             %Load behavioral file
             try
+                [~, data_dir] = lab.utils.get_path_from_official_dir(data_dir);
                 data = load(data_dir,'log');
                 log = data.log;
                 %Check if it is a real behavioral file
