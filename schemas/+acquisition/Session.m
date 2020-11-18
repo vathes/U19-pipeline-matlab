@@ -15,6 +15,8 @@ num_trials_try=null         : tinyblob                      # Accumulative numbe
 session_narrative = ''      : varchar(512)                  # descriptive string
 session_protocol=null       : varchar(255)                  # function and parameters to generate the stimulus
 session_code_version=null   : blob                          # code version of the stimulus, usually two numbers "maze_version=2.1, code_version = 4.0". In the future: a githash?
+is_bad_session=0            : boolean                       # Flag that indicates if this session had any issues
+session_comments=''         : varchar(2048)                 # Text to indicate some particularity of the session (e.g. state the issues in a bad session)
 %}
 
 classdef Session < dj.Imported
