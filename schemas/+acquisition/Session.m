@@ -109,8 +109,8 @@ classdef Session < dj.Imported
             
             %Get num_trials & num_trials_try
             if isfield(log, 'numTrials') && isfield(log, 'numTrialsTry') 
-                key.num_trials       = log.NumTrials;
-                key.num_trials_try   = log.NumTrialsTry;
+                key.num_trials       = log.numTrials;
+                key.num_trials_try   = log.numTrialsTry;
             else
                 key.num_trials       = -1;
                 key.num_trials_try   = [];
