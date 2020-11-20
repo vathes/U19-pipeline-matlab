@@ -10,9 +10,13 @@ stimulus_bank = ''          : varchar(255)                  # path to the functi
 stimulus_commit = ''        : varchar(64)                   # git hash for the version of the function
 stimulus_set                : tinyint                       # an integer that describes a particular set of stimuli in a trial
 session_performance         : float                         # percentage correct on this session
+num_trials=-1               : int(11)                       # Number of trials for the session
+num_trials_try=null         : tinyblob                      # Accumulative number of trials for each try of the session
 session_narrative = ''      : varchar(512)                  # descriptive string
 session_protocol=null       : varchar(255)                  # function and parameters to generate the stimulus
 session_code_version=null   : blob                          # code version of the stimulus, usually two numbers "maze_version=2.1, code_version = 4.0". In the future: a githash?
+is_bad_session=0            : boolean                       # Flag that indicates if this session had any issues
+session_comments=''         : varchar(2048)                 # Text to indicate some particularity of the session (e.g. state the issues in a bad session)
 %}
 
 classdef Session < dj.Imported
@@ -26,7 +30,7 @@ classdef Session < dj.Imported
             data_dir = fetch(acquisition.SessionStarted & key, fields{:});
             
             if strcmp(data_dir.task, 'Towers')
-                acqsession_file = getLocalPath(data_dir.remote_path_behavior_file);
+                [~, acqsession_file] = lab.utils.get_path_from_official_dir(data_dir.remote_path_behavior_file);
                 
                 %Load behavioral file
                 try
@@ -38,7 +42,8 @@ classdef Session < dj.Imported
                     else
                         disp(['File does not match expected Towers behavioral file: ', acqsession_file])
                     end
-                catch 
+                catch err
+                    disp(err)
                     disp(['Could not open behavioral file: ', acqsession_file])
                 end
                 
@@ -77,7 +82,7 @@ classdef Session < dj.Imported
             key.set_id = 1;
             
             %Get session_performance
-            [key.session_performance, num_trails, key.level, key.stimulus_bank] = self.getSessionPerformance(log.block);
+            [key.session_performance, ~, key.level, key.stimulus_bank] = self.getSessionPerformance(log.block);
                         
             %Check for log.animal.protocol in file, not all beh files have it
             if isstruct(log.animal) && isfield(log.animal, 'protocol')
@@ -102,6 +107,15 @@ classdef Session < dj.Imported
             %Session code_version
             key.session_code_version = {log.version.mazeVersion, log.version.codeVersion};
             
+            %Get num_trials & num_trials_try
+            if isfield(log, 'numTrials') && isfield(log, 'numTrialsTry') 
+                key.num_trials       = log.numTrials;
+                key.num_trials_try   = log.numTrialsTry;
+            else
+                key.num_trials       = -1;
+                key.num_trials_try   = [];
+            end
+            
             %and insert this session:
             insert(acquisition.Session, key)
             
@@ -125,9 +139,21 @@ classdef Session < dj.Imported
             update(acquisition.Session & key, 'session_location', session_location)
 
             %Get session_performance
-            [session_performance, num_trails, level] = self.getSessionPerformance(log.block);
+            [session_performance, ~, level] = self.getSessionPerformance(log.block);
             update(acquisition.Session & key, 'session_performance', session_performance)
             update(acquisition.Session & key, 'level', level)
+            
+            %Get num_trials & num_trials_try
+            if isfield(log, 'numTrials') && isfield(log, 'numTrialsTry') 
+                num_trials       = log.numTrials;
+                num_trials_try   = log.numTrialsTry;
+            else
+                num_trials       = -1;
+                num_trials_try   = [];
+            end
+            
+            update(acquisition.Session & key, 'num_trials', num_trials)
+            update(acquisition.Session & key, 'num_trials_try', num_trials_try)
              
         end
         
@@ -171,3 +197,4 @@ classdef Session < dj.Imported
         
     end
 end
+

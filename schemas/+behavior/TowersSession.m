@@ -21,10 +21,12 @@ classdef TowersSession < dj.Imported
         function makeTuples(self, key)
             
             %Get behavioral file to load
-            data_dir = getLocalPath(fetch1(acquisition.SessionStarted & key, 'remote_path_behavior_file'));
+            data_dir = fetch1(acquisition.SessionStarted & key, 'remote_path_behavior_file');
+            
             
             %Load behavioral file
             try
+                [~, data_dir] = lab.utils.get_path_from_official_dir(data_dir);
                 data = load(data_dir,'log');
                 log = data.log;
                 %Check if it is a real behavioral file
@@ -34,7 +36,8 @@ classdef TowersSession < dj.Imported
                 else
                     disp(['File does not match expected Towers behavioral file: ', data_dir])
                 end
-            catch
+            catch err
+                disp(err)
                 disp(['Could not open behavioral file: ', data_dir])
             end
             
@@ -52,7 +55,11 @@ classdef TowersSession < dj.Imported
             % log  = behavioral file as stored in Virmen
             
             %Write stimulus_set
-            key.stimulus_set = log.animal.stimulusSet;
+            if isstruct(log.animal) && isfield(log.animal, 'stimulusSet') && ~isnan(log.animal.stimulusSet)
+                key.stimulus_set = log.animal.stimulusSet;
+            else
+                key.stimulus_set = -1;
+            end
             
             %Initialize variables to concatenate
             key.rewarded_side = [];
@@ -72,8 +79,15 @@ classdef TowersSession < dj.Imported
                 
                 %Separate cueCombo to get towersR and towersL
                 cueCombo = {trialstruct.trial.cueCombo};
-                num_towers_r = cellfun(@(x) sum(x(Choice.R,:)), cueCombo);
-                num_towers_l = cellfun(@(x) sum(x(Choice.L,:)), cueCombo);
+                % Get last cueCombo on cell
+                idx_empty_cueCombo = find(cellfun(@isempty, cueCombo),1,'first');
+                if isempty(idx_empty_cueCombo)
+                    idx_endCues = length(cueCombo);
+                else
+                    idx_endCues = idx_empty_cueCombo-1;
+                end
+                num_towers_r = cellfun(@(x) sum(x(Choice.R,:)), cueCombo(1:idx_endCues));
+                num_towers_l = cellfun(@(x) sum(x(Choice.L,:)), cueCombo(1:idx_endCues));
                 
                 
                 %Concatenate variables
