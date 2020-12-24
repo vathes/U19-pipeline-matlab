@@ -17,7 +17,7 @@ function fit_results = psychFit(deltaBins, numR, numL, choices)
 
 
     %% Logistic function fit
-    [phat, pci]          = binointerval(numR, numTrials, normcdf(-1));
+    [phat, pci]          = binointerval(numRight, numTrials, normcdf(-1));
     sigmoid             = @(O,A,lambda,x0,x) O + A ./ (1 + exp(-(x-x0)/lambda));
     sel                 = numTrials > 0;
 
