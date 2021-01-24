@@ -19,7 +19,7 @@ classdef TowersSubjectCumulativePsychLevel < dj.Computed
             deltaBins           = -15:3:15;       % controls binning of #R - #L
             deltaBins           = deltaBins(:);
            
-            [session_start_time, level] = fetch1(acquisition.Session & key, 'session_start_time', level);
+            [session_start_time, level] = fetch1(acquisition.Session & key, 'session_start_time', 'level');
             
             sessions_included = fetch(acquisition.Session ...
                 & struct('subject_fullname', key.subject_fullname) ...
