@@ -15,7 +15,7 @@ classdef PuffsSubjectCumulativePsych < dj.Computed
         
         function makeTuples(self, key)
 
-            deltaBins           = -15:3:15;       % controls binning of #R - #L
+            deltaBins           = -12:3:12;       % controls binning of #R - #L
             deltaBins           = deltaBins(:);
            
             session_start_time = fetch1(acquisition.Session & key, 'session_start_time');
