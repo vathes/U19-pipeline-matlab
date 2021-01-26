@@ -183,7 +183,11 @@ classdef Session < dj.Imported
                     if isempty(trial.trialType)
                         break;
                     end
-                    correct_number = correct_number + strcmp(trial.trialType.char, trial.choice.char);
+                    if isa(trial.choice, 'single')
+                        correct_number = correct_number + single(trial.trialType) == single(trial.choice);
+                    else
+                        correct_number = correct_number + strcmp(trial.trialType.char, trial.choice.char);
+                    end
                     num_trials = num_trials + 1;
                 end
             end
