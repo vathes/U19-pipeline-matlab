@@ -1,12 +1,11 @@
 %{
 # Information of a optogenetic session
-->acquisition.SessionTest
+->acquisition.Session
 ---
-->reference.BrainArea
-hemisphere			               : enum('Left','Right','Bilateral')
-laser_nm			               : int                             # Laser color in nm
-laser_power                        : int                             # Laser power in (mW)
-frequency			               : float
+laser_wavelength		           : DECIMAL(5,1)                    # (nm)
+laser_power                        : DECIMAL(4,1)                    # (mW)
+frequency			               : DECIMAL(6,2)                    # (Hz) 
+pulse_width			               : DECIMAL(5,1)                    # (ms) 
 %}
 
 classdef OptogeneticSession < dj.Imported

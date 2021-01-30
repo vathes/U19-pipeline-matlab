@@ -1,6 +1,7 @@
 %{
 # Specific actions performed for maintenance on each rig
--> rig_maintenance.RigMaintenanceAction
+-> rig_maintenance.TrainingRig
+-> rig_maintenance.MaintenaceAction
 maintenance_time              : DATETIME
 ---
 (maintenance_person) ->lab.User	                  
