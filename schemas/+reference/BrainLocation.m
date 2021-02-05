@@ -9,7 +9,7 @@ location_description= '':  varchar(255)
 %}
 
 
-classdef BrainLocation < dj.Manual
+classdef BrainLocation < dj.Lookup
     properties
         
     end

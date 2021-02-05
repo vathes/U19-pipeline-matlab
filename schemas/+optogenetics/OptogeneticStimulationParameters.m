@@ -8,6 +8,6 @@ frequency			               : DECIMAL(6,2)                    # (Hz)
 pulse_width			               : DECIMAL(5,1)                    # (ms) 
 %}
 
-classdef OptogeneticStimulationParameters < dj.LookUp
+classdef OptogeneticStimulationParameters < dj.Lookup
 
 end
