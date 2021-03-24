@@ -1,9 +1,8 @@
 %{
 # time binned activity by trialStruct
--> meso.Segmentation
+-> imaging.Scan
 -> meso_analysis.BinningParameters
 ---
- 
 standardized_time : longblob  # linearly interpolated behavioral epoch ID per imaging frame
 binned_time       : blob      #
 %}
@@ -17,7 +16,7 @@ classdef StandardizedTime < dj.Computed
             behav =  fetch(behavior.TowersBlockTrial & key, ...
                 'trial_idx','trial_type','choice','position');
  
-            [frames, frame_span] = fetchn(meso.SyncImagingBehavior & key, 'sync_im_frame_global','sync_im_frame_span_by_behav_trial');
+            [frames, frame_span] = fetchn(imaging.SyncImagingBehavior & key, 'sync_im_frame_global','sync_im_frame_span_by_behav_trial');
             frames = frames{:}; frame_span = frame_span{:};
   
             
@@ -36,11 +35,14 @@ classdef StandardizedTime < dj.Computed
             f_error_iti   = [eventFrames.timeout_meso_frame];
             
             %% Get standardized time for each trial and deal into 1 x nframe vector 
-            Tr = numel(f_cue_entry);
+            Tr = [eventFrames(:).trial_idx];
             behaviorByFrame = nan(size(frames));
             
-            for trialNum = 1:Tr % ends up being easier to still do this in a for loop because of the format for tr.choice
+            for trialNum = 1:numel(Tr) % ends up being easier to still do this in a for loop because of the format for tr.choice
                 fEpoch          = [ f_trial_start(trialNum), f_cue_entry(trialNum), f_mem_entry(trialNum), f_arm_entry(trialNum), f_trial_end(trialNum) ];
+                % Mdia: Nan's were set to -1 previously. If -1, cummax
+                % won't work
+                fEpoch(fEpoch == -1) = nan;
                 if behav(trialNum).choice ~= behav(trialNum).trial_type
                     fEpoch(end+1) = f_error_iti(trialNum);
                 end
@@ -57,7 +59,7 @@ classdef StandardizedTime < dj.Computed
                     location(tRange)  = iEpoch-1 + loc(1:end-1);
                 end
                 
-                behaviorByFrame(frame_span{trialNum}(1):frame_span{trialNum}(2)) = location;
+                behaviorByFrame(frame_span{Tr(trialNum)}(1):frame_span{Tr(trialNum)}(2)) = location;
                 %results.standardize_time = behaviorByFrame;
             end
             %%
@@ -68,10 +70,11 @@ classdef StandardizedTime < dj.Computed
             
             
             %%
-            key.standardized_time = behaviorByFrame;
-            key.binned_time = binned_time;
+            result = key;
+            result.standardized_time = behaviorByFrame;
+            result.binned_time = binned_time;
             
-            self.insert(key);
+            self.insert(result);
         end
         
     end
