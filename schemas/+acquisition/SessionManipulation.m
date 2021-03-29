@@ -1,7 +1,7 @@
 %{
 # Relationship between session & manipulation performed
 -> acquisition.Session
--> lab.manipulation_type
+-> lab.ManipulationType
 ---
 %}
 

@@ -2,7 +2,8 @@
 # Information of a optogenetic session
 ->acquisition.Session
 ---
--> optogenetics.OptogeneticStimulationParameters
+-> optogenetics.OptogeneticStimulationParameter
+-> optogenetics.OptogeneticSoftwareParameter
 %}
 
 classdef OptogeneticSession < dj.Imported
