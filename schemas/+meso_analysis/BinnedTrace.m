@@ -1,16 +1,13 @@
 %{
 # time binned activity by trial
--> meso.Segmentation
--> meso_analysis.BinningParameters
--> meso_analysis.TrialSelectionParams
+-> imaging.FieldOfView
+-> meso_analysis.StandardizedTime
+-> meso_analysis.TrialSelectionParams 
 
-global_roi_idx         : int           # roi_idx in SegmentationRoi table
+global_roi_idx         : int           # roi_idx in Suite2ptrace
 trial_idx              : int           # trial number as in meso_analysis.Trialstats
- 
 ---
- 
-binned_dff             : blob@meso  # binned Dff, 1 row per neuron per trialStruct
- 
+binned_dff             : blob          # binned Dff, 1 row per neuron per trialStruct 
 %}
  
  
@@ -25,44 +22,51 @@ classdef BinnedTrace < dj.Computed
       end
       
       %% retrieve dff data
-      data = fetch(meso.Trace & key, 'dff_roi','roi_idx');
-      dff = cell2mat({data.dff_roi}');
+      data = fetch( meso_analysis.Suite2ptrace & key, 'dff_roi_uncorrected','roi_idx', 'is_cell');
+      dff = cell2mat({data.dff_roi_uncorrected}');
       global_idx = [data.roi_idx]';
-      %dff              = cell2mat(dff); % neurons by frames 
+      is_cell = vertcat(data(:).is_cell);
       
       %% use manual curation to select only good rois
-      goodMorphoOnly = fetch1(meso_analysis.BinningParameters & key, 'good_morpho_only');
-      if goodMorphoOnly == 1
-        morpho               = fetchn(meso.SegmentationRoiMorphologyManual & key, 'morphology');
-      else
-        morpho               = [];
-      end
-      
-      if isempty(morpho)
-        isgood               = true(1,size(dff,1));
-      else
-        isgood               = strcmp(morpho,'Doughnut') | strcmp(morpho,'Blob');
-      end
-      isallnan               = sum(~isfinite(dff),2) == size(dff,2); % some neurons are nan'd or inf'd out
-      isgood                 = isgood & ~isallnan;
-      
-      dff(~isgood,:)         = [];
-      global_idx(~isgood,:)  = [];
-      
+%       goodMorphoOnly = fetch1(meso_analysis.BinningParameters & key, 'good_morpho_only');
+%       if goodMorphoOnly == 1
+%         morpho               = fetchn(meso.SegmentationRoiMorphologyManual & key, 'morphology');
+%       else
+%         morpho               = [];
+%       end
+%       
+%       if isempty(morpho)
+%         isgood               = true(1,size(dff,1));
+%       else
+%         isgood               = strcmp(morpho,'Doughnut') | strcmp(morpho,'Blob');
+%       end
+%       isallnan               = sum(~isfinite(dff),2) == size(dff,2); % some neurons are nan'd or inf'd out
+%       isgood                 = isgood & ~isallnan;
+%       
+%       dff(~isgood,:)         = [];
+%       global_idx(~isgood,:)  = [];
+
+%% for suite2p we need to define different metrics (eg classifier, skewness) 
+        dff                    = dff(is_cell(:,1)==1,:);
+        %dff(:,[1:2999, 36701:end]) = nan;
+        global_idx             = global_idx(is_cell(:,1)==1);
       %% get behavioral trial info
  
-      syncinfo = fetch(meso.SyncImagingBehavior & key, '*');
+      syncinfo = fetch(imaging.SyncImagingBehavior & key, '*');
  
  
     %% get trial info wrt segmented frames
       segmented_frames = ~all(isnan(dff));
  
       % this is trial within block, we need trial within session
-      trial_wi_block_by_im_frame = syncinfo.sync_behav_trial_by_im_frame;
-      block_by_im_frame          = syncinfo.sync_behav_block_by_im_frame;
-      im_frame_id      = syncinfo.sync_im_frame_global;
+      % MDia added indexing for sessions where scanimage started later
+      trial_wi_block_by_im_frame = syncinfo.sync_behav_trial_by_im_frame(syncinfo.sync_im_frame_global ~=0);
+      block_by_im_frame          = syncinfo.sync_behav_block_by_im_frame(syncinfo.sync_im_frame_global ~=0);
+      im_frame_id      = syncinfo.sync_im_frame_global(syncinfo.sync_im_frame_global ~=0);
       seg_frame_id     = im_frame_id(segmented_frames);
-      trial_span       = cell2mat(syncinfo.sync_im_frame_span_by_behav_trial');
+      trial_span       = syncinfo.sync_im_frame_span_by_behav_trial;
+      trial_span       = vertcat(trial_span{:});
+      
       % trial starts after segmentation starts and ends before segmentation stops
       is_within_segmentation = trial_span(:,1) > seg_frame_id(1) & trial_span(:,2) < seg_frame_id(end);
       
@@ -73,7 +77,7 @@ classdef BinnedTrace < dj.Computed
       trial_by_im_frame(trial_wi_block_by_im_frame>0) = trial_wi_block_by_im_frame(trial_wi_block_by_im_frame>0)+trial2add-1;
  
       %% now that trials are wrt segmented frames, can select for good trials based on session trial idx in .TrialStats
-      trial_stats = fetch(meso_analysis.Trialstats & key, 'trial_idx','is_not_excess_travel','mean_perf_block', ...
+      trial_stats = fetch(meso_analysis.Trialstats & key, 'is_not_excess_travel','mean_perf_block', ...
                                         'mean_bias_block','mean_perf_block','is_towers_task','is_visguided_task','block_id');
       trial_idx = [trial_stats.trial_idx];
       
@@ -102,7 +106,7 @@ classdef BinnedTrace < dj.Computed
                        
       good_trial     = good_towers_trials | good_visguide_trials;
                        
-      good_trial_idx = trial_idx(good_trial & is_within_segmentation');
+      good_trial_idx = trial_idx(good_trial & is_within_segmentation(trial_idx)');
 
                          
       %% Get trial bins (which trial bin # corresponds to each imaging frame)
@@ -116,7 +120,7 @@ classdef BinnedTrace < dj.Computed
       %% Get epoch bins 
 %       epochEdges       = getEpochEdges(key);
       [standardizedTime, epochEdges] = fetchn(meso_analysis.StandardizedTime & key, 'standardized_time', 'binned_time');
-        standardizedTime = standardizedTime{:};
+        standardizedTime = standardizedTime{:}(syncinfo.sync_im_frame_global ~=0);
         epochEdges = epochEdges{:};
       epoch_by_frame     = standardizedTime(segmented_frames & good_trial_frames);
       epoch_bin_by_frame = binarySearch(epochEdges, epoch_by_frame, -1, -1);

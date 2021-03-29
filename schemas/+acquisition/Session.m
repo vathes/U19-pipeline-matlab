@@ -119,6 +119,12 @@ classdef Session < dj.Imported
             %and insert this session:
             insert(acquisition.Session, key)
             
+            %Update water earned from behavioral file
+            water_earned_key = struct();
+            water_earned_key.subject_fullname = key.subject_fullname;
+            water_earned_key.session_date = key.session_date;
+            updateWaterEarnedFromFile(action.WaterAdministration, water_earned_key, log);
+            
         end
         
         function updateSessionFromFile_Towers(self,key,log)
@@ -159,6 +165,12 @@ classdef Session < dj.Imported
             
             update(acquisition.Session & key, 'num_trials', num_trials)
             update(acquisition.Session & key, 'num_trials_try', num_trials_try)
+            
+            %Update water earned from behavioral file
+            water_earned_key = struct();
+            water_earned_key.subject_fullname = key.subject_fullname;
+            water_earned_key.session_date = key.session_date;
+            updateWaterEarnedFromFile(action.WaterAdministration, water_earned_key, log);
              
         end
         
@@ -189,7 +201,7 @@ classdef Session < dj.Imported
                         break;
                     end
                     if isa(trial.choice, 'single')
-                        correct_number = correct_number + single(trial.trialType) == single(trial.choice);
+                        correct_number = correct_number + double(single(trial.trialType) == single(trial.choice));
                     else
                         correct_number = correct_number + strcmp(trial.trialType.char, trial.choice.char);
                     end

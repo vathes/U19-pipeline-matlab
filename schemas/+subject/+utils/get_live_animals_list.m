@@ -14,7 +14,9 @@ subject_status_table = action.SubjectStatus * max_status_date;
 key.subject_status = 'Dead';
 subject_status_table_live = subject_status_table - key;
 
-animal_list = fetchn(subject_status_table_live, 'subject_fullname');
+animal_list = fetch(subject_status_table_live, 'subject_fullname');
+ 
+animal_list = {animal_list.subject_fullname};
 
 end
 
