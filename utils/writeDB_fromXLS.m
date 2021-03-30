@@ -1,11 +1,22 @@
 function writeDB_fromXLS(filename, tables)
 % Write a Excel spreadsheet to datajoint tables
 % Inputs
-% filename  = Full path of Excel file to read data from
+% filename  = Full path of Excel/csv file to read data from (if mac/linux csv is needed)
 % tables    = Cell array of tables to insert data (e.g {action.Weighing actionWaterAdministration}
 
+% Check file extension:
+[~,~,file_extension] = fileparts(filename);
+
 % Read data and column names
+if ispc && contains(file_extension, 'xls')
 [~,~,data] = xlsread(filename);
+%If mac/linux, read as csv and pass data to cell
+else
+    data = readtable(filename);
+    fields = data.Properties.VariableNames;
+    data = table2cell(data);
+    data = [fields; data];
+end
 xls_fields = data(1,:);
 
 for i=1:length(tables)
