@@ -31,23 +31,32 @@ classdef TowersBlock < dj.Imported
                 [~, data_dir] = lab.utils.get_path_from_official_dir(data_dir);
                 data = load(data_dir,'log');
                 log = data.log;
-                %Check if it is a real behavioral file
-                if isfield(log, 'session')
-                    %Insert Blocks and trails from BehFile
-                    self.insertTowersBlockFromFile(key,log)
-                else
-                    disp(['File does not match expected Towers behavioral file: ', data_dir])
+                status = 1;
+            catch
+                disp(['Could not open behavioral file: ', data_dir])
+                status = 0;
+            end
+            if status
+                try
+                    %Check if it is a real behavioral file
+                    if isfield(log, 'session')
+                        %Insert Blocks and trails from BehFile
+                        self.insertTowersBlockFromFile(key,log)
+                    else
+                        disp(['File does not match expected Towers behavioral file: ', data_dir])
+                    end
+                catch err
+                    disp(err.message)
+                    sprintf('Error in here: %s, %s, %d',err.stack(1).file, err.stack(1).name, err.stack(1).line )
                 end
-            catch err
-                disp(err)
             end
             
         end
-            
+        
     end
     
     % Public methods
-    methods     
+    methods
         function insertTowersBlockFromFile(self, key,log)
             % Insert blocks and blocktrials record from behavioralfile
             % Called at the end of training or when populating towersBlock
@@ -121,6 +130,14 @@ classdef TowersBlock < dj.Imported
                     tuple_trial.collision = trial.collision;
                     tuple_trial.cue_presence_left = trial.cueCombo(1, :);
                     tuple_trial.cue_presence_right = trial.cueCombo(2, :);
+                    
+                    if isempty(tuple_trial.cue_presence_left)
+                        tuple_trial.cue_presence_left = 0;
+                    end
+                    
+                    if isempty(tuple_trial.cue_presence_right)
+                        tuple_trial.cue_presence_right = 0;
+                    end
                     
                     if ~isempty(trial.cueOnset{1})
                         tuple_trial.cue_onset_left = trial.cueOnset{1};
