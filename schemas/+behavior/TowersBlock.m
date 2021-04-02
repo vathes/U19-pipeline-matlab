@@ -120,9 +120,9 @@ classdef TowersBlock < dj.Imported
                         tuple_trial.trial_type = trial.trialType.char;
                     end
                     if isnumeric(trial.choice)
-                        tuple_trial.trial_type = Choice(trial.choice).char;
+                        tuple_trial.choice = Choice(trial.choice).char;
                     else
-                        tuple_trial.trial_type = trial.choice.char;
+                        tuple_trial.choice = trial.choice.char;
                     end
                     
                     tuple_trial.trial_time = trial.time;
