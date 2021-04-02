@@ -1,11 +1,26 @@
 
 
-date_key = 'session_date > "2021-01-01"';
+% date_key = 'session_date >= "2021-03-31" and session_date <= "2021-04-30"';
+% 
+% session_struct = fetch(acquisition.Session * ...
+%                        proj(acquisition.SessionStarted, 'remote_path_behavior_file') & ...
+%                         date_key, '*', 'ORDER BY session_date');
+                   
+             
+towers_session   = behavior.TowersSession;                  
+reward_session   = s.aggr(behavior.TowersBlock, 'sum(reward_mil)->reward_session');
+water_admin_info = proj(action.WaterAdministration, 'administration_date->session_date', 'earned');
 
-session_struct = fetch(acquisition.Session * ...
-                       proj(acquisition.SessionStarted, 'remote_path_behavior_file') & ...
-                       date_key, '*', 'ORDER BY session_date');
-                                      
+
+final_comparison = (reward_session * water_admin_info);
+final_comparison2 = proj(final_comparison, 'abs(reward_session-earned)->diff');
+
+extra_info = final_comparison2 * proj(acquisition.SessionStarted, 'remote_path_behavior_file');
+
+session_struct = fetch( extra_info & 'diff>0.05', 'ORDER BY session_date desc');
+                    
+                    
+                   
 for j=1:length(session_struct)
     
     [j length(session_struct)]
@@ -17,9 +32,12 @@ for j=1:length(session_struct)
     [~, acqsession_file] = lab.utils.get_path_from_official_dir(session_struct(j).remote_path_behavior_file);
     
     %Load behavioral file
-    
-    data = load(acqsession_file,'log');
-    log = data.log;
+    try
+        data = load(acqsession_file,'log');
+        log = data.log;
+    catch err 
+        disp('Could not open file');
+    end
     
     %updateSessionFromFile_Towers(acquisition.Session,key,log);
     updateWaterEarnedFromFile(action.WaterAdministration, key, log);
