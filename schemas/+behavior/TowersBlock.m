@@ -40,7 +40,6 @@ classdef TowersBlock < dj.Imported
                 end
             catch err
                 disp(err)
-                disp(['Could not open behavioral file: ', data_dir])
             end
             
         end
@@ -82,7 +81,11 @@ classdef TowersBlock < dj.Imported
                 correct_counter = 0;
                 for itrial = 1:length(block.trial)
                     trial = block.trial(itrial);
-                    correct_counter = correct_counter + strcmp(trial.trialType.char, trial.choice.char);
+                    if isnumeric(trial.choice)
+                        correct_counter = correct_counter + double(single(trial.trialType) == single(trial.choice));
+                    else
+                        correct_counter = correct_counter + strcmp(trial.trialType.char, trial.choice.char);
+                    end
                 end
                 perf = correct_counter/length(block.trial);
                 if isfinite(perf)
@@ -92,7 +95,8 @@ classdef TowersBlock < dj.Imported
                 end
                 self.insert(tuple);
                 
-                for itrial = 1:length(block.trial)
+                nTrials = length([block.trial.choice]);
+                for itrial = 1:nTrials
                     trial = block.trial(itrial);
                     
                     tuple = key; %% Start with an emty tube to trial data
@@ -100,8 +104,18 @@ classdef TowersBlock < dj.Imported
                     tuple_trial = tuple;
                     
                     tuple_trial.trial_idx = itrial;
-                    tuple_trial.trial_type = trial.trialType.char;
-                    tuple_trial.choice = trial.choice.char;
+                    
+                    if isnumeric(trial.trialType)
+                        tuple_trial.trial_type = Choice(trial.trialType).char;
+                    else
+                        tuple_trial.trial_type = trial.trialType.char;
+                    end
+                    if isnumeric(trial.choice)
+                        tuple_trial.trial_type = Choice(trial.choice).char;
+                    else
+                        tuple_trial.trial_type = trial.choice.char;
+                    end
+                    
                     tuple_trial.trial_time = trial.time;
                     tuple_trial.trial_abs_start = trial.start;
                     tuple_trial.collision = trial.collision;
