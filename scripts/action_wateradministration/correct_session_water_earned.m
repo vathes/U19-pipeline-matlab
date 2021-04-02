@@ -26,6 +26,7 @@ for j=1:length(session_struct)
     
     %Load behavioral file & update water eanred
     try
+        disp(acqsession_file)
         data = load(acqsession_file,'log');
         log = data.log;
         updateWaterEarnedFromFile(action.WaterAdministration, key, log);
