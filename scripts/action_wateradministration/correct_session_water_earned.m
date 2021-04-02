@@ -1,14 +1,7 @@
 
-
-% date_key = 'session_date >= "2021-03-31" and session_date <= "2021-04-30"';
-% 
-% session_struct = fetch(acquisition.Session * ...
-%                        proj(acquisition.SessionStarted, 'remote_path_behavior_file') & ...
-%                         date_key, '*', 'ORDER BY session_date');
-                   
-             
+clearvars
 towers_session   = behavior.TowersSession;                  
-reward_session   = s.aggr(behavior.TowersBlock, 'sum(reward_mil)->reward_session');
+reward_session   = towers_session.aggr(behavior.TowersBlock, 'sum(reward_mil)->reward_session');
 water_admin_info = proj(action.WaterAdministration, 'administration_date->session_date', 'earned');
 
 
