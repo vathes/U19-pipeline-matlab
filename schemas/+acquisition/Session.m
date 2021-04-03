@@ -36,15 +36,23 @@ classdef Session < dj.Imported
                 try
                     data = load(acqsession_file,'log');
                     log = data.log;
-                    %Check if it is a real behavioral file
-                    if isfield(log, 'session')
-                        self.insertSessionFromFile_Towers(key, log);
-                    else
-                        disp(['File does not match expected Towers behavioral file: ', acqsession_file])
-                    end
-                catch err
-                    disp(err)
+                    status = 1;
+                catch
                     disp(['Could not open behavioral file: ', acqsession_file])
+                    status = 0;
+                end
+                if status
+                    try
+                        %Check if it is a real behavioral file
+                        if isfield(log, 'session')
+                            self.insertSessionFromFile_Towers(key, log);
+                        else
+                            disp(['File does not match expected Towers behavioral file: ', acqsession_file])
+                        end
+                    catch err
+                        disp(err.message)
+                        sprintf('Error in here: %s, %s, %d',err.stack(1).file, err.stack(1).name, err.stack(1).line )
+                    end
                 end
                 
             end
@@ -200,7 +208,7 @@ classdef Session < dj.Imported
                     if isempty(trial.trialType)
                         break;
                     end
-                    if isa(trial.choice, 'single')
+                    if isnumeric(trial.choice)
                         correct_number = correct_number + double(single(trial.trialType) == single(trial.choice));
                     else
                         correct_number = correct_number + strcmp(trial.trialType.char, trial.choice.char);

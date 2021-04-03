@@ -31,24 +31,32 @@ classdef TowersBlock < dj.Imported
                 [~, data_dir] = lab.utils.get_path_from_official_dir(data_dir);
                 data = load(data_dir,'log');
                 log = data.log;
-                %Check if it is a real behavioral file
-                if isfield(log, 'session')
-                    %Insert Blocks and trails from BehFile
-                    self.insertTowersBlockFromFile(key,log)
-                else
-                    disp(['File does not match expected Towers behavioral file: ', data_dir])
-                end
-            catch err
-                disp(err)
+                status = 1;
+            catch
                 disp(['Could not open behavioral file: ', data_dir])
+                status = 0;
+            end
+            if status
+                try
+                    %Check if it is a real behavioral file
+                    if isfield(log, 'session')
+                        %Insert Blocks and trails from BehFile
+                        self.insertTowersBlockFromFile(key,log)
+                    else
+                        disp(['File does not match expected Towers behavioral file: ', data_dir])
+                    end
+                catch err
+                    disp(err.message)
+                    sprintf('Error in here: %s, %s, %d',err.stack(1).file, err.stack(1).name, err.stack(1).line )
+                end
             end
             
         end
-            
+        
     end
     
     % Public methods
-    methods     
+    methods
         function insertTowersBlockFromFile(self, key,log)
             % Insert blocks and blocktrials record from behavioralfile
             % Called at the end of training or when populating towersBlock
@@ -82,7 +90,11 @@ classdef TowersBlock < dj.Imported
                 correct_counter = 0;
                 for itrial = 1:length(block.trial)
                     trial = block.trial(itrial);
-                    correct_counter = correct_counter + strcmp(trial.trialType.char, trial.choice.char);
+                    if isnumeric(trial.choice)
+                        correct_counter = correct_counter + double(single(trial.trialType) == single(trial.choice));
+                    else
+                        correct_counter = correct_counter + strcmp(trial.trialType.char, trial.choice.char);
+                    end
                 end
                 perf = correct_counter/length(block.trial);
                 if isfinite(perf)
@@ -92,7 +104,8 @@ classdef TowersBlock < dj.Imported
                 end
                 self.insert(tuple);
                 
-                for itrial = 1:length(block.trial)
+                nTrials = length([block.trial.choice]);
+                for itrial = 1:nTrials
                     trial = block.trial(itrial);
                     
                     tuple = key; %% Start with an emty tube to trial data
@@ -100,13 +113,31 @@ classdef TowersBlock < dj.Imported
                     tuple_trial = tuple;
                     
                     tuple_trial.trial_idx = itrial;
-                    tuple_trial.trial_type = trial.trialType.char;
-                    tuple_trial.choice = trial.choice.char;
+                    
+                    if isnumeric(trial.trialType)
+                        tuple_trial.trial_type = Choice(trial.trialType).char;
+                    else
+                        tuple_trial.trial_type = trial.trialType.char;
+                    end
+                    if isnumeric(trial.choice)
+                        tuple_trial.choice = Choice(trial.choice).char;
+                    else
+                        tuple_trial.choice = trial.choice.char;
+                    end
+                    
                     tuple_trial.trial_time = trial.time;
                     tuple_trial.trial_abs_start = trial.start;
                     tuple_trial.collision = trial.collision;
                     tuple_trial.cue_presence_left = trial.cueCombo(1, :);
                     tuple_trial.cue_presence_right = trial.cueCombo(2, :);
+                    
+                    if isempty(tuple_trial.cue_presence_left)
+                        tuple_trial.cue_presence_left = 0;
+                    end
+                    
+                    if isempty(tuple_trial.cue_presence_right)
+                        tuple_trial.cue_presence_right = 0;
+                    end
                     
                     if ~isempty(trial.cueOnset{1})
                         tuple_trial.cue_onset_left = trial.cueOnset{1};
