@@ -10,7 +10,7 @@ final_comparison2 = proj(final_comparison, 'abs(reward_session-earned)->diff', '
 
 extra_info = final_comparison2 * proj(acquisition.SessionStarted, 'remote_path_behavior_file');
 
-session_struct = fetch( extra_info & 'diff>0.05', 'remote_path_behavior_file', 'reward_session', 'earned', 'ORDER BY session_date desc')
+session_struct = fetch( extra_info & 'diff>0.001', 'remote_path_behavior_file', 'reward_session', 'earned', 'ORDER BY session_date desc')
                     
                     
                    
@@ -26,6 +26,7 @@ for j=1:length(session_struct)
     
     %Load behavioral file & update water eanred
     try
+        disp(acqsession_file)
         data = load(acqsession_file,'log');
         log = data.log;
         updateWaterEarnedFromFile(action.WaterAdministration, key, log);
