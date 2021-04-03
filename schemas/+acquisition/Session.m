@@ -38,7 +38,7 @@ classdef Session < dj.Imported
                     log = data.log;
                     status = 1;
                 catch
-                    disp(['Could not open behavioral file: ', data_dir])
+                    disp(['Could not open behavioral file: ', acqsession_file])
                     status = 0;
                 end
                 if status
@@ -208,7 +208,7 @@ classdef Session < dj.Imported
                     if isempty(trial.trialType)
                         break;
                     end
-                    if isa(trial.choice, 'single')
+                    if isnumeric(trial.choice)
                         correct_number = correct_number + double(single(trial.trialType) == single(trial.choice));
                     else
                         correct_number = correct_number + strcmp(trial.trialType.char, trial.choice.char);
