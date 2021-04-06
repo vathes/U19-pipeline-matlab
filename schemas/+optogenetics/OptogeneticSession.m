@@ -2,7 +2,7 @@
 # Information of a optogenetic session
 ->acquisition.Session
 ---
--> optogenetics.OptogeneticStimulationParameter
+-> optogenetics.OptogeneticProtocol
 -> optogenetics.OptogeneticSoftwareParameter
 %}
 
