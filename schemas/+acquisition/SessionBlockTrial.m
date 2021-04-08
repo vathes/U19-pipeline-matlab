@@ -47,7 +47,7 @@ classdef SessionBlockTrial < dj.Part
         
         function ingestFromBehaviorBlockTrial(self)
             %Function to copy over trials from behavior.TowersBlockTrial -> acquisition.SessionBlockTrial
-            warning('off','MATLAB:MKDIR:DirectoryExists')
+            %warning('off','MATLAB:MKDIR:DirectoryExists')
             % Which fields we need from behavior.TowersBlockTrial
             needed_fields = {'trial_type', 'choice', 'trial_abs_start', 'trial_duration', 'trial_time', ...
                 'cue_presence_left', 'cue_presence_right', 'cue_onset_left', 'cue_onset_right', ...
@@ -130,17 +130,14 @@ classdef SessionBlockTrial < dj.Part
                     %Pass to structrue and insert trials from entire session
                     subset_struct_trial = table2struct(subset_table_trial);   
                     
-                    disp('Before insert')
+                    disp('During insert session')
                     tic
-                    for j=1:length(subset_struct_trial)
-                        insert(self, subset_struct_trial(j), 'IGNORE');
-                    end
+                    insert(self, subset_struct_trial, 'IGNORE');
                     toc
-                    
                 end
             end
             
-            warning('on','MATLAB:MKDIR:DirectoryExists')
+           % warning('on','MATLAB:MKDIR:DirectoryExists')
         end
         
        function updateEventsFromBehaviorBlockTrial(self)
