@@ -2,13 +2,21 @@
 -> acquisition.Session
 block                       : tinyint                       # block number
 ---
-n_trials                    : int                           # number of trials in this block
-first_trial                 : int                           # trial_idx of the first trial in this block
-block_duration              : float                         # in secs, duration of the block
-block_start_time            : datetime                      # absolute start time of the block
-reward_mil                  : float                         # in mL, reward volume in this block
-block_performance           : float                         # performance in the current block
 %}
+
+
+%     'CREATE TABLE `u19_behavior`.`_test_towers_block` (
+%      `subject_fullname` varchar(64) NOT NULL COMMENT "username_mouse_nickname",
+%      `session_date` date NOT NULL COMMENT "date of experiment",
+%      `session_number` int NOT NULL COMMENT "number",
+%      `block` tinyint NOT NULL COMMENT "block number",
+%      `task` varchar(32) NOT NULL COMMENT "",
+%      `level` int NOT NULL COMMENT "difficulty level",
+%      `set_id` int NOT NULL DEFAULT "1" COMMENT "parameter set id",
+%      PRIMARY KEY (`subject_fullname`,`session_date`,`session_number`,`block`),
+%      CONSTRAINT `-_P1hFgw` FOREIGN KEY (`subject_fullname`,`session_date`,`session_number`) REFERENCES `u19_behavior`.`_towers_session` (`subject_fullname`,`session_date`,`session_number`) ON UPDATE CASCADE ON DELETE RESTRICT,
+%      CONSTRAINT `g7P9uUf6` FOREIGN KEY (`task`,`level`,`set_id`) REFERENCES `u19_task`.`#task_level_parameter_set` (`task`,`level`,`set_id`) ON UPDATE CASCADE ON DELETE RESTRICT
+%      ) ENGINE = InnoDB, COMMENT ""'
 
 classdef SessionBlock < dj.Imported
     properties
@@ -19,7 +27,6 @@ classdef SessionBlock < dj.Imported
     methods(Access=protected)
         function makeTuples(self, key)
             
-           
             [status, data] = lab.utils.read_behavior_file(key);            
             if status
                 try
@@ -52,118 +59,16 @@ classdef SessionBlock < dj.Imported
             % log  = behavioral file as stored in Virmen
             
             for iBlock = 1:length(log.block)
-                tuple = key;
-                block = log.block(iBlock);
-                block = fixLogs(block); % fix bug for mesoscope recordings where choice is not recorded (but view angle is)
-                
+                tuple = key;          
                 tuple.block = iBlock;
-                tuple.task = 'Towers';
-                tuple.n_trials = length(block.trial);
-                tuple.first_trial = block.firstTrial;
-                tuple.block_duration = block.duration;
-                tuple.block_start_time = sprintf('%d-%02d-%02d %02d:%02d:00', ...
-                    block.start(1), block.start(2), block.start(3), ...
-                    block.start(4), block.start(5));
-                tuple.reward_mil = block.rewardMiL;
-                
-                correct_counter = 0;
-                for itrial = 1:length(block.trial)
-                    trial = block.trial(itrial);
-                    if isnumeric(trial.choice)
-                        correct_counter = correct_counter + double(single(trial.trialType) == single(trial.choice));
-                    else
-                        correct_counter = correct_counter + strcmp(trial.trialType.char, trial.choice.char);
-                    end
-                end
-                perf = correct_counter/length(block.trial);
-                if isfinite(perf)
-                    tuple.block_performance = perf;
-                else
-                    tuple.block_performance = 0;
-                end
+              
                 self.insert(tuple);
                 
                 nTrials = length([block.trial.choice]);
-                for itrial = 1:nTrials
-                    trial = block.trial(itrial);
-                    
-                    tuple = key; %% Start with an emty tube to trial data
-                    tuple.block = iBlock;
+                for itrial = 1:nTrials        
                     tuple_trial = tuple;
-                    
                     tuple_trial.trial_idx = itrial;
-                    
-                    if isnumeric(trial.trialType)
-                        tuple_trial.trial_type = Choice(trial.trialType).char;
-                    else
-                        tuple_trial.trial_type = trial.trialType.char;
-                    end
-                    if isnumeric(trial.choice)
-                        tuple_trial.choice = Choice(trial.choice).char;
-                    else
-                        tuple_trial.choice = trial.choice.char;
-                    end
-                    
-                    tuple_trial.trial_time = trial.time;
-                    tuple_trial.trial_abs_start = trial.start;
-                    tuple_trial.trial_duration = trial.duration;
-                    
-                    
-                    
-                    %tuple_trial.cue_presence_left = trial.cueCombo(1, :);
-                    %tuple_trial.cue_presence_right = trial.cueCombo(2, :);
-                    
-%                     if isempty(tuple_trial.cue_presence_left)
-%                         tuple_trial.cue_presence_left = 0;
-%                     end
-%                     
-%                     if isempty(tuple_trial.cue_presence_right)
-%                         tuple_trial.cue_presence_right = 0;
-%                     end
-%                     
-%                     if ~isempty(trial.cueOnset{1})
-%                         tuple_trial.cue_onset_left = trial.cueOnset{1};
-%                     end
-%                     
-%                     if ~isempty(trial.cueOnset{2})
-%                         tuple_trial.cue_onset_right = trial.cueOnset{2};
-%                     end
-%                     
-%                     if ~isempty(trial.cueOffset{1})
-%                         tuple_trial.cue_offset_left = trial.cueOffset{1};
-%                     end
-%                     
-%                     if ~isempty(trial.cueOffset{2})
-%                         tuple_trial.cue_offset_right = trial.cueOffset{2};
-%                     end
-%                     
-%                     if ~isempty(trial.cuePos{1})
-%                         tuple_trial.cue_pos_left = trial.cuePos{1};
-%                     end
-%                     
-%                     if ~isempty(trial.cuePos{2})
-%                         tuple_trial.cue_pos_right = trial.cuePos{2};
-%                     end
-                    
-                    
-                    %tuple_trial.excess_travel = trial.excessTravel;
-                    %tuple_trial.i_arm_entry = exists_helper(trial,'iArmEntry');
-                    %tuple_trial.i_blank = exists_helper(trial,'iBlank');
-                    %tuple_trial.i_turn_entry = exists_helper(trial,'iTurnEntry');
-                    %tuple_trial.i_cue_entry = exists_helper(trial,'iCueEntry');
-                    %tuple_trial.i_mem_entry = exists_helper(trial,'iMemEntry');
-                    %tuple_trial.iterations = trial.iterations;
-                    
-                    %tuple_trial.trial_id = trial.trialID;
-%                     if length(trial.trialProb) == 1
-%                         tuple_trial.trial_prior_p_left = trial.trialProb;
-%                     else
-%                         % For not 50:50 trials, take only one of the
-%                         % probabilities (they add up to 1)
-%                         tuple_trial.trial_prior_p_left = trial.trialProb(1);
-%                     end
-%                     
-%                     tuple_trial.vi_start = trial.viStart;
+                 
                     insert(acquisition.SessionBlock, tuple_trial)
                 end
             end
@@ -171,40 +76,5 @@ classdef SessionBlock < dj.Imported
     end
 end
 
-%% fix logs where trial type and choice are not recorded due to bug
-function block = fixLogs(block)
 
-for iBlock = 1:numel(block)
-    
-    %Correct number of trials when there are empty trials in block
-    nTrials = length([block(iBlock).trial.choice]);
-    block(iBlock).trial = block(iBlock).trial(1:nTrials);
-    
-    nTrials = numel(block(iBlock).trial);
-    for iTrial = 1:nTrials
-        if isempty(block(iBlock).trial(iTrial).trialType)
-            if numel(block(iBlock).trial(iTrial).cuePos{1}) > numel(block(iBlock).trial(iTrial).cuePos{1})
-                block(iBlock).trial(iTrial).trialType = Choice.L;
-            else
-                block(iBlock).trial(iTrial).trialType = Choice.R;
-            end
-        end
-        if isempty(block(iBlock).trial(iTrial).choice)
-            pos = block(iBlock).trial(iTrial).position;
-            if pos(end,2) < 300
-                block(iBlock).trial(iTrial).choice   = Choice.nil;
-            else
-                if pos(end,3) > 0
-                    block(iBlock).trial(iTrial).choice = Choice.L;
-                else
-                    block(iBlock).trial(iTrial).choice = Choice.R;
-                end
-            end
-        end
-    end
-    block(iBlock).trialType      = [block(iBlock).trial(:).trialType];
-    block(iBlock).medianTrialDur = median([block(iBlock).trial(:).duration]);
-end
-
-end
 
