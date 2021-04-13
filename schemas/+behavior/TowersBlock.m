@@ -1,6 +1,5 @@
 %{
--> behavior.TowersSession
-block                       : tinyint                       # block number
+-> acquisition.SessionBlock
 ---
 -> task.TaskLevelParameterSet
 n_trials                    : int                           # number of trials in this block

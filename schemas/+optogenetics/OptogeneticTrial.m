@@ -1,7 +1,7 @@
 %{
 # Information of a optogenetic trial
--> optogenetics.OptogeneticSession
 -> acquisition.SessionBlockTrial
+-> optogenetics.OptogeneticSession
 ---
 stim_epoch			              : varchar(32)	 # Which epoch of the trial stimulation was on
 stim_on			                  : tinyint	     # 1 if stimulation was turned on 0 otherwise

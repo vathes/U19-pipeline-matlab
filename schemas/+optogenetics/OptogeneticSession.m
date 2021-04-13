@@ -1,7 +1,8 @@
 %{
 # Information of a optogenetic session
-->acquisition.SessionManipulation
+->acquisition.Session
 ---
+-> acquisition.SessionManipulation
 -> optogenetics.OptogeneticProtocol
 -> optogenetics.OptogeneticSoftwareParameter
 %}
@@ -9,7 +10,7 @@
 classdef OptogeneticSession < dj.Imported
     
     properties
-        keySource = acquisition.SessionManipulation & struct('manipulation_type', 'optogenetics');
+        keySource =  acquisition.Session & (acquisition.SessionManipulation & struct('manipulation_type', 'optogenetics'));
     end
     
     methods(Access=protected)

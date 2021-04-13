@@ -2,9 +2,10 @@
 -> puffs.PuffsSession
 trial_idx                   : int                           # trial index, keep the original number in the file
 ---
--> task.TaskLevelParameterSet`
+-> task.TaskLevelParameterSet
 trial_type                  : enum('L','R')                 # answer of this trial, left or right
 choice                      : enum('L','R','nil')           # choice of this trial, left or right
+answered_correct            : int
 trial_prior_p_left          : float                         # prior probablity of this trial for left
 trial_rel_start             : float                         # start time of the trial relative to the beginning of the session [seconds]
 trial_rel_finish            : float                         # end time of the trial relative to the beginning of the session [seconds]
