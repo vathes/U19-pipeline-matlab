@@ -36,15 +36,23 @@ classdef Session < dj.Imported
                 try
                     data = load(acqsession_file,'log');
                     log = data.log;
-                    %Check if it is a real behavioral file
-                    if isfield(log, 'session')
-                        self.insertSessionFromFile_Towers(key, log);
-                    else
-                        disp(['File does not match expected Towers behavioral file: ', acqsession_file])
-                    end
-                catch err
-                    disp(err)
+                    status = 1;
+                catch
                     disp(['Could not open behavioral file: ', acqsession_file])
+                    status = 0;
+                end
+                if status
+                    try
+                        %Check if it is a real behavioral file
+                        if isfield(log, 'session')
+                            self.insertSessionFromFile_Towers(key, log);
+                        else
+                            disp(['File does not match expected Towers behavioral file: ', acqsession_file])
+                        end
+                    catch err
+                        disp(err.message)
+                        sprintf('Error in here: %s, %s, %d',err.stack(1).file, err.stack(1).name, err.stack(1).line )
+                    end
                 end
                 
             end
@@ -119,6 +127,12 @@ classdef Session < dj.Imported
             %and insert this session:
             insert(acquisition.Session, key)
             
+            %Update water earned from behavioral file
+            water_earned_key = struct();
+            water_earned_key.subject_fullname = key.subject_fullname;
+            water_earned_key.session_date = key.session_date;
+            updateWaterEarnedFromFile(action.WaterAdministration, water_earned_key, log);
+            
         end
         
         function updateSessionFromFile_Towers(self,key,log)
@@ -132,6 +146,11 @@ classdef Session < dj.Imported
             %Update end time
             session_end_time = sprintf('%d-%02d-%02d %02d:%02d:00', log.session.end(1), log.session.end(2), log.session.end(3), log.session.end(4), log.session.end(5));
             update(acquisition.Session & key, 'session_end_time', session_end_time)
+            
+            %Support when behavioral files has 2 "versions"
+            if length(log.version) > 1
+                log.version = log.version(1);
+            end
             
             % Check if location exist, and if not insert it
             lab.utils.check_location(log.version.rig.rig);
@@ -154,6 +173,12 @@ classdef Session < dj.Imported
             
             update(acquisition.Session & key, 'num_trials', num_trials)
             update(acquisition.Session & key, 'num_trials_try', num_trials_try)
+            
+            %Update water earned from behavioral file
+            water_earned_key = struct();
+            water_earned_key.subject_fullname = key.subject_fullname;
+            water_earned_key.session_date = key.session_date;
+            updateWaterEarnedFromFile(action.WaterAdministration, water_earned_key, log);
              
         end
         
@@ -183,7 +208,11 @@ classdef Session < dj.Imported
                     if isempty(trial.trialType)
                         break;
                     end
-                    correct_number = correct_number + strcmp(trial.trialType.char, trial.choice.char);
+                    if isnumeric(trial.choice)
+                        correct_number = correct_number + double(single(trial.trialType) == single(trial.choice));
+                    else
+                        correct_number = correct_number + strcmp(trial.trialType.char, trial.choice.char);
+                    end
                     num_trials = num_trials + 1;
                 end
             end
