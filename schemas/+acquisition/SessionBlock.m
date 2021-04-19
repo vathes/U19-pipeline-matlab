@@ -64,12 +64,12 @@ classdef SessionBlock < dj.Imported
               
                 self.insert(tuple);
                 
-                nTrials = length([block.trial.choice]);
+                nTrials = length([log.block(iBlock).trial.choice]);
                 for itrial = 1:nTrials        
                     tuple_trial = tuple;
                     tuple_trial.trial_idx = itrial;
                  
-                    insert(acquisition.SessionBlock, tuple_trial)
+                    insert(acquisition.SessionBlockTrial, tuple_trial)
                 end
             end
         end

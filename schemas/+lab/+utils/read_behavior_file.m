@@ -1,21 +1,22 @@
-function [status,data] = read_behavioral_file(inputArg1,inputArg2)
+function [status,data] = read_behavior_file(key)
 %READ_BEHAVIORAL_FILE, read information from behavioral file
 
-data_dir = fetch1(acquisition.SessionStarted & key, 'task', 'remote_path_behavior_file');
-
+data = [];
+status = 0;
+data_dir = fetch(acquisition.SessionStarted & key, 'task', 'remote_path_behavior_file');
 
 %Load behavioral file
 try
-    [~, data_dir] = lab.utils.get_path_from_official_dir(data_dir);
+    [~, filepath] = lab.utils.get_path_from_official_dir(data_dir.remote_path_behavior_file);
     if data_dir.task == "Towers"
-        data = load(data_dir,'log');
+        data = load(filepath,'log');
         status = 1;
     else
-        data = load(data_dir);
+        data = load(filepath);
+        status = 1;
     end
 catch
-    disp(['Could not open behavioral file: ', data_dir])
-    status = 0;
+    disp(['Could not open behavioral file: ', filepath])
 end
 
 end
