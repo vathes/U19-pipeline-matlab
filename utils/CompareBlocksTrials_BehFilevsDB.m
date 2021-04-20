@@ -2,7 +2,7 @@
 
 
 this_path = fileparts(mfilename('fullpath'));
-file2save = fullfile(this_path, 'sessions_different_numblocks_withDB.mat');
+file2save = fullfile(this_path, 'sessions_diff_trial_vs_trials.mat');
 
 fields_session = {'subject_fullname', 'session_date'};
 fields_trials = {'position', 'iterations'};
