@@ -1,5 +1,6 @@
 %{
 -> acquisition.SessionBlock
+-> behavior.TowersSession
 ---
 -> task.TaskLevelParameterSet
 n_trials                    : int                           # number of trials in this block
@@ -64,12 +65,13 @@ classdef TowersBlock < dj.Imported
             % key  = behavior.TowersSession key (subject_fullname, date, session_no)
             % log  = behavioral file as stored in Virmen
             
-            for iBlock = 1:length(log.block)
+            %for iBlock = 1:length(log.block)
+                iBlock = key.block;
                 tuple = key;
                 block = log.block(iBlock);
                 block = fixLogs(block); % fix bug for mesoscope recordings where choice is not recorded (but view angle is)
                 
-                tuple.block = iBlock;
+                %tuple.block = iBlock;
                 tuple.task = 'Towers';
                 tuple.n_trials = length(block.trial);
                 tuple.first_trial = block.firstTrial;
@@ -184,7 +186,7 @@ classdef TowersBlock < dj.Imported
                     tuple_trial.vi_start = trial.viStart;
                     insert(behavior.TowersBlockTrial, tuple_trial)
                 end
-            end
+            %end
         end
     end
 end
