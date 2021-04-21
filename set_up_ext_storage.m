@@ -16,5 +16,5 @@ u19_storage = struct('protocol', 'file',...
 dj.config('stores.extstorage', u19_storage)
 
 
-dj.config.saveGlobal()
+dj.config.saveLocal()
 

@@ -127,7 +127,7 @@ classdef TowersBlock < dj.Imported
                 tuple_trial.cue_presence_left = {trial.cueCombo(1, :)};
                 tuple_trial.cue_presence_right = {trial.cueCombo(2, :)};                
                 tuple_trial.cue_onset_left = trial.cueOnset(1);
-                tuple_trial.cue_onset_right = trial.cueOnset{2};
+                tuple_trial.cue_onset_right = trial.cueOnset(2);
                 tuple_trial.cue_offset_left = trial.cueOffset(1);
                 tuple_trial.cue_offset_right = trial.cueOffset(2);
                 tuple_trial.cue_pos_left = trial.cuePos(1);
@@ -163,18 +163,19 @@ classdef TowersBlock < dj.Imported
                 
                 %"Unnest" cells to match previous way of inserting data
                 fields_blob = {'cue_presence_left', 'cue_presence_right', 'cue_onset_left', ...
-                    'cue_onset_right', '.cue_offset_left', 'cue_offset_right', ...
+                    'cue_onset_right', 'cue_offset_left', 'cue_offset_right', ...
                     'cue_pos_left', 'cue_pos_right'};
-                for f=1:lrngth(fields_blob)
+                for f=1:length(fields_blob)
                     field = fields_blob{f};
                     for s = 1:length(struct_trials)
                         struct_trials(s).(field) = struct_trials(s).(field){:};
                     end
                 end
-                
+                tic
                 insert(behavior.TowersBlockTrial, struct_trials)
+                toc
             end
-            toc
+            
             %end
         end
     end
