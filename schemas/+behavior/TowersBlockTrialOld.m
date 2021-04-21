@@ -1,6 +1,6 @@
 %{
+-> acquisition.SessionBlockTrial
 -> behavior.TowersBlock
-trial_idx:          int     # trial index, keep the original number in the file
 ---
 trial_type:                 enum('L', 'R')               # answer of this trial, left or right
 choice:                     enum('L', 'R', 'nil')   # choice of this trial, left or right
