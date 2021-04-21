@@ -38,7 +38,7 @@ fields_trials = {'trial_type', ...
 session_struct = fetch(proj(acquisition.Session,'session_location->sess_loc') * acquisition.SessionStarted, ...
     'remote_path_behavior_file', 'ORDER BY session_date');
  
-num_sessions = 600;
+num_sessions = 500;
 num_runs_fields = [5 4 3 0];
 
 session_perm = randperm(length(session_struct));
@@ -58,10 +58,10 @@ for k=num_runs_fields
         ac_session = session_perm(j);
     
         tic
-        trial_struct = fetch(behavior.TowersBlockTrial & session_struct(ac_session),fields_ac{:});
+        trial_struct = fetch(behavior.TowersBlockTrialOld & session_struct(ac_session),fields_ac{:});
         session_time_fetch(j, num_runs, 1)  = toc;
         tic
-        trials_struct = fetch(behavior.TowersBlockTrials & session_struct(ac_session),fields_ac{:});
+        trials_struct = fetch(behavior.TowersBlockTrial & session_struct(ac_session),fields_ac{:});
         session_time_fetch(j, num_runs, 2)  = toc;
    
         
@@ -93,7 +93,7 @@ for k=num_runs_fields
     
 end
 
-save(file2save, 'session_time_fetch2', '-v7.3')
+save(file2save, 'session_time_fetch', '-v7.3')
 if exist('session_diff_struct')
     save(file2save2, 'session_diff_struct', '-v7.3')
 end
