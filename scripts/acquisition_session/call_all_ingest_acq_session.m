@@ -40,12 +40,6 @@ session_struct = fetch(proj(subject.Subject & user_array, 'user_id') * proj(lab.
 unique_sessions = struct2table(session_struct);
 unique_sessions.user_id = categorical(unique_sessions.user_id);
 
-unique_sessions{1, 'subject_fullname'} = {'koay_k56'};
-unique_sessions{2, 'subject_fullname'} = {'koay_k53'};
-
-unique_sessions = unique_sessions(1:2,:);
-
-
 %Just keep in table sessions from users_dirs we stated
 unique_sessions = unique_sessions(...
                 ismember(unique_sessions.user_id,users_dirsT.user_id),:);
