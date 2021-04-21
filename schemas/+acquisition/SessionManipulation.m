@@ -17,7 +17,7 @@ classdef SessionManipulation < dj.Manual
             % key          = structure with required fields: (subject_fullname, date, session_no)
             % log          = behavioral file as stored in Virmen
             
-            if ~contains(log.animal.manipulationType, 'none')
+            if isfield(log.animal, 'manipulationType') && ~contains(log.animal.manipulationType, 'none')
                 key.manipulation_type = log.animal.manipulationType;
                 insert(self, key, 'IGNORE');
             end
