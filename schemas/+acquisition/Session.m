@@ -132,6 +132,13 @@ classdef Session < dj.Imported
             water_earned_key.subject_fullname = key.subject_fullname;
             water_earned_key.session_date = key.session_date;
             updateWaterEarnedFromFile(action.WaterAdministration, water_earned_key, log);
+
+            %Insert sessionManipulation if present
+            session_key = struct();
+            session_key.subject_fullname = key.subject_fullname;
+            session_key.session_date     = key.session_date;
+            session_key.session_number   = key.session_number;
+            insertSessionManipulation(acquisition.SessionManipulation, session_key, log);
             
         end
         
@@ -179,6 +186,13 @@ classdef Session < dj.Imported
             water_earned_key.subject_fullname = key.subject_fullname;
             water_earned_key.session_date = key.session_date;
             updateWaterEarnedFromFile(action.WaterAdministration, water_earned_key, log);
+
+            %Insert sessionManipulation if present
+            session_key = struct();
+            session_key.subject_fullname = key.subject_fullname;
+            session_key.session_date     = key.session_date;
+            session_key.session_number   = key.session_number;
+            insertSessionManipulation(acquisition.SessionManipulation, session_key, log);
              
         end
         

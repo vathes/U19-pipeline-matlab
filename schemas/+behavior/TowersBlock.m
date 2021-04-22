@@ -1,6 +1,6 @@
 %{
+-> acquisition.SessionBlock
 -> behavior.TowersSession
-block                       : tinyint                       # block number
 ---
 -> task.TaskLevelParameterSet
 n_trials                    : int                           # number of trials in this block
@@ -65,127 +65,118 @@ classdef TowersBlock < dj.Imported
             % key  = behavior.TowersSession key (subject_fullname, date, session_no)
             % log  = behavioral file as stored in Virmen
             
-            for iBlock = 1:length(log.block)
-                tuple = key;
-                block = log.block(iBlock);
-                block = fixLogs(block); % fix bug for mesoscope recordings where choice is not recorded (but view angle is)
-                
-                tuple.block = iBlock;
-                tuple.task = 'Towers';
-                tuple.n_trials = length(block.trial);
-                tuple.first_trial = block.firstTrial;
-                tuple.block_duration = block.duration;
-                tuple.block_start_time = sprintf('%d-%02d-%02d %02d:%02d:00', ...
-                    block.start(1), block.start(2), block.start(3), ...
-                    block.start(4), block.start(5));
-                tuple.reward_mil = block.rewardMiL;
-                try
-                    tuple.reward_scale = block.trial(1).rewardScale;
-                catch
-                    tuple.reward_scale = 0;
-                end
-                tuple.level = block.mazeID;
-                tuple.set_id = 1;
-                tuple.easy_block = exists_helper(block,'easyBlockFlag'); %if it doesn't exist, difficulty was uniform
-                correct_counter = 0;
-                for itrial = 1:length(block.trial)
-                    trial = block.trial(itrial);
-                    if isnumeric(trial.choice)
-                        correct_counter = correct_counter + double(single(trial.trialType) == single(trial.choice));
-                    else
-                        correct_counter = correct_counter + strcmp(trial.trialType.char, trial.choice.char);
-                    end
-                end
-                perf = correct_counter/length(block.trial);
-                if isfinite(perf)
-                    tuple.block_performance = perf;
+            %for iBlock = 1:length(log.block)
+            iBlock = key.block;
+            tuple = key;
+            block = log.block(iBlock);
+            block = fixLogs(block); % fix bug for mesoscope recordings where choice is not recorded (but view angle is)
+            
+            %tuple.block = iBlock;
+            tuple.task = 'Towers';
+            tuple.n_trials = length(block.trial);
+            tuple.first_trial = block.firstTrial;
+            tuple.block_duration = block.duration;
+            tuple.block_start_time = sprintf('%d-%02d-%02d %02d:%02d:00', ...
+                block.start(1), block.start(2), block.start(3), ...
+                block.start(4), block.start(5));
+            tuple.reward_mil = block.rewardMiL;
+            try
+                tuple.reward_scale = block.trial(1).rewardScale;
+            catch
+                tuple.reward_scale = 0;
+            end
+            tuple.level = block.mazeID;
+            tuple.set_id = 1;
+            tuple.easy_block = exists_helper(block,'easyBlockFlag'); %if it doesn't exist, difficulty was uniform
+            correct_counter = 0;
+            for itrial = 1:length(block.trial)
+                trial = block.trial(itrial);
+                if isnumeric(trial.choice)
+                    correct_counter = correct_counter + double(single(trial.trialType) == single(trial.choice));
                 else
-                    tuple.block_performance = 0;
-                end
-                self.insert(tuple);
-                
-                nTrials = length([block.trial.choice]);
-                for itrial = 1:nTrials
-                    trial = block.trial(itrial);
-                    
-                    tuple = key; %% Start with an emty tube to trial data
-                    tuple.block = iBlock;
-                    tuple_trial = tuple;
-                    
-                    tuple_trial.trial_idx = itrial;
-                    
-                    if isnumeric(trial.trialType)
-                        tuple_trial.trial_type = Choice(trial.trialType).char;
-                    else
-                        tuple_trial.trial_type = trial.trialType.char;
-                    end
-                    if isnumeric(trial.choice)
-                        tuple_trial.choice = Choice(trial.choice).char;
-                    else
-                        tuple_trial.choice = trial.choice.char;
-                    end
-                    
-                    tuple_trial.trial_time = trial.time;
-                    tuple_trial.trial_abs_start = trial.start;
-                    tuple_trial.collision = trial.collision;
-                    tuple_trial.cue_presence_left = trial.cueCombo(1, :);
-                    tuple_trial.cue_presence_right = trial.cueCombo(2, :);
-                    
-                    if isempty(tuple_trial.cue_presence_left)
-                        tuple_trial.cue_presence_left = 0;
-                    end
-                    
-                    if isempty(tuple_trial.cue_presence_right)
-                        tuple_trial.cue_presence_right = 0;
-                    end
-                    
-                    if ~isempty(trial.cueOnset{1})
-                        tuple_trial.cue_onset_left = trial.cueOnset{1};
-                    end
-                    
-                    if ~isempty(trial.cueOnset{2})
-                        tuple_trial.cue_onset_right = trial.cueOnset{2};
-                    end
-                    
-                    if ~isempty(trial.cueOffset{1})
-                        tuple_trial.cue_offset_left = trial.cueOffset{1};
-                    end
-                    
-                    if ~isempty(trial.cueOffset{2})
-                        tuple_trial.cue_offset_right = trial.cueOffset{2};
-                    end
-                    
-                    if ~isempty(trial.cuePos{1})
-                        tuple_trial.cue_pos_left = trial.cuePos{1};
-                    end
-                    
-                    if ~isempty(trial.cuePos{2})
-                        tuple_trial.cue_pos_right = trial.cuePos{2};
-                    end
-                    
-                    tuple_trial.trial_duration = trial.duration;
-                    tuple_trial.excess_travel = trial.excessTravel;
-                    tuple_trial.i_arm_entry = exists_helper(trial,'iArmEntry');
-                    tuple_trial.i_blank = exists_helper(trial,'iBlank');
-                    tuple_trial.i_turn_entry = exists_helper(trial,'iTurnEntry');
-                    tuple_trial.i_cue_entry = exists_helper(trial,'iCueEntry');
-                    tuple_trial.i_mem_entry = exists_helper(trial,'iMemEntry');
-                    tuple_trial.iterations = trial.iterations;
-                    tuple_trial.position = trial.position;
-                    tuple_trial.velocity = trial.velocity;
-                    tuple_trial.sensor_dots = trial.sensorDots;
-                    tuple_trial.trial_id = trial.trialID;
-                    if length(trial.trialProb) == 1
-                        tuple_trial.trial_prior_p_left = trial.trialProb;
-                    else
-                        % For not 50:50 trials, take only one of the
-                        % probabilities (they add up to 1)
-                        tuple_trial.trial_prior_p_left = trial.trialProb(1);
-                    end
-                    tuple_trial.vi_start = trial.viStart;
-                    insert(behavior.TowersBlockTrial, tuple_trial)
+                    correct_counter = correct_counter + strcmp(trial.trialType.char, trial.choice.char);
                 end
             end
+            perf = correct_counter/length(block.trial);
+            if isfinite(perf)
+                tuple.block_performance = perf;
+            else
+                tuple.block_performance = 0;
+            end
+           
+            nTrials = length([block.trial.choice]);
+            for itrial = 1:nTrials
+                trial = block.trial(itrial);
+                tuple_trial = key;              
+                tuple_trial.trial_idx = itrial;
+                
+                if isnumeric(trial.trialType)
+                    tuple_trial.trial_type = Choice(trial.trialType).char;
+                else
+                    tuple_trial.trial_type = trial.trialType.char;
+                end
+                if isnumeric(trial.choice)
+                    tuple_trial.choice = Choice(trial.choice).char;
+                else
+                    tuple_trial.choice = trial.choice.char;
+                end
+                
+                tuple_trial.trial_time = trial.time;
+                tuple_trial.trial_abs_start = trial.start;
+                tuple_trial.collision = trial.collision;
+                tuple_trial.cue_presence_left = {trial.cueCombo(1, :)};
+                tuple_trial.cue_presence_right = {trial.cueCombo(2, :)};                
+                tuple_trial.cue_onset_left = trial.cueOnset(1);
+                tuple_trial.cue_onset_right = trial.cueOnset(2);
+                tuple_trial.cue_offset_left = trial.cueOffset(1);
+                tuple_trial.cue_offset_right = trial.cueOffset(2);
+                tuple_trial.cue_pos_left = trial.cuePos(1);
+                tuple_trial.cue_pos_right = trial.cuePos(2);
+                
+                tuple_trial.trial_duration = trial.duration;
+                tuple_trial.excess_travel = trial.excessTravel;
+                tuple_trial.i_arm_entry = exists_helper(trial,'iArmEntry');
+                tuple_trial.i_blank = exists_helper(trial,'iBlank');
+                tuple_trial.i_turn_entry = exists_helper(trial,'iTurnEntry');
+                tuple_trial.i_cue_entry = exists_helper(trial,'iCueEntry');
+                tuple_trial.i_mem_entry = exists_helper(trial,'iMemEntry');
+                tuple_trial.iterations = trial.iterations;
+                tuple_trial.position = trial.position;
+                tuple_trial.velocity = trial.velocity;
+                tuple_trial.sensor_dots = trial.sensorDots;
+                tuple_trial.trial_id = trial.trialID;
+                if length(trial.trialProb) == 1
+                    tuple_trial.trial_prior_p_left = trial.trialProb;
+                else
+                    % For not 50:50 trials, take only one of the
+                    % probabilities (they add up to 1)
+                    tuple_trial.trial_prior_p_left = trial.trialProb(1);
+                end
+                
+                tuple_trial.vi_start = trial.viStart;
+                struct_trials(itrial) = tuple_trial;
+                
+            end
+
+            self.insert(tuple);
+            if exist('struct_trials')
+                
+                %"Unnest" cells to match previous way of inserting data
+                fields_blob = {'cue_presence_left', 'cue_presence_right', 'cue_onset_left', ...
+                    'cue_onset_right', 'cue_offset_left', 'cue_offset_right', ...
+                    'cue_pos_left', 'cue_pos_right'};
+                for f=1:length(fields_blob)
+                    field = fields_blob{f};
+                    for s = 1:length(struct_trials)
+                        struct_trials(s).(field) = struct_trials(s).(field){:};
+                    end
+                end
+                tic
+                insert(behavior.TowersBlockTrial, struct_trials)
+                toc
+            end
+            
+            %end
         end
     end
 end

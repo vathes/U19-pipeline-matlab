@@ -1,6 +1,6 @@
 %{
--> acquisition.SessionBlockTrial
 -> puffs.PuffsSession
+trial_idx                   : int                           # trial index, keep the original number in the file
 ---
 -> task.TaskLevelParameterSet
 trial_type                  : enum('L','R')                 # answer of this trial, left or right
@@ -21,5 +21,5 @@ rule                        : tinyint                       #
 %}
 
 
-classdef PuffsSessionTrial < dj.Manual
+classdef PuffsSessionTrialOld < dj.Manual
 end
