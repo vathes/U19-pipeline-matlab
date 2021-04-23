@@ -9,9 +9,8 @@ block_duration              : float                         # in secs, duration 
 block_start_time            : datetime                      # absolute start time of the block
 reward_mil                  : float                         # in mL, reward volume in this block
 reward_scale                : tinyint                       # scale of the reward in this block
-easy_block                  : bool                          # true if the difficulty reduces during the session
+easy_block                  : tinyint                          # true if the difficulty reduces during the session
 block_performance           : float                         # performance in the current block
-level                       : int                           # maze number (difficulty) of this block
 %}
 
 classdef TowersBlock < dj.Imported
@@ -22,10 +21,10 @@ classdef TowersBlock < dj.Imported
     end
     methods(Access=protected)
         function makeTuples(self, key)
-            
+
             data_dir = fetch1(acquisition.SessionStarted & key, 'remote_path_behavior_file');
-            
-            
+
+
             %Load behavioral file
             try
                 [~, data_dir] = lab.utils.get_path_from_official_dir(data_dir);
@@ -50,11 +49,11 @@ classdef TowersBlock < dj.Imported
                     sprintf('Error in here: %s, %s, %d',err.stack(1).file, err.stack(1).name, err.stack(1).line )
                 end
             end
-            
+
         end
-        
+
     end
-    
+
     % Public methods
     methods
         function insertTowersBlockFromFile(self, key,log)
@@ -64,13 +63,13 @@ classdef TowersBlock < dj.Imported
             % self = behavior.TowersBlock instance
             % key  = behavior.TowersSession key (subject_fullname, date, session_no)
             % log  = behavioral file as stored in Virmen
-            
+
             %for iBlock = 1:length(log.block)
             iBlock = key.block;
             tuple = key;
             block = log.block(iBlock);
             block = fixLogs(block); % fix bug for mesoscope recordings where choice is not recorded (but view angle is)
-            
+
             %tuple.block = iBlock;
             tuple.task = 'Towers';
             tuple.n_trials = length(block.trial);
@@ -103,13 +102,13 @@ classdef TowersBlock < dj.Imported
             else
                 tuple.block_performance = 0;
             end
-           
+
             nTrials = length([block.trial.choice]);
             for itrial = 1:nTrials
                 trial = block.trial(itrial);
-                tuple_trial = key;              
+                tuple_trial = key;
                 tuple_trial.trial_idx = itrial;
-                
+
                 if isnumeric(trial.trialType)
                     tuple_trial.trial_type = Choice(trial.trialType).char;
                 else
@@ -120,19 +119,19 @@ classdef TowersBlock < dj.Imported
                 else
                     tuple_trial.choice = trial.choice.char;
                 end
-                
+
                 tuple_trial.trial_time = trial.time;
                 tuple_trial.trial_abs_start = trial.start;
                 tuple_trial.collision = trial.collision;
                 tuple_trial.cue_presence_left = {trial.cueCombo(1, :)};
-                tuple_trial.cue_presence_right = {trial.cueCombo(2, :)};                
+                tuple_trial.cue_presence_right = {trial.cueCombo(2, :)};
                 tuple_trial.cue_onset_left = trial.cueOnset(1);
                 tuple_trial.cue_onset_right = trial.cueOnset(2);
                 tuple_trial.cue_offset_left = trial.cueOffset(1);
                 tuple_trial.cue_offset_right = trial.cueOffset(2);
                 tuple_trial.cue_pos_left = trial.cuePos(1);
                 tuple_trial.cue_pos_right = trial.cuePos(2);
-                
+
                 tuple_trial.trial_duration = trial.duration;
                 tuple_trial.excess_travel = trial.excessTravel;
                 tuple_trial.i_arm_entry = exists_helper(trial,'iArmEntry');
@@ -152,15 +151,15 @@ classdef TowersBlock < dj.Imported
                     % probabilities (they add up to 1)
                     tuple_trial.trial_prior_p_left = trial.trialProb(1);
                 end
-                
+
                 tuple_trial.vi_start = trial.viStart;
                 struct_trials(itrial) = tuple_trial;
-                
+
             end
 
             self.insert(tuple);
             if exist('struct_trials')
-                
+
                 %"Unnest" cells to match previous way of inserting data
                 fields_blob = {'cue_presence_left', 'cue_presence_right', 'cue_onset_left', ...
                     'cue_onset_right', 'cue_offset_left', 'cue_offset_right', ...
@@ -175,7 +174,7 @@ classdef TowersBlock < dj.Imported
                 insert(behavior.TowersBlockTrial, struct_trials)
                 toc
             end
-            
+
             %end
         end
     end
@@ -193,11 +192,11 @@ end
 function block = fixLogs(block)
 
 for iBlock = 1:numel(block)
-    
+
     %Correct number of trials when there are empty trials in block
     nTrials = length([block(iBlock).trial.choice]);
     block(iBlock).trial = block(iBlock).trial(1:nTrials);
-    
+
     nTrials = numel(block(iBlock).trial);
     for iTrial = 1:nTrials
         if isempty(block(iBlock).trial(iTrial).trialType)
@@ -225,4 +224,3 @@ for iBlock = 1:numel(block)
 end
 
 end
-
