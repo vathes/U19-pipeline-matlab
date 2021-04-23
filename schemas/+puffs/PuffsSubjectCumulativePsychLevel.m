@@ -1,5 +1,7 @@
 %{
+# compute cumulative psych curve for certain level
 -> puffs.PuffsSession
+psych_level                  : tinyint 
 -----
 subject_delta_data=null      : blob   # num of right - num of left, x ticks for data
 subject_pright_data=null     : blob   # percentage went right for each delta bin for data
@@ -9,7 +11,8 @@ subject_delta_fit=null       : blob   # num of right - num of left, x ticks for 
 subject_pright_fit=null      : blob   # fitting results for percent went right
 %}
 
-classdef PuffsSubjectCumulativePsych < dj.Computed
+classdef PuffsSubjectCumulativePsychLevel < dj.Computed
+    
     
     methods(Access=protected)
         
@@ -18,11 +21,15 @@ classdef PuffsSubjectCumulativePsych < dj.Computed
             deltaBins           = -12:3:12;       % controls binning of #R - #L
             deltaBins           = deltaBins(:);
            
-            session_start_time = fetch1(acquisition.Session & key, 'session_start_time');
+            [session_start_time, level] = fetch1(acquisition.Session & key, 'session_start_time', 'level');
             
-            sessions_included = fetch(acquisition.Session & 'level < 8' ...
+            if level >= 8
+                return
+            end
+            
+            sessions_included = fetch(acquisition.Session ...
                 & struct('subject_fullname', key.subject_fullname) ...
-                & puffs.PuffsSession ... 
+                & puffs.PuffsSession & struct('level', level) ... 
                 & sprintf('session_start_time <= "%s"', session_start_time));
             
             [numR, numL, choices_str] = fetchn(puffs.PuffsSessionTrial & sessions_included, ...
@@ -40,6 +47,8 @@ classdef PuffsSubjectCumulativePsych < dj.Computed
             for i = 1:length(f)
                key.(strcat('subject_', f{i})) = fit_results.(f{i});
             end
+            
+            key.psych_level = level;
             
             self.insert(key)
         end
