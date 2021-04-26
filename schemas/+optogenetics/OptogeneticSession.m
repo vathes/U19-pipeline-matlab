@@ -58,6 +58,8 @@ classdef OptogeneticSession < dj.Imported
             % key      = session info structure (subject_fullname, session_date, session_number)
             % log      = loaded information from behavioral file
             
+            key.manipulation_type = 'optogenetics';
+            
             %Get optogenetic protocol from behavioral file
             key.optogenetic_protocol_id = log.animal.stimulationProtocol.optogenetic_protocol_id;
             
