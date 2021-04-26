@@ -5,9 +5,9 @@ function set_up_ext_storage()
 if ispc
     ext_storage_path = '\\bucket.pni.princeton.edu\u19_dj\external_dj_blobs\';
 elseif u19_dj_utils.is_this_spock
-    
+
     ext_storage_path = '/mnt/bucket/u19_dj/external_dj_blobs/';
-    
+
 elseif isunix
     ext_storage_path = '/Volumes/u19_dj/external_dj_blobs/';
 end
@@ -27,5 +27,5 @@ cd(u19_path);
 dj.config.saveLocal()
 cd(this_dir);
 
-
 end
+
