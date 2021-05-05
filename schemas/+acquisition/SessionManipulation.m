@@ -23,6 +23,34 @@ classdef SessionManipulation < dj.Manual
             end
                       
         end
-    
+        
+        function ingest_previous_optogenetic_sessions(self)
+            % Ingest previous optogenetics session manipulation records
+            % Read through all behavior files and search for optogenetic data fields.
+            
+            % All sessions not previously inserted
+            prev_sessions = fetch(acquisition.SessionStarted - self);
+            
+            
+            for i=1:length(prev_sessions)
+                [status, data] = lab.utils.read_behavior_file(prev_sessions(i));  
+                if status
+                    log = data.log;
+                    block_1 = log.block(1);
+                    %Check if block has field named lsrepoch
+                    if isstruct(block_1) && isfield(block_1, 'lsrepoch')
+                        key = prev_sessions(i);
+                        key.manipulation_type = 'optogenetics';
+                        insert(self, key, 'IGNORE');
+                    end
+                end
+            end
+            
+           
+            
+            
+        
+        
+        end
      end
 end
