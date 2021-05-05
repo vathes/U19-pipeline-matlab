@@ -7,7 +7,7 @@
 
 classdef SessionManipulation < dj.Manual
     
-     methods
+    methods
         
         function insertSessionManipulation(self,key,log)
             % Insert session manipulation record from behavioralfile in towersTask
@@ -21,7 +21,7 @@ classdef SessionManipulation < dj.Manual
                 key.manipulation_type = log.animal.manipulationType;
                 insert(self, key, 'IGNORE');
             end
-                      
+            
         end
         
         function ingest_previous_optogenetic_sessions(self)
@@ -31,14 +31,16 @@ classdef SessionManipulation < dj.Manual
             % All sessions not previously inserted
             prev_sessions = fetch(acquisition.SessionStarted - self);
             
-            
+            opto_sessions = 0;
             for i=1:length(prev_sessions)
-                [status, data] = lab.utils.read_behavior_file(prev_sessions(i));  
+                [opto_sessions i length(prev_sessions)]
+                [status, data] = lab.utils.read_behavior_file(prev_sessions(i));
                 if status
                     log = data.log;
                     block_1 = log.block(1);
                     %Check if block has field named lsrepoch
                     if isstruct(block_1) && isfield(block_1, 'lsrepoch')
+                        opto_sessions = opto_sessions + 1;
                         key = prev_sessions(i);
                         key.manipulation_type = 'optogenetics';
                         insert(self, key, 'IGNORE');
@@ -46,11 +48,9 @@ classdef SessionManipulation < dj.Manual
                 end
             end
             
-           
             
-            
-        
-        
         end
-     end
+    end
+    
+    
 end
