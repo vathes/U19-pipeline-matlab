@@ -24,12 +24,12 @@ classdef TowersSessionPsychTask < dj.Computed
             mainBlocks = blocksWithLevel & 'session_level=level';
             guidingBlocks = blocksWithLevel & 'session_level>level';
             
-            [numTowersR, numTowersL, choices] = fetch1(acquisition.Session & key, 'num_towers_r', 'num_towers_l', 'chosen_side');
+            [numTowersR, numTowersL, choices] = fetch1(behavior.TowersSession & key, 'num_towers_r', 'num_towers_l', 'chosen_side');
             % construct indices of main block trials
             blocks_types = {'main', 'guiding'};
             blocks = [mainBlocks, guidingBlocks];
             for iblocks = 1:length(blocks)
-                first_trials, n_trials = fetchn(behavior.TowersBlock & proj(blocks(iblocks)), 'first_trial', 'n_trials');
+                [first_trials, n_trials] = fetchn(behavior.TowersBlock & proj(blocks(iblocks)), 'first_trial', 'n_trials');
                 if length(first_trials)
                     trials_indices = [];
                     for iblock = 1:length(first_trials)
@@ -38,7 +38,7 @@ classdef TowersSessionPsychTask < dj.Computed
 
                     num_towers_r_sub = numTowersR(trials_indices);
                     num_towers_l_sub = numTowersL(trials_indices);
-                    choices_sub = choices(main_block_trials);
+                    choices_sub = choices(trials_indices);
 
                     fit_results = behavior.utils.psychFit(deltaBins, num_towers_r_sub, num_towers_l_sub, choices_sub);
 
