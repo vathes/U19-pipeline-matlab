@@ -17,7 +17,7 @@ classdef OptogeneticSessionTrial < dj.Part
            
     methods
         
-        function opto_trial_structure = get_all_optogenetic_trials_data(self,session_key, log)
+        function opto_trial_structure = get_all_optogenetic_trials_data(~,session_key, log)
            % Create a trial structure from behavioral file data ready to be inserted on the table
            %Inputs
            % session_key          = primary key information from OptogeneticSession table 
@@ -38,39 +38,38 @@ classdef OptogeneticSessionTrial < dj.Part
           
                     
                     %Fill basic opto trial info
-                    opto_trial_structure(total_trials).subject_fullname  = session_key.subject_fullname;
-                    opto_trial_structure(total_trials).session_date      = session_key.session_date;
-                    opto_trial_structure(total_trials).session_number    = session_key.session_number;
-                    opto_trial_structure(total_trials).block             = iBlock;
-                    opto_trial_structure(total_trials).trial_idx         = itrial;
-                    opto_trial_structure(total_trials).stim_on           = curr_trial.lsrON;
+                    opto_trial_key = session_key;
+                    opto_trial_key.block             = iBlock;
+                    opto_trial_key.trial_idx         = itrial;
+                    opto_trial_key.stim_on           = curr_trial.lsrON;
                     
                     %Fill times where stim was on
                     if curr_trial.lsrON == 1
                         if curr_trial.iLaserOn > 0 
-                            opto_trial_structure(total_trials).t_stim_on  = time_trial(curr_trial.iLaserOn);
+                            opto_trial_key.t_stim_on  = time_trial(curr_trial.iLaserOn);
                         else
-                            opto_trial_structure(total_trials).t_stim_on  = 0;
+                            opto_trial_key.t_stim_on  = 0;
                         end
                         if curr_trial.iLaserOff > 0 
-                            opto_trial_structure(total_trials).t_stim_off = time_trial(curr_trial.iLaserOff);
+                            opto_trial_key.t_stim_off = time_trial(curr_trial.iLaserOff);
                         else
-                            opto_trial_structure(total_trials).t_stim_off = 0;
+                            opto_trial_key.t_stim_off = 0;
                         end
                     else
-                        opto_trial_structure(total_trials).t_stim_on  = 0;
-                        opto_trial_structure(total_trials).t_stim_off = 0;
+                        opto_trial_key.t_stim_on  = 0;
+                        opto_trial_key.t_stim_off = 0;
                     end
                     
                     %Fill epoch where stim was on
-                    opto_trial_structure(total_trials).stim_epoch = '';
+                    opto_trial_key.stim_epoch = '';
                     if isfield(curr_trial,'LaserTrialType')
                         if isnumeric(curr_trial.LaserTrialType)
-                            opto_trial_structure(total_trials).stim_epoch = num2str(curr_trial.LaserTrialType);
+                            opto_trial_key.stim_epoch = num2str(curr_trial.LaserTrialType);
                         else
-                            opto_trial_structure(total_trials).stim_epoch = curr_trial.LaserTrialType;
+                            opto_trial_key.stim_epoch = curr_trial.LaserTrialType;
                         end
                     end
+                    opto_trial_structure(total_trials) = opto_trial_key;
                 end
             end
             

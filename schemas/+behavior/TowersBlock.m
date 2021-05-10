@@ -88,7 +88,8 @@ classdef TowersBlock < dj.Imported
             tuple.set_id = 1;
             tuple.easy_block = exists_helper(block,'easyBlockFlag'); %if it doesn't exist, difficulty was uniform
             correct_counter = 0;
-            for itrial = 1:length(block.trial)
+            nTrials = length([block.trial.choice]);
+            for itrial = 1:nTrials
                 trial = block.trial(itrial);
                 if isnumeric(trial.choice)
                     correct_counter = correct_counter + double(single(trial.trialType) == single(trial.choice));
@@ -96,7 +97,7 @@ classdef TowersBlock < dj.Imported
                     correct_counter = correct_counter + strcmp(trial.trialType.char, trial.choice.char);
                 end
             end
-            perf = correct_counter/length(block.trial);
+            perf = correct_counter/nTrials;
             if isfinite(perf)
                 tuple.block_performance = perf;
             else
