@@ -182,7 +182,7 @@ classdef TowersBlock < dj.Imported
 end
 
 function [s] = exists_helper(trial, fieldname)
-if isfield(trial, fieldname)
+if isfield(trial, fieldname) && ~isempty(trial.(fieldname))
     s = trial.(fieldname);
 else
     s = 0;

@@ -41,10 +41,14 @@ classdef OptogeneticSessionTrial < dj.Part
                     opto_trial_key = session_key;
                     opto_trial_key.block             = iBlock;
                     opto_trial_key.trial_idx         = itrial;
-                    opto_trial_key.stim_on           = curr_trial.lsrON;
+                    if isfield(curr_trial, 'lsrON')
+                        opto_trial_key.stim_on           = curr_trial.lsrON;
+                    else
+                        opto_trial_key.stim_on       = 0;
+                    end
                     
                     %Fill times where stim was on
-                    if curr_trial.lsrON == 1
+                    if opto_trial_key.stim_on  == 1
                         if curr_trial.iLaserOn > 0 
                             opto_trial_key.t_stim_on  = time_trial(curr_trial.iLaserOn);
                         else

@@ -32,7 +32,7 @@ classdef OptogeneticSession < dj.Imported
                 status = 0;
             end
             if status
-                try
+               % try
                     %Check if it is a real behavioral file
                     if isfield(log, 'session')
                         %Insert Blocks and trails from BehFile (new and old versions)
@@ -40,10 +40,10 @@ classdef OptogeneticSession < dj.Imported
                     else
                         disp(['File does not match expected Towers behavioral file: ', data_dir])
                     end
-                catch err
-                    disp(err.message)
-                    sprintf('Error in here: %s, %s, %d',err.stack(1).file, err.stack(1).name, err.stack(1).line )
-                end
+               % catch err
+               %     disp(err.message)
+               %     sprintf('Error in here: %s, %s, %d',err.stack(1).file, err.stack(1).name, err.stack(1).line )
+               % end
             end
             
         end
@@ -64,7 +64,7 @@ classdef OptogeneticSession < dj.Imported
             key.manipulation_type = 'optogenetics';
             
             %Get optogenetic protocol from behavioral file
-            if isfield(log.animal, 'stimulationProtocol')
+            if isfield(log.animal, 'stimulationProtocol') && isstruct(log.animal.stimulationProtocol)
                 key.optogenetic_protocol_id = log.animal.stimulationProtocol.optogenetic_protocol_id;
             else
                 %For now protocol_id = 1 by default
@@ -72,7 +72,7 @@ classdef OptogeneticSession < dj.Imported
             end
             
             %Get software params from behavioral file (check if they exist on db)
-            if isfield(log.animal, 'softwareParams')
+            if isfield(log.animal, 'softwareParams') && isstruct(log.animal.softwareParams)
                 curr_software_params = log.animal.softwareParams.software_parameters;
             else
                 %Support for old optogenetic sessions
