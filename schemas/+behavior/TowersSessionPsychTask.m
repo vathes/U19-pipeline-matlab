@@ -24,20 +24,24 @@ classdef TowersSessionPsychTask < dj.Computed
             mainBlocks = blocksWithLevel & 'session_level=level';
             guidingBlocks = blocksWithLevel & 'session_level>level';
 
+            disp 'fetching...'
             [numTowersR, numTowersL, choices] = fetch1(behavior.TowersSession & key, 'num_towers_r', 'num_towers_l', 'chosen_side');
 
             % construct indices of main block trials
             blocks_types = {'main', 'guiding'};
             blocks = [mainBlocks, guidingBlocks];
             for iblocks = 1:length(blocks)
+                iblocks
                 blocks_count = count(behavior.TowersBlock & proj(blocks(iblocks)));
+                blocks_count
                 if blocks_count
                     [first_trials, n_trials] = fetchn(behavior.TowersBlock & proj(blocks(iblocks)), 'first_trial', 'n_trials');
                     trials_indices = [];
                     for i = 1:length(first_trials)
-                        trials_indices = [trials_indices, first_trials(i):n_trials(i)];
+                        trials_indices = [trials_indices, first_trials(i):frist_trials(i) + n_trials(i) - 1];
                     end
 
+                    disp 'fitting...'
                     num_towers_r_sub = numTowersR(trials_indices);
                     num_towers_l_sub = numTowersL(trials_indices);
                     choices_sub = choices(trials_indices);
