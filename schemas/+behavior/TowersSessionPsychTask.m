@@ -19,46 +19,60 @@ classdef TowersSessionPsychTask < dj.Computed
             deltaBins           = -15:3:15;       % controls binning of #R - #L
             deltaBins           = deltaBins(:);
 
-            blocksWithLevel = proj(behavior.TowersBlock, 'level') * proj(acquisition.Session, 'level->session_level') & key;
+            %Get level and main level from block table
+            block_info = fetch(behavior.TowersBlock & key, 'level', 'main_level');
+            block_info = struct2table(block_info, 'AsArray', true);
 
-            mainBlocks = blocksWithLevel & 'session_level=level';
-            guidingBlocks = blocksWithLevel & 'session_level>level';
+            %Get array of main blocks and "guide" blocks
+            mainBlocks = block_info(block_info.level == block_info.main_level,:);
+            mainBlocks = mainBlocks.block;
+            guidingBlocks = block_info(block_info.level ~= block_info.main_level,:);
+            guidingBlocks = guidingBlocks.block;
 
-            disp 'fetching...'
-            [numTowersR, numTowersL, choices] = fetch1(behavior.TowersSession & key, 'num_towers_r', 'num_towers_l', 'chosen_side');
+            %Get all trials info
+            trial_info = fetch(behavior.TowersBlockTrial & key, 'choice', 'cue_presence_left', 'cue_presence_right');
 
-            % construct indices of main block trials
+            if isempty(trial_info)
+                return
+            end
+
+            trial_info = struct2table(trial_info, 'AsArray', true);
+
+            %Transform cue and choice to numeric arrays (instead of cells)
+            if ~iscell(trial_info.cue_presence_left)
+                trial_info.cue_presence_left = num2cell(trial_info.cue_presence_left);
+            end
+            if ~iscell(trial_info.cue_presence_right)
+                trial_info.cue_presence_right = num2cell(trial_info.cue_presence_right);
+            end
+            trial_info.num_towers_l = cellfun(@sum, trial_info.cue_presence_left);
+            trial_info.num_towers_r = cellfun(@sum, trial_info.cue_presence_right);
+
+            trial_info.choice = double(cellfun(@Choice,  trial_info.choice));
+
+            %For each of the kind of level types:
             blocks_types = {'main', 'guiding'};
-            blocks = [mainBlocks, guidingBlocks];
+            blocks = {mainBlocks, guidingBlocks};
             for iblocks = 1:length(blocks)
-                iblocks
-                blocks_count = count(behavior.TowersBlock & proj(blocks(iblocks)));
-                blocks_count
-                if blocks_count
-                    [first_trials, n_trials] = fetchn(behavior.TowersBlock & proj(blocks(iblocks)), 'first_trial', 'n_trials');
-                    trials_indices = [];
-                    for i = 1:length(first_trials)
-                        trials_indices = [trials_indices, first_trials(i):frist_trials(i) + n_trials(i) - 1];
-                    end
 
-                    disp 'fitting...'
-                    num_towers_r_sub = numTowersR(trials_indices);
-                    num_towers_l_sub = numTowersL(trials_indices);
-                    choices_sub = choices(trials_indices);
+                if size(blocks{iblocks}, 1)
+                    %Filter corresponding trials
+                    ac_trial_info = trial_info(ismember(trial_info.block,blocks{iblocks}),:);
 
-                    fit_results = behavior.utils.psychFit(deltaBins, num_towers_r_sub, num_towers_l_sub, choices_sub);
+                    %Fit and insert results
+                    fit_results = behavior.utils.psychFit(deltaBins, ac_trial_info.num_towers_r, ...
+                        ac_trial_info.num_towers_l, ac_trial_info.choice);
 
                     f = fieldnames(fit_results);
 
                     key_subtype = key;
                     for i = 1:length(f)
-                       key_subtype.(strcat('blocks_', f{i})) = fit_results.(f{i});
+                        key_subtype.(strcat('blocks_', f{i})) = fit_results.(f{i});
                     end
                     key_subtype.blocks_type = blocks_types{iblocks};
                     self.insert(key_subtype)
                 end
             end
-
         end
     end
 end
